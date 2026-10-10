@@ -1,0 +1,41 @@
+# Local tools, IDE state, and machine-specific configuration
+.tools/
+.gradle/
+.kotlin/
+.idea/
+.vscode/
+*.iml
+local.properties
+.DS_Store
+Thumbs.db
+
+# Build outputs and native build caches
+build/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.apks
+*.hprof
+*.log
+captures/
+
+# Secrets, signing material, and personal playlists
+.env
+.env.*
+*.jks
+*.keystore
+*.pem
+*.key
+keystore.properties
+signing.properties
+google-services.json
+*.m3u
+*.m3u8
+playlist.src
+channels.tsv
+
+# Local generator metadata and unreviewed screenshots
+/metadata.json
+/assets/.aistudio/
+/app/src/test/screenshots/

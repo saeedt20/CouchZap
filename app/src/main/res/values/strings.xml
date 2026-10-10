@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">CouchZap</string>
+    <string name="import_title">Welcome to CouchZap</string>
+    <string name="import_hint">Import an M3U, M3U8, or TXT playlist file to start watching TV</string>
+    <string name="btn_import_playlist">Import playlist (.m3u / .m3u8 / .txt)</string>
+    <string name="loading_channels">Loading channels… %d found</string>
+    <string name="no_channels_found">No valid channels found in this playlist file</string>
+    <string name="channel_unavailable">Channel unavailable — select it again to retry, or choose another channel</string>
+    <string name="press_back_again">Press BACK again to exit app</string>
+    <string name="next_channel_ghost">▲ NEXT: %s</string>
+    <string name="no_channel_number">No channel %s</string>
+    <string name="buffering">Buffering…</string>
+
+    <!-- Settings menu -->
+    <string name="settings_reimport">Re-import playlist</string>
+    <string name="settings_aspect">Aspect ratio: %s</string>
+    <string name="settings_exit">Exit app</string>
+    <string name="aspect_fit">Fit</string>
+    <string name="aspect_fill">Fill</string>
+    <string name="aspect_16_9">16:9</string>
+    <string name="aspect_4_3">4:3</string>
+</resources>
