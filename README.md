@@ -1,208 +1,149 @@
-# CouchZap
+<p align="center">
+  <img src="docs/brand/couchzap.svg" alt="CouchZap couch and lightning logo" width="112">
+</p>
 
-**Your playlist. Your remote. Your couch.**
+<h1 align="center">CouchZap</h1>
+<p align="center"><strong>Take a seat. Start watching.</strong><br>A calm, remote-friendly IPTV player for Android TV and phones.</p>
 
-[![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&logoColor=white)](#requirements)
-[![Kotlin](https://img.shields.io/badge/Kotlin-native-7F52FF?logo=kotlin&logoColor=white)](#project-structure)
-[![Playback](https://img.shields.io/badge/Playback-Media3-6750A4)](#features)
+<p align="center">
+  <a href="https://github.com/saeedt20/CouchZap/releases/latest">Download APK</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#controls">Remote guide</a> ·
+  <a href="https://github.com/saeedt20/CouchZap/issues">Report an issue</a>
+</p>
 
-CouchZap is a lightweight IPTV player for Android TV boxes, with remote-friendly
-channel browsing and a touchscreen interface for phones. Import your own playlist,
-choose a channel, and start watching.
+CouchZap brings your playlist to the living room with a sage-green interface, clear focus states and uncluttered playback controls. Add a local file or playlist link, or start with public channels from [iptv-org](https://github.com/iptv-org/iptv).
 
-The app includes no channels, subscriptions, or streaming accounts. You supply the
-playlist and stream sources.
+Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account required
+
+## Download and start
+
+1. Download **CouchZap-2.0.0.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [repository copy](https://github.com/saeedt20/CouchZap/raw/refs/heads/main/distribution/CouchZap-2.0.0.apk) and [SHA-256 checksum](distribution/CouchZap-2.0.0.apk.sha256) are also available.
+2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
+3. Choose **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
+4. Select a channel and enjoy.
+
+Use **Settings → Playlist sources** to import an HTTP(S) link, choose another source or refresh the current playlist. Public channels can be selected by country, language or category, or imported together.
+
+Public channel availability depends on the source and your location. CouchZap downloads playlists when requested; it does not bundle streams or provide a subscription service.
+
+## Screenshots
+
+These images render the app's actual Android layouts with demo channel data and an illustrative background. They show the interface rather than a live broadcast or hardware playback test.
+
+| Welcome | Channels |
+| --- | --- |
+| ![TV welcome screen](docs/screenshots/welcome-tv.png) | ![Left-docked channel browser](docs/screenshots/channels-tv.png) |
+| **Playback info** | **Settings** |
+| ![Compact playback information](docs/screenshots/info-tv.png) | ![Left-docked settings](docs/screenshots/settings-tv.png) |
+
+<details>
+<summary>Stream details and phone layout</summary>
+
+![Expanded stream details](docs/screenshots/info-details-tv.png)
+
+<img src="docs/screenshots/welcome-phone.png" alt="Phone welcome screen" width="270">
+
+</details>
 
 ## Features
 
-- **Local playlist import** — M3U, M3U8, and TXT files through Android's document picker.
-- **Remote navigation** — D-pad browsing, channel keys, and numeric channel selection.
-- **TV and phone interfaces** — Auto detection plus manual TV and Phone modes.
-- **Media3 playback** — HLS, RTSP, and compatible progressive media streams.
-- **Playback overlays** — channel name, time, buffering status, and available stream details.
-- **Display modes** — Fit, Fill, 16:9, and 4:3.
-- **Local persistence** — cached channels, last selected channel, and interface preferences.
-- **Background handling** — playback stops when the activity leaves the foreground.
+- **A calmer interface:** couch-and-lightning identity, warm sage accents, generous buttons and visible remote focus.
+- **A better channel browser:** left-docked panel, search, groups, favourites, channel logos and a distinct playing marker. Up from the first visible channel wraps to the last; Down wraps back to the first.
+- **Flexible playlist sources:** local files, HTTP(S) links and the public iptv-org directory. Cached channels remain available between launches; failed imports preserve the previous playlist.
+- **Useful Info controls:** channel name, number, clock, play/pause, favourites and a second level for available codec, resolution and bitrate information.
+- **Programme guide:** XMLTV from a file or link, including gzip files. Shows now/next and programme progress when guide IDs match the playlist.
+- **Playback options:** HLS, DASH, RTSP and compatible progressive streams, available audio/subtitle tracks, Fit/Fill/16:9/4:3 picture modes, reconnect attempts and a retry/next-channel error panel.
+- **Everyday conveniences:** last watched channel, numeric selection for large playlists, a 15/30/60/90-minute sleep timer and saved interface preferences.
+- **TV and phone support:** automatic device detection, manual TV/Phone modes, TV overscan padding, responsive phone layout and touch gestures.
 
-TV mode uses landscape orientation and an inset channel panel to accommodate
-overscan. Phone mode supports rotation, touch controls, and swipe gestures.
-
-## Getting started
-
-1. Build and install the APK using the instructions below.
-2. Open CouchZap and select **Import playlist**.
-3. Choose a local `.m3u`, `.m3u8`, or `.txt` file.
-4. Browse channels with the remote or touchscreen and select one to play.
-
-To replace a playlist, open **Settings → Re-import playlist**. To change the
-interface, open **Settings → Interface mode** and choose **Auto**, **TV**, or **Phone**.
-
-On Android 7–9, a basic storage browser is available when the system document picker
-is missing. Android 10 and later require an installed system document picker.
+Favourites and the current channel survive playlist refreshes when `tvg-id`, or the fallback name and group identity, remain stable. Refresh is manual; cached playlists and guides do not update automatically.
 
 ## Controls
 
 ### TV remote
 
-| Button | Action during playback |
+| Button | Action |
 | --- | --- |
-| OK / Up | Open the channel list |
-| D-pad / OK in the list | Navigate / play the focused channel |
-| Right / CH+ / Page Up | Next channel |
-| Left / CH− / Page Down | Previous channel |
-| Down / Info | Show playback controls |
-| Number keys | Enter a channel number |
-| Play/Pause | Toggle playback |
+| OK / Up during playback | Open channels |
+| Up / Down in channels | Move focus; wrap at the first/last visible row |
+| OK on a channel | Play it |
+| Hold OK on a channel | Add/remove favourite |
+| Left from a channel row | Reach the filter buttons, then search |
+| Right / CH+ / Page Up during playback | Next channel |
+| Left / CH− / Page Down during playback | Previous channel |
+| Down / Info | Show controls; press Info again for stream details |
+| Number keys / Delete / OK | Enter / correct / confirm a channel number |
+| Play / Pause / Play-Pause | Play / pause / toggle |
+| Last Channel | Return to the previous watched channel |
 | Menu | Open settings |
-| Back | Close the active overlay; press twice with overlays closed to exit |
+| Back | Close the active panel; press twice with panels closed to exit |
 
-Playback controls hide after five seconds without interaction. Actual key mappings
-can vary between remotes and Android TV boxes.
+Arrow keys move between buttons when a control panel has focus. Key mappings can vary between remotes. The expanded Info panel also includes a previous-watched-channel button.
 
-### Touchscreen
+### Phone
 
-| Gesture | Action |
-| --- | --- |
-| Tap the video | Show or hide playback controls |
-| Double-tap | Toggle playback |
-| Swipe left / right | Next / previous channel |
-| Swipe up | Open the channel list |
-| Gear button | Open settings |
+Tap the video to show/hide controls, double-tap to play/pause, swipe left/right to switch channels and swipe up to open the channel list. Use the gear button for settings.
 
-## Playlist examples
+## Playlists and programme guide
 
-### M3U
+M3U metadata includes `tvg-id`, `tvg-logo`, `group-title`, User-Agent/Referer fields and HLS/DASH manifest hints. Duplicate stream URLs are removed; channel numbers follow playlist order. TXT accepts `Name,URL` entries or bare stream URLs.
 
 ```m3u
-#EXTM3U
-#EXTINF:-1 group-title="News",Example News
-https://example.org/news/live.m3u8
-#EXTINF:-1 group-title="Music",Example Music
-https://example.org/music/live.m3u8
+#EXTM3U x-tvg-url="https://example.org/guide.xml.gz"
+#EXTINF:-1 tvg-id="example.news" tvg-logo="https://example.org/logo.png" group-title="News",Example News
+https://example.org/live.m3u8
 ```
 
-### TXT
+The URLs above are placeholders. Import your guide through **Settings → Programme guide** and use matching `tvg-id` values. A guide URL in the playlist header can be used through **Refresh guide**; guides are not downloaded automatically. Guide import keeps programmes relevant to the next 48 hours and rejects oversized files. Audio tracks, subtitles and programme information appear only when the source supplies them.
 
-```text
-Example News,https://example.org/news/live.m3u8
-Example Music,https://example.org/music/live.m3u8
-```
+Android 7–9 also have a basic file-browser fallback if the system document picker is missing. Android 10+ require an enabled system Files/document-picker app.
 
-These URLs are placeholders. Replace them with stream sources you can access.
-The parser also accepts bare stream URLs and supported User-Agent/Referer metadata.
-Duplicate stream URLs are removed and imported channels receive sequential numbers.
+## Build from source
 
-## Requirements
-
-| Component | Requirement |
+| Tool | Version |
 | --- | --- |
-| Device | Android 7.0 or later (API 24+) |
 | JDK | 17 |
-| Android SDK | Platform 35 |
+| Android SDK / target SDK | 35 |
 | Android Build Tools | 36.0.0 |
 | Android Gradle Plugin | 9.1.1 |
-| Gradle | 9.3.1, supplied through the wrapper |
-
-Codec support and playback performance depend on the device and stream. Internet
-access is required for network streams.
-
-## Build
-
-Clone the repository and open it in Android Studio:
+| Gradle wrapper | 9.3.1 |
+| Minimum Android | 7.0 / API 24 |
 
 ```sh
-git clone https://github.com/saeedt20/couchzap.git
-cd couchzap
+git clone https://github.com/saeedt20/CouchZap.git
+cd CouchZap
+./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
-Install the SDK components listed above. Configure the SDK through Android Studio,
-the `ANDROID_HOME` environment variable, or an untracked `local.properties` file.
+Configure the SDK in Android Studio, `ANDROID_HOME` or an untracked `local.properties`. On Windows use `gradlew.bat`. Debug output: `app/build/outputs/apk/debug/app-debug.apk`.
 
-Build the debug APK, run the tests, and check lint:
+For a signed, optimized release, set these environment variables in your shell or secure build environment:
+
+| Variable | Purpose |
+| --- | --- |
+| `COUCHZAP_KEYSTORE` | Absolute path to your private release keystore |
+| `COUCHZAP_STORE_PASSWORD` | Keystore password |
+| `COUCHZAP_KEY_ALIAS` | Key alias; defaults to `couchzap` |
+| `COUCHZAP_KEY_PASSWORD` | Key password; defaults to the store password |
 
 ```sh
-./gradlew assembleDebug testDebugUnitTest lintDebug
+./gradlew :app:assembleRelease :app:lintRelease
+adb install -r app/build/outputs/apk/release/app-release.apk
 ```
 
-On Windows, use `gradlew.bat` instead of `./gradlew`.
+Without a configured keystore, the release output is unsigned. Published 2.0.0 uses a dedicated release key. Updates must use the same key; Android cannot install it over a build signed with a different key. Uninstalling removes local playlists and preferences. Signing keys and passwords are excluded from this repository.
 
-The debug APK is generated at:
+## Validation and limitations
 
-```text
-app/build/outputs/apk/debug/app-debug.apk
-```
+The 2.0.0 build passed **28 unit/Robolectric tests**, debug/release lint with no errors, and debug and optimized release assembly. Tests cover parsing, cache preservation, refresh identity, favourites, XMLTV/gzip/time zones, numeric entry, remote focus and list wrapping. The six screenshots are generated from native layouts by `ScreenRenderTest`.
 
-No API key, backend service, or custom debug keystore is required. The Gradle wrapper
-verifies the distribution checksum. Debug builds use standard Android debug signing;
-release builds require your own signing configuration for distribution.
+Automated checks do not validate physical TV remotes, hardware decoders or live stream availability. Playback depends on the device's codec support and source availability. There is no provider-account login, DRM configuration, recording, catch-up service or SmoothStreaming module. Opaque HLS/DASH links use manifest hints or a server's HEAD content type; servers that supply neither may require a conventional manifest URL.
 
-## Install
+## Data and attribution
 
-Transfer the debug APK to your device and install it, or use Android Debug Bridge:
+Playlists, guides, favourites and preferences stay in private app storage. CouchZap has no analytics, advertising or account service. It connects to playlist, guide, artwork and stream servers that you select; the public directory connects to iptv-org. HTTP sources are supported, so transport security depends on the source.
 
-```sh
-adb devices
-adb -s DEVICE_SERIAL install -r app/build/outputs/apk/debug/app-debug.apk
-```
+Thanks to [iptv-org](https://github.com/iptv-org/iptv) for its public playlist directory and metadata API, [AndroidX Media3](https://github.com/androidx/media) for playback, [AndroidSVG](https://github.com/BigBadaboom/androidsvg) for SVG artwork, and [Robolectric](https://github.com/robolectric/robolectric) for Android regression testing.
 
-The application ID is `com.couchzap.iptv`. Future updates must use the same application
-ID and signing key. Uninstalling removes the app's cached playlist and settings.
-
-## Project structure
-
-```text
-app/src/main/
-├── java/com/couchzap/iptv/
-│   ├── MainActivity.kt    # Lifecycle, navigation, and interface coordination
-│   ├── data/              # Playlist parsing and cached storage
-│   ├── player/            # Media3 playback and stream information
-│   ├── ui/                # Overlays, channel list, file browser, numeric input
-│   └── util/              # Preferences, key mappings, and animations
-└── res/                   # Layouts, strings, themes, and vector assets
-
-app/src/test/              # Unit and Robolectric regression tests
-app/src/androidTest/       # Device instrumentation test
-gradle/                   # Version catalog and Gradle wrapper
-```
-
-## Testing
-
-Unit and Robolectric tests cover playlist parsing, stream closure, preservation of
-the cached playlist on empty or failed imports, interface mode selection, and remote
-menu behavior.
-
-```sh
-./gradlew testDebugUnitTest lintDebug
-```
-
-Before using a new build on a TV box, check playlist import, channel switching,
-audio/video playback, remote focus, aspect modes, and stopping/resuming after Home.
-For phones, also check rotation and touchscreen controls. Automated tests do not
-verify hardware decoders or live stream availability.
-
-## Current limitations
-
-- No EPG, favorites, playlist URL subscriptions, or provider account login.
-- DASH and SmoothStreaming media-source modules are not included.
-- HLS URLs without a recognizable `.m3u8` path can be treated as progressive media.
-- Numeric channel entry supports up to four digits.
-- Dedicated Play and Pause keys currently share the toggle behavior.
-- URL validation checks supported schemes; malformed URLs can still be imported.
-- DRM and subtitle controls are outside the current interface.
-
-## Data and privacy
-
-Imported channels and settings are stored in the app's private local storage. The
-app has no analytics, advertising, or account-login integration. Stream playback
-connects to the servers specified in your playlist. HTTP streams and cross-protocol
-redirects are allowed, so transport security depends on the stream source.
-
-Local SDK paths, editor state, tool caches, environment files, signing keys, build
-outputs, and playlist files are excluded from version control. Keep credentials and
-personal playlists out of source files and issue attachments as well.
-
-## Feedback
-
-Report bugs or suggest improvements through [GitHub Issues](https://github.com/saeedt20/couchzap/issues).
-Include the Android version, steps to reproduce, and relevant logs with credentials,
-private stream URLs, and personal details removed.
+For bugs, include device/Android version, reproduction steps and sanitized logs in [GitHub Issues](https://github.com/saeedt20/CouchZap/issues).

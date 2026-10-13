@@ -1,15 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_black">#FF080808</color>
-    <color name="osd_background">#E6121212</color>
-    <color name="panel_background">#F2121212</color>
-    <color name="item_focus">#FFD0BCFF</color>
-    <color name="item_focus_text">#FF1D192B</color>
-    <color name="item_focus_stroke">#FFE8DEF8</color>
-    <color name="item_normal">#0DFFFFFF</color>
-    <color name="text_white">#FFFFFFFF</color>
-    <color name="text_gray">#99FFFFFF</color>
-    <color name="text_dim">#66FFFFFF</color>
-    <color name="accent_gold">#FFD0BCFF</color>
-    <color name="accent_blue">#FFD0BCFF</color>
+<color name="bg_black">#161A18</color><color name="osd_background">#F5242B26</color><color name="panel_background">#242B26</color>
+<color name="item_focus">#B7C9AC</color><color name="item_focus_text">#182116</color><color name="item_focus_stroke">#E2EBDD</color>
+<color name="item_normal">#161A18</color><color name="text_white">#F2EFE7</color><color name="text_gray">#BEC7BE</color><color name="text_dim">#AAB7AC</color>
+<color name="accent_gold">#B7C9AC</color><color name="accent_blue">#B7C9AC</color><color name="outline">#536451</color>
 </resources>

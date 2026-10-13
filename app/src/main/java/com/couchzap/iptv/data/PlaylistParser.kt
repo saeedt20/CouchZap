@@ -5,8 +5,11 @@ import java.io.InputStream
 import java.io.InputStreamReader
 
 class PlaylistParser {
+    var epgUrl: String? = null
+        private set
 
     fun parse(inputStream: InputStream): List<Channel> {
+        epgUrl = null
         val reader = BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8))
         val channels = mutableListOf<Channel>()
         val seenUrls = HashSet<String>()
@@ -14,6 +17,8 @@ class PlaylistParser {
         var pendingName: String? = null
         var pendingGroup: String? = null
         var pendingLogo: String? = null
+        var pendingId: String? = null
+        var pendingMime: String? = null
         var pendingUserAgent: String? = null
         var pendingReferer: String? = null
 
@@ -36,6 +41,7 @@ class PlaylistParser {
             }
 
             if (cleanLine.startsWith("#EXTM3U")) {
+                epgUrl = extractAttribute(cleanLine, "x-tvg-url") ?: extractAttribute(cleanLine, "url-tvg")
                 line = reader.readLine()
                 continue
             }
@@ -45,6 +51,8 @@ class PlaylistParser {
                 pendingName = parsedInf.name
                 pendingGroup = parsedInf.group
                 pendingLogo = parsedInf.logo
+                pendingId = extractAttribute(cleanLine.substringBeforeLast(','), "tvg-id")
+                pendingMime = null
                 line = reader.readLine()
                 continue
             }
@@ -55,6 +63,16 @@ class PlaylistParser {
                     pendingUserAgent = opt.substring(16).trim()
                 } else if (opt.startsWith("http-referrer=", ignoreCase = true)) {
                     pendingReferer = opt.substring(14).trim()
+                }
+                line = reader.readLine()
+                continue
+            }
+
+            if (cleanLine.startsWith("#KODIPROP:inputstream.adaptive.manifest_type=")) {
+                pendingMime = when (cleanLine.substringAfter('=').trim().lowercase()) {
+                    "hls" -> "application/x-mpegURL"
+                    "mpd", "dash" -> "application/dash+xml"
+                    else -> null
                 }
                 line = reader.readLine()
                 continue
@@ -94,6 +112,8 @@ class PlaylistParser {
                 pendingName = null
                 pendingGroup = null
                 pendingLogo = null
+                pendingId = null
+                pendingMime = null
                 pendingUserAgent = null
                 pendingReferer = null
                 line = reader.readLine()
@@ -140,7 +160,9 @@ class PlaylistParser {
                             group = group,
                             logo = logo,
                             userAgent = userAgent,
-                            referer = referer
+                            referer = referer,
+                            tvgId = pendingId,
+                            mimeType = pendingMime
                         )
                     )
                 }
@@ -150,6 +172,8 @@ class PlaylistParser {
             pendingName = null
             pendingGroup = null
             pendingLogo = null
+            pendingId = null
+            pendingMime = null
             pendingUserAgent = null
             pendingReferer = null
 
@@ -243,11 +267,13 @@ class PlaylistParser {
     }
 
     private fun isValidUrl(url: String): Boolean {
-        val lower = url.lowercase()
-        return lower.startsWith("http://") ||
-                lower.startsWith("https://") ||
-                lower.startsWith("rtsp://") ||
-                lower.startsWith("udp://") ||
-                lower.startsWith("file://")
+        return try {
+            val uri = java.net.URI(url.substringBefore('|').trim())
+            when (uri.scheme?.lowercase(java.util.Locale.ROOT)) {
+                "http", "https", "rtsp", "udp" -> !uri.host.isNullOrBlank()
+                "file" -> !uri.path.isNullOrBlank()
+                else -> false
+            }
+        } catch (_: java.net.URISyntaxException) { false }
     }
 }

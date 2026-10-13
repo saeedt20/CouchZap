@@ -85,7 +85,9 @@ class SimpleFileBrowser(
                 !file.isDirectory && (
                         file.name.endsWith(".m3u", ignoreCase = true) ||
                                 file.name.endsWith(".m3u8", ignoreCase = true) ||
-                                file.name.endsWith(".txt", ignoreCase = true)
+                                file.name.endsWith(".txt", ignoreCase = true) ||
+                                file.name.endsWith(".xml", ignoreCase = true) ||
+                                file.name.endsWith(".xml.gz", ignoreCase = true)
                         )
             }.sortedBy { it.name.lowercase() }
 

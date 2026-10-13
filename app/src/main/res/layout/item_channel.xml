@@ -1,36 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="52dp"
+    android:layout_height="64dp"
     android:layout_marginBottom="6dp"
     android:background="@drawable/bg_focus"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp">
-
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp">
+    <ImageView
+        android:id="@+id/iv_channel_logo"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_station"
+        android:importantForAccessibility="no"
+        android:duplicateParentState="true" />
     <TextView
         android:id="@+id/tv_item_channel_num"
         android:duplicateParentState="true"
-        android:layout_width="56dp"
+        android:layout_width="48dp"
         android:layout_height="wrap_content"
-        android:fontFamily="sans-serif-medium"
         android:textColor="@color/selector_channel_num"
-        android:textSize="16sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/tv_item_channel_name"
-        android:duplicateParentState="true"
+        android:textSize="15sp" />
+    <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:ellipsize="end"
-        android:fontFamily="sans-serif"
-        android:maxLines="1"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:duplicateParentState="true">
+        <TextView
+            android:id="@+id/tv_item_channel_name"
+            android:duplicateParentState="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/selector_channel_text"
+            android:textSize="17sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+        <TextView
+            android:id="@+id/tv_item_channel_group"
+            android:duplicateParentState="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textColor="@color/selector_channel_text"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+    <TextView
+        android:id="@+id/tv_item_channel_status"
+        android:duplicateParentState="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:textColor="@color/selector_channel_text"
-        android:textSize="16sp" />
-
+        android:textSize="12sp" />
 </LinearLayout>

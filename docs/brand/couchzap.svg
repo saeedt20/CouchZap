@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" role="img" aria-label="CouchZap">
+  <rect width="108" height="108" rx="24" fill="#161A18"/>
+  <path fill="#B7C9AC" d="M28 25Q28 18 36 18H72Q80 18 80 25V56H28Z M21 49Q17 49 17 54V70Q17 75 23 75H85Q91 75 91 70V54Q91 49 86 49Q81 49 81 54V62H27V54Q27 49 21 49Z M26 74H33V82H26Z M75 74H82V82H75Z"/>
+  <path fill="#161A18" d="M56 22H67L56 37H64L43 57L49 42H41Z"/>
+</svg>

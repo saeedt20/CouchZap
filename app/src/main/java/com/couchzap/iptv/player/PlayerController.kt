@@ -22,13 +22,20 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import com.couchzap.iptv.data.Channel
 import com.couchzap.iptv.util.Prefs
+import com.couchzap.iptv.R
+import androidx.media3.common.TrackSelectionOverride
+import androidx.media3.common.Timeline
+import androidx.media3.common.text.CueGroup
+import androidx.media3.ui.SubtitleView
+import kotlinx.coroutines.*
 
 @OptIn(UnstableApi::class)
 class PlayerController(
     private val context: Context,
     private val surfaceView: SurfaceView,
     private val videoFrame: androidx.media3.ui.AspectRatioFrameLayout,
-    private val listener: PlayerEventListener
+    private val listener: PlayerEventListener,
+    private val subtitleView: SubtitleView? = null
 ) {
 
     interface PlayerEventListener {
@@ -38,11 +45,17 @@ class PlayerController(
         fun onPlaybackStateChanged(state: Int, isBuffering: Boolean)
         fun onError(message: String)
         fun onChannelFailed(channel: Channel)
+        fun onPlaybackInfo(playWhenReady: Boolean, isLive: Boolean, status: String) {}
     }
 
     private var exoPlayer: ExoPlayer? = null
     private var trackSelector: DefaultTrackSelector? = null
     private var currentChannel: Channel? = null
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private var preparationJob: Job? = null
+    private var desiredPlay = false
+    private var resolvedMime: String? = null
+    private var currentTracks: Tracks = Tracks.EMPTY
     private var aspectMode = Prefs.ASPECT_FIT
     private var videoAspect = 16f / 9f
     private val retryRunnable = Runnable { retryCurrentChannel() }
@@ -75,6 +88,7 @@ class PlayerController(
         }
 
         override fun onTracksChanged(tracks: Tracks) {
+            currentTracks = tracks
             var vFormat: Format? = null
             var aFormat: Format? = null
 
@@ -115,11 +129,18 @@ class PlayerController(
         override fun onPlaybackStateChanged(playbackState: Int) {
             val isBuffering = playbackState == Player.STATE_BUFFERING
             listener.onPlaybackStateChanged(playbackState, isBuffering)
+            publishPlaybackInfo()
         }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) { publishPlaybackInfo() }
+        override fun onIsPlayingChanged(isPlaying: Boolean) { publishPlaybackInfo() }
+        override fun onTimelineChanged(timeline: Timeline, reason: Int) { publishPlaybackInfo() }
+        override fun onCues(cueGroup: CueGroup) { subtitleView?.setCues(cueGroup.cues) }
 
         override fun onPlayerError(error: PlaybackException) {
             val channel = currentChannel ?: return
             mainHandler.removeCallbacks(retryRunnable)
+            if (!desiredPlay) return
 
             // Decoder error recovery
             if (error.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED && !hasDecoderFallbackAttempted) {
@@ -134,6 +155,7 @@ class PlayerController(
 
             if (retryCount < 3) {
                 retryCount++
+                listener.onPlaybackInfo(true, false, context.getString(R.string.retrying, retryCount, 3))
                 mainHandler.postDelayed(retryRunnable, 1200L * retryCount)
             } else {
                 listener.onChannelFailed(channel)
@@ -183,6 +205,10 @@ class PlayerController(
         val player = exoPlayer ?: return
         cancelRetry()
         currentChannel = channel
+        desiredPlay = true
+        preparationJob?.cancel()
+        subtitleView?.setCues(emptyList())
+        currentTracks = Tracks.EMPTY
         trackSelector?.setParameters(trackSelector!!.buildUponParameters().clearVideoSizeConstraints())
         activeVideoFormat = null
         activeAudioFormat = null
@@ -190,10 +216,32 @@ class PlayerController(
         retryCount = 0
         hasDecoderFallbackAttempted = false
 
-        val mediaSourceFactory = createMediaSourceFactoryForChannel(channel)
-        player.setMediaSource(mediaSourceFactory.createMediaSource(MediaItem.fromUri(channel.url)))
+        listener.onPlaybackInfo(true, false, context.getString(R.string.connecting))
+        preparationJob = scope.launch {
+            resolvedMime = withContext(Dispatchers.IO) { StreamTypeResolver.resolve(channel) }
+            ensureActive()
+            if (currentChannel == channel && desiredPlay) prepare(channel)
+        }
+    }
+
+    private fun prepare(channel: Channel) {
+        val player = exoPlayer ?: return
+        val item = MediaItem.Builder().setUri(channel.url).setMimeType(resolvedMime ?: channel.mimeType).build()
+        player.setMediaSource(createMediaSourceFactoryForChannel(channel).createMediaSource(item))
         player.prepare()
-        player.playWhenReady = true
+        player.playWhenReady = desiredPlay
+    }
+
+    private fun publishPlaybackInfo() {
+        val player = exoPlayer ?: return
+        val state = when {
+            !desiredPlay -> context.getString(R.string.paused)
+            player.playbackState == Player.STATE_BUFFERING -> context.getString(R.string.buffering)
+            player.playbackState != Player.STATE_READY -> context.getString(R.string.connecting)
+            player.isCurrentMediaItemLive -> context.getString(R.string.live)
+            else -> context.getString(R.string.playing)
+        }
+        listener.onPlaybackInfo(desiredPlay, player.isCurrentMediaItemLive, state)
     }
 
     private fun createMediaSourceFactoryForChannel(channel: Channel): DefaultMediaSourceFactory {
@@ -201,7 +249,7 @@ class PlayerController(
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(8000)
             .setReadTimeoutMs(8000)
-            .setUserAgent(channel.userAgent ?: "CouchZap/1.0")
+            .setUserAgent(channel.userAgent ?: "CouchZap/2.0")
 
         if (!channel.referer.isNull_or_empty()) {
             httpFactory.setDefaultRequestProperties(mapOf("Referer" to channel.referer!!))
@@ -214,6 +262,9 @@ class PlayerController(
     private fun String?.isNull_or_empty(): Boolean = this == null || this.trim().isEmpty()
 
     fun stop() {
+        preparationJob?.cancel()
+        desiredPlay = false
+        subtitleView?.setCues(emptyList())
         cancelRetry()
         currentChannel = null
         exoPlayer?.stop()
@@ -221,14 +272,30 @@ class PlayerController(
     }
 
     fun togglePlayPause() {
+        if (desiredPlay) pause() else play()
+    }
+    fun pause() { desiredPlay = false; cancelRetry(); preparationJob?.cancel(); exoPlayer?.pause(); publishPlaybackInfo() }
+    fun play() {
         val player = exoPlayer ?: return
-        if (player.playWhenReady) {
-            cancelRetry()
-            player.pause()
-        } else {
-            if (player.playbackState == Player.STATE_IDLE && currentChannel != null) retryCurrentChannel()
-            else player.play()
+        desiredPlay = true
+        if (player.playbackState == Player.STATE_IDLE && currentChannel != null) playChannel(currentChannel!!) else player.play()
+        publishPlaybackInfo()
+    }
+
+    data class TrackChoice(val label: String, val group: androidx.media3.common.TrackGroup, val index: Int)
+    fun choices(type: Int): List<TrackChoice> = currentTracks.groups.filter { it.type == type }.flatMap { group ->
+        (0 until group.length).filter { group.isTrackSupported(it) }.map { index ->
+            val format = group.getTrackFormat(index)
+            val language = format.language?.let { java.util.Locale.forLanguageTag(it).displayLanguage }
+            val label = format.label ?: language?.takeIf { it.isNotBlank() } ?: "Track ${index + 1}"
+            TrackChoice(label, group.mediaTrackGroup, index)
         }
+    }
+    fun selectTrack(type: Int, choice: TrackChoice?, disabled: Boolean = false) {
+        val player = exoPlayer ?: return
+        val parameters = player.trackSelectionParameters.buildUpon().clearOverridesOfType(type).setTrackTypeDisabled(type, disabled)
+        if (choice != null) parameters.setOverrideForType(TrackSelectionOverride(choice.group, choice.index))
+        player.trackSelectionParameters = parameters.build()
     }
 
     fun setAspectRatioMode(mode: Int) {
@@ -237,6 +304,8 @@ class PlayerController(
     }
 
     fun release() {
+        preparationJob?.cancel()
+        scope.cancel()
         cancelRetry()
         currentChannel = null
         mainHandler.removeCallbacksAndMessages(null)
@@ -254,10 +323,7 @@ class PlayerController(
     private fun retryCurrentChannel() {
         val channel = currentChannel ?: return
         val player = exoPlayer ?: return
-        val mediaSourceFactory = createMediaSourceFactoryForChannel(channel)
-        player.setMediaSource(mediaSourceFactory.createMediaSource(MediaItem.fromUri(channel.url)))
-        player.prepare()
-        player.playWhenReady = true
+        if (desiredPlay) prepare(channel)
     }
 
     fun getActiveFormats(): Pair<Format?, Format?> = Pair(activeVideoFormat, activeAudioFormat)

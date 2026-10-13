@@ -1,0 +1,62 @@
+name: Android checks and release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - name: Install SDK components
+        run: sdkmanager 'platforms;android-35' 'build-tools;36.0.0'
+      - name: Test, lint and build
+        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+
+  release:
+    needs: checks
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify reviewed distribution
+        working-directory: distribution
+        run: sha256sum --check CouchZap-2.0.0.apk.sha256
+      - name: Publish signed 2.0.0 APK once
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view v2.0.0 >/dev/null 2>&1; then
+            echo 'Release v2.0.0 already exists; leaving its assets unchanged.'
+          else
+            gh release create v2.0.0 \
+              distribution/CouchZap-2.0.0.apk \
+              distribution/CouchZap-2.0.0.apk.sha256 \
+              --target "$GITHUB_SHA" \
+              --title 'CouchZap 2.0.0 — Take a seat. Start watching.' \
+              --notes-file docs/releases/v2.0.0.md
+          fi

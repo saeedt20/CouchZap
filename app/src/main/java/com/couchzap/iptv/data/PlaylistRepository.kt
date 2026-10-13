@@ -30,17 +30,43 @@ class PlaylistRepository(private val context: Context) {
         return prefs.getInt("last_channel_index", 0)
     }
 
-    fun saveLastChannelIndex(index: Int) {
-        prefs.edit().putInt("last_channel_index", index).apply()
+    fun saveLastChannelIndex(index: Int, channel: Channel? = null) {
+        prefs.edit().putInt("last_channel_index", index).apply {
+            if (channel != null) putString("last_channel_id", channel.stableId)
+        }.apply()
     }
 
+    fun favouriteIds(): Set<String> = prefs.getStringSet("favourite_ids", emptySet())!!.toSet()
+    fun isFavourite(channel: Channel): Boolean = channel.stableId in favouriteIds()
+    fun toggleFavourite(channel: Channel): Boolean {
+        val ids = favouriteIds().toMutableSet()
+        val added = if (channel.stableId in ids) { ids.remove(channel.stableId); false }
+            else { ids.add(channel.stableId); true }
+        prefs.edit().putStringSet("favourite_ids", ids).apply()
+        return added
+    }
+    fun source(): PlaylistSource? = prefs.getString("playlist_source", null)?.let {
+        runCatching { PlaylistSource.fromJson(org.json.JSONObject(it)) }.getOrNull()
+    }
+    fun updatedAt(): Long = prefs.getLong("playlist_updated_at", 0)
+    fun playlistEpgUrl(): String? = prefs.getString("playlist_epg_url", null)
+
     suspend fun importPlaylistFromStream(
-        inputStream: InputStream
+        inputStream: InputStream,
+        source: PlaylistSource? = null,
+        preserveSelection: Boolean = false
     ): List<Channel> = withContext(Dispatchers.IO) {
-        val channels = inputStream.use { PlaylistParser().parse(it) }
+        val parser = PlaylistParser()
+        val channels = inputStream.use { parser.parse(it) }
         if (channels.isNotEmpty()) {
+            val previousId = prefs.getString("last_channel_id", null)
+            val restored = if (preserveSelection) channels.indexOfFirst { it.stableId == previousId }.coerceAtLeast(0) else 0
             saveChannelsToTsv(channels)
-            prefs.edit().putBoolean("playlist_ready", true).putInt("last_channel_index", 0).apply()
+            prefs.edit().putBoolean("playlist_ready", true).putInt("last_channel_index", restored)
+                .putString("last_channel_id", channels[restored].stableId)
+                .putLong("playlist_updated_at", System.currentTimeMillis())
+                .putString("playlist_epg_url", parser.epgUrl)
+                .apply { if (source != null) putString("playlist_source", source.toJson().toString()) }.apply()
         }
 
         channels
@@ -71,7 +97,9 @@ class PlaylistRepository(private val context: Context) {
                             group = group,
                             logo = logo,
                             userAgent = userAgent,
-                            referer = referer
+                            referer = referer,
+                            tvgId = parts.getOrNull(7)?.takeIf { it.isNotEmpty() },
+                            mimeType = parts.getOrNull(8)?.takeIf { it.isNotEmpty() }
                         )
                     )
                 }
@@ -94,8 +122,10 @@ class PlaylistRepository(private val context: Context) {
                 val logo = (ch.logo ?: "").replace("\t", " ")
                 val ua = (ch.userAgent ?: "").replace("\t", " ")
                 val ref = (ch.referer ?: "").replace("\t", " ")
-
-                writer.write("$num\t$name\t$url\t$group\t$logo\t$ua\t$ref\n")
+                val id = ch.tvgId.orEmpty().replace("\t", " ")
+                val mime = ch.mimeType.orEmpty().replace("\t", " ")
+                writer.write(listOf("$num", name, url, group, logo, ua, ref, id, mime)
+                    .joinToString("\t") { it.replace('\n', ' ').replace('\r', ' ') } + "\n")
             }
             writer.flush()
             atomicFile.finishWrite(out)
@@ -106,7 +136,8 @@ class PlaylistRepository(private val context: Context) {
     }
 
     fun clearPlaylist() {
-        prefs.edit().putBoolean("playlist_ready", false).putInt("last_channel_index", 0).apply()
+        prefs.edit().putBoolean("playlist_ready", false).putInt("last_channel_index", 0)
+            .remove("last_channel_id").remove("playlist_source").remove("playlist_updated_at").apply()
         if (playlistSrcFile.exists()) playlistSrcFile.delete()
         if (channelsTsvFile.exists()) channelsTsvFile.delete()
     }

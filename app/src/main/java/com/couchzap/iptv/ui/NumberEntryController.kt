@@ -26,7 +26,7 @@ class NumberEntryController(
     fun isTyping(): Boolean = digitBuffer.isNotEmpty()
 
     fun appendDigit(digit: Int) {
-        if (digitBuffer.length >= 4) return
+        if (digitBuffer.length >= totalChannelCount().toString().length.coerceAtLeast(4)) return
 
         digitBuffer.append(digit)
         updateDigitOverlay()

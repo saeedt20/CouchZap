@@ -60,4 +60,17 @@ class PlaylistRepositoryTest {
         assertEquals("New", repository.loadCachedChannels().single().name)
         assertEquals(0, repository.getLastChannelIndex())
     }
+
+    @Test fun `refresh preserves favourite and selected channel when order and URLs change`() = runBlocking {
+        val first = "#EXTM3U\n#EXTINF:-1 tvg-id=\"one\",One\nhttps://example.org/one\n#EXTINF:-1 tvg-id=\"two\",Two\nhttps://example.org/two"
+        val channels = repository.importPlaylistFromStream(first.byteInputStream())
+        repository.toggleFavourite(channels[1])
+        repository.saveLastChannelIndex(1, channels[1])
+        val refreshed = "#EXTM3U\n#EXTINF:-1 tvg-id=\"two\",Two\nhttps://example.org/new-two\n#EXTINF:-1 tvg-id=\"one\",One\nhttps://example.org/new-one"
+        val result = repository.importPlaylistFromStream(refreshed.byteInputStream(), preserveSelection = true)
+        assertEquals(0, repository.getLastChannelIndex())
+        assertTrue(repository.isFavourite(result[0]))
+        assertFalse(repository.isFavourite(result[1]))
+        assertEquals("two", repository.loadCachedChannels()[0].tvgId)
+    }
 }

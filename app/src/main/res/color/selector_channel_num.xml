@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_focused="true" android:color="#1D192B" />
-    <item android:state_pressed="true" android:color="#1D192B" />
-    <item android:state_selected="true" android:color="#D0BCFF" />
-    <item android:color="#99D0BCFF" />
+<selector
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:state_focused="true"
+        android:color="@color/item_focus_text" />
+    <item
+        android:state_pressed="true"
+        android:color="@color/item_focus_text" />
+    <item
+        android:color="@color/accent_gold" />
 </selector>

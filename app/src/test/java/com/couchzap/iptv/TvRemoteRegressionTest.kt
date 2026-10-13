@@ -83,11 +83,11 @@ class TvRemoteRegressionTest {
             assertEquals(number, numberView.text.toString())
             assertEquals(name, nameView.text.toString())
             if (focused || row.isPressed) {
-                assertEquals(Color.parseColor("#1D192B"), numberView.currentTextColor)
-                assertEquals(Color.parseColor("#1D192B"), nameView.currentTextColor)
+                assertEquals(Color.parseColor("#182116"), numberView.currentTextColor)
+                assertEquals(Color.parseColor("#182116"), nameView.currentTextColor)
             } else {
-                assertEquals(Color.parseColor("#D0BCFF"), numberView.currentTextColor)
-                assertEquals(Color.parseColor("#D0BCFF"), nameView.currentTextColor)
+                assertEquals(Color.parseColor("#B7C9AC"), numberView.currentTextColor)
+                assertEquals(Color.parseColor("#F2EFE7"), nameView.currentTextColor)
             }
         }
         assertTrue(current.isSelected)
@@ -142,18 +142,49 @@ class TvRemoteRegressionTest {
         assertMenuOpen(activity)
     }
 
-    @Test fun `channel panel stays within TV safe margins with full list bounds`() = withPlayback { activity ->
+    @Test fun `channel panel docks left with overscan safe content and full list bounds`() = withPlayback { activity ->
         press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
         val panel = activity.findViewById<View>(R.id.view_channel_list)
         val params = panel.layoutParams as FrameLayout.LayoutParams
-        assertTrue(params.leftMargin >= 48)
-        assertTrue(params.topMargin >= 27)
-        assertTrue(params.bottomMargin >= 27)
-        assertTrue(panel.left >= 48)
-        assertTrue(panel.top >= 27)
-        assertTrue(panel.bottom <= 540 - 27)
+        assertEquals(0, params.leftMargin)
+        assertEquals(0, panel.left)
+        assertTrue(panel.paddingLeft >= 48)
+        assertTrue(panel.paddingTop >= 27)
+        assertTrue(panel.paddingBottom >= 27)
+        assertTrue(panel.bottom <= 540)
         val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
         assertTrue(list.bottom <= panel.height - panel.paddingBottom)
         assertNull(list.itemAnimator)
+    }
+
+    @Test fun `remote wraps first and last visible channels without changing playback`() = withPlayback { activity ->
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
+        val first = list.findViewHolderForAdapterPosition(0)!!.itemView
+        val last = list.findViewHolderForAdapterPosition(1)!!.itemView
+        assertTrue(first.isSelected)
+        assertTrue(first.isFocused)
+        press(activity, KeyEvent.KEYCODE_DPAD_UP)
+        assertTrue(last.isFocused)
+        assertTrue(first.isSelected)
+        assertFalse(last.isSelected)
+        press(activity, KeyEvent.KEYCODE_DPAD_DOWN)
+        assertTrue(first.isFocused)
+        assertTrue(first.isSelected)
+    }
+
+    @Test fun `favourites filter keeps global channel numbers and empty results are usable`() = withPlayback { activity ->
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
+        list.findViewHolderForAdapterPosition(1)!!.itemView.performLongClick()
+        layout(activity)
+        activity.findViewById<View>(R.id.btn_filter_favourites).performClick()
+        layout(activity)
+        assertEquals(1, list.adapter!!.itemCount)
+        assertEquals("002", list.findViewHolderForAdapterPosition(0)!!.itemView.findViewById<TextView>(R.id.tv_item_channel_num).text.toString())
+        list.findViewHolderForAdapterPosition(0)!!.itemView.performLongClick()
+        layout(activity)
+        assertEquals(0, list.adapter!!.itemCount)
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.tv_empty_channels).visibility)
     }
 }

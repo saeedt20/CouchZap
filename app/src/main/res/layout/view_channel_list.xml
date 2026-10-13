@@ -1,47 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/channel_list_container"
-    android:layout_width="380dp"
+    android:layout_width="400dp"
     android:layout_height="match_parent"
     android:background="@color/panel_background"
     android:orientation="vertical"
     android:padding="20dp"
-    android:elevation="12dp"
     android:visibility="gone">
-
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp">
-
+        android:layout_height="64dp"
+        android:layout_marginBottom="12dp">
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:orientation="vertical">
-
             <TextView
-                android:id="@+id/tv_channel_list_sub"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/app_name"
-                android:letterSpacing="0.15"
-                android:textColor="@color/accent_gold"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
+                android:textColor="@color/text_gray"
+                android:textSize="13sp" />
             <TextView
                 android:id="@+id/tv_channel_list_header"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Channels"
+                android:layout_marginTop="4dp"
+                android:text="@string/channels"
                 android:textColor="@color/text_white"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+                android:textSize="28sp"
+                android:fontFamily="sans-serif-medium" />
         </LinearLayout>
-
         <ImageButton
             android:id="@+id/btn_close_channel_list"
             android:layout_width="48dp"
@@ -49,20 +41,89 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:background="@drawable/bg_focus"
-            android:contentDescription="Close channels"
+            android:contentDescription="@string/close"
             android:focusable="true"
-            android:padding="10dp"
-            android:src="@drawable/ic_close" />
+            android:padding="12dp"
+            android:src="@drawable/ic_close"
+            app:tint="@color/selector_channel_text" />
     </RelativeLayout>
-
+    <EditText
+        android:id="@+id/et_channel_search"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_focus"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:textColor="@color/selector_channel_text"
+        android:textColorHint="@color/selector_channel_text"
+        android:hint="@string/search_channels"
+        android:textSize="16sp"
+        android:singleLine="true"
+        android:inputType="text"
+        android:imeOptions="actionSearch" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btn_filter_all"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_focus"
+            android:text="@string/all_channels"
+            android:textColor="@color/selector_channel_text"
+            android:textAllCaps="false"
+            android:textSize="13sp" />
+        <Button
+            android:id="@+id/btn_filter_favourites"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_focus"
+            android:text="@string/favourites"
+            android:textColor="@color/selector_channel_text"
+            android:textAllCaps="false"
+            android:textSize="13sp" />
+        <Button
+            android:id="@+id/btn_filter_groups"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_focus"
+            android:text="@string/groups"
+            android:textColor="@color/selector_channel_text"
+            android:textAllCaps="false"
+            android:textSize="13sp" />
+    </LinearLayout>
+    <TextView
+        android:id="@+id/tv_empty_channels"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="@string/no_matches"
+        android:textColor="@color/text_gray"
+        android:textSize="16sp"
+        android:visibility="gone" />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_channels"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="4dp"
+        android:padding="2dp"
         android:clipToPadding="false"
         android:focusable="true"
         android:scrollbars="vertical" />
-
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/favourite_hint"
+        android:textColor="@color/text_gray"
+        android:textSize="12sp" />
 </LinearLayout>

@@ -34,7 +34,9 @@ object StreamInfoFormatter {
             height <= 576 -> "SD"
             height <= 720 -> "HD"
             height <= 1080 -> "FHD"
-            else -> "4K"
+            height <= 1440 -> "QHD"
+            height <= 2160 -> "4K"
+            else -> "${height}p"
         }
     }
 
@@ -70,9 +72,6 @@ object StreamInfoFormatter {
     fun buildStreamInfoString(videoFormat: Format?, audioFormat: Format?): String {
         val parts = mutableListOf<String>()
 
-        // 1. Time
-        parts.add(formatCurrentTime())
-
         // 2. Video Codec
         if (videoFormat != null) {
             val vCodec = formatVideoCodec(videoFormat.sampleMimeType)
@@ -81,14 +80,12 @@ object StreamInfoFormatter {
             // 3. Resolution
             val res = formatResolution(videoFormat.width, videoFormat.height, videoFormat.frameRate)
             if (res.isNotEmpty()) parts.add(res)
-
-            // 4. Quality Tag
-            val quality = formatQualityTag(videoFormat.height)
-            if (quality.isNotEmpty()) parts.add(quality)
+            if (videoFormat.width > 0 && videoFormat.height > 0) parts.add("${videoFormat.width} × ${videoFormat.height}")
+            if (videoFormat.frameRate > 0) parts.add(String.format(Locale.US, "%.2f fps", videoFormat.frameRate))
 
             // 5. Bitrate
             val bitrateStr = formatBitrate(videoFormat.bitrate)
-            if (bitrateStr.isNotEmpty()) parts.add(bitrateStr)
+            if (bitrateStr.isNotEmpty()) parts.add("Bitrate $bitrateStr")
         }
 
         // 6. Audio Codec
