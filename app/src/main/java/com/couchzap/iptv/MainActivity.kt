@@ -853,9 +853,11 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         updateChannelListAdapter()
 
         playerController?.stop()
-        playerController?.playChannel(channel)
-
-        osdController.showOsd(channel, autoHideMs = 5000L)
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            playCurrentChannel()
+        } else {
+            osdController.showOsd(channel, autoHideMs = 5000L)
+        }
 
         handler.removeCallbacks(savePrefsRunnable)
         handler.postDelayed(savePrefsRunnable, 1000L)
