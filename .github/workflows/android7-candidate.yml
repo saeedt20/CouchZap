@@ -3,6 +3,7 @@ name: Android 7 compatibility candidate
 on:
   push:
     branches: [codex/android7-startup]
+    paths: [app/**, gradle/**]
   workflow_dispatch:
 
 permissions:
