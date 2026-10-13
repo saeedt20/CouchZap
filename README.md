@@ -18,7 +18,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **CouchZap-2.0.0.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [repository copy](https://github.com/saeedt20/CouchZap/raw/refs/heads/main/distribution/CouchZap-2.0.0.apk) and [SHA-256 checksum](distribution/CouchZap-2.0.0.apk.sha256) are also available.
+1. Download **CouchZap-2.0.0.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.0.0.apk.sha256) accompanies the signed APK.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. Choose **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
@@ -132,7 +132,7 @@ For a signed, optimized release, set these environment variables in your shell o
 adb install -r app/build/outputs/apk/release/app-release.apk
 ```
 
-Without a configured keystore, the release output is unsigned. Published 2.0.0 uses a dedicated release key. Updates must use the same key; Android cannot install it over a build signed with a different key. Uninstalling removes local playlists and preferences. Signing keys and passwords are excluded from this repository.
+Without a configured keystore, the release output is unsigned. Published 2.0.0 uses a dedicated release key. Updates must use the same key; Android cannot install it over a build signed with a different key. Uninstalling removes local playlists and preferences. Signing keys and passwords are excluded from this repository. Maintainers can read the [reviewed-release publishing notes](docs/releases/publishing.md).
 
 ## Validation and limitations
 

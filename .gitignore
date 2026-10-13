@@ -40,5 +40,6 @@ channels.tsv
 /assets/.aistudio/
 /app/src/test/screenshots/
 
-# Explicitly reviewed, signed distribution package
-!/distribution/CouchZap-2.0.0.apk
+# Python release tooling caches
+__pycache__/
+*.pyc

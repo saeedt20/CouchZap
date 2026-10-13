@@ -60,14 +60,12 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
-      - name: Verify reviewed distribution
-        working-directory: distribution
-        run: sha256sum --check CouchZap-2.0.0.apk.sha256
-      - name: Publish signed 2.0.0 APK once
+      - name: Publish the reviewed signed APK once
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -75,6 +73,13 @@ jobs:
           if gh release view v2.0.0 >/dev/null 2>&1; then
             echo 'Release v2.0.0 already exists; leaving its assets unchanged.'
           else
+            build_run=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['build_run_id'])")
+            gh run download "$build_run" --name couchzap-release-unsigned --dir "$RUNNER_TEMP/reviewed-build"
+            python3 scripts/assemble-reviewed-release.py \
+              distribution/release-recipe.json \
+              "$RUNNER_TEMP/reviewed-build/app-release-unsigned.apk" \
+              distribution/CouchZap-2.0.0.apk
+            (cd distribution && sha256sum --check CouchZap-2.0.0.apk.sha256)
             gh release create v2.0.0 \
               distribution/CouchZap-2.0.0.apk \
               distribution/CouchZap-2.0.0.apk.sha256 \
