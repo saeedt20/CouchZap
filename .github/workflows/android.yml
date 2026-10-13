@@ -2,7 +2,7 @@ name: Android checks and release
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/couchzap-2.0]
   pull_request:
   workflow_dispatch:
 
@@ -29,7 +29,15 @@ jobs:
       - name: Install SDK components
         run: sdkmanager 'platforms;android-35' 'build-tools;36.0.0'
       - name: Test, lint and build
-        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease
+
+      - name: Upload unsigned release for signing
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: couchzap-release-unsigned
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          if-no-files-found: error
+          retention-days: 7
 
   release:
     needs: checks
