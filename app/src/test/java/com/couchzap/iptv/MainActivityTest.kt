@@ -19,7 +19,7 @@ class MainActivityTest {
     @Test fun `phone mode permits rotation and remote menu works before import`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         Prefs(context).setInterfaceMode("Phone")
-        val controller = Robolectric.buildActivity(MainActivity::class.java).create()
+        val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
         val activity = controller.get()
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, activity.requestedOrientation)
         activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU))
@@ -32,7 +32,7 @@ class MainActivityTest {
     @Test fun `manual TV mode locks landscape even on a phone configuration`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         Prefs(context).setInterfaceMode("TV")
-        val controller = Robolectric.buildActivity(MainActivity::class.java).create()
+        val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
         val activity = controller.get()
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE, activity.requestedOrientation)
         assertEquals(View.GONE, activity.findViewById<View>(R.id.btn_quick_settings).visibility)

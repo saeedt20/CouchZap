@@ -1,8 +1,6 @@
 name: Android 7 TV startup check
 
 on:
-  push:
-    branches: [codex/android7-startup]
   workflow_dispatch:
 
 permissions:

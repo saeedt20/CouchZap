@@ -98,7 +98,7 @@
     <string name="favourite_removed">Removed from favourites</string>
     <string name="about_body">Your playlist. Your remote. Your couch.
 
-CouchZap 2.0 · Native Android TV and phone player.
+CouchZap 2.0.1 · Native Android TV and phone player.
 
 Playlists, favourites and preferences stay on your device. Public playlists are provided by iptv-org; stream availability varies.</string>
     <string name="pick_failure">No file picker installed. Enable a system Files app to import playlists.</string>

@@ -157,7 +157,6 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             onFile = { closeSettingsMenu(); launchImportPicker() },
             onSource = { source, refresh -> closeSettingsMenu(); importSource(source, refresh) },
             onNotice = ::notice)
-        lifecycleScope.launch { withContext(Dispatchers.IO) { epg.load() }; osdController.refresh() }
         currentAspectIndex = aspectRatios.indexOf(prefs.getAspectRatioMode()).coerceAtLeast(0)
 
         setupFullscreen()
@@ -208,6 +207,9 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             }
         )
 
+        // The IO load may finish inline; every UI controller must exist first.
+        lifecycleScope.launch { withContext(Dispatchers.IO) { epg.load() }; osdController.refresh() }
+
         setupChannelListOverlay()
         setupSettingsMenu()
         setupGesturesAndTouch()
@@ -244,10 +246,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     override fun onStart() {
         super.onStart()
         osdController.resume()
-        if (playerController == null) {
-            playerController = PlayerController(this, binding.surfaceView, binding.videoFrame, this, binding.subtitleView)
-            playerController?.setAspectRatioMode(prefs.getAspectRatioMode())
-        }
+        // The welcome screen does not need codecs, audio focus or a player surface.
         if (channels.isNotEmpty() && !sleepExpired) {
             playCurrentChannel()
         }
@@ -760,7 +759,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun applyInterfaceMode() {
         val mode = prefs.getInterfaceMode()
-        val detectedTv = (getSystemService(UI_MODE_SERVICE) as UiModeManager).currentModeType == Configuration.UI_MODE_TYPE_TELEVISION ||
+        val detectedTv = (getSystemService(UI_MODE_SERVICE) as? UiModeManager)?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION ||
             packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK) ||
             !packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)
         isTvMode = mode == "TV" || (mode == "Auto" && detectedTv)
@@ -864,6 +863,10 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun playCurrentChannel() {
         if (channels.isEmpty()) return
+        if (playerController == null) {
+            playerController = PlayerController(this, binding.surfaceView, binding.videoFrame, this, binding.subtitleView)
+            playerController?.setAspectRatioMode(prefs.getAspectRatioMode())
+        }
         binding.layoutPlaybackError.visibility = View.GONE
         val channel = channels[currentIndex]
         playerController?.playChannel(channel)
