@@ -18,7 +18,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **CouchZap-2.0.1.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.0.1.apk.sha256) accompanies the signed APK.
+1. Download **CouchZap-2.0.2.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.0.2.apk.sha256) accompanies the signed APK.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. Choose **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
@@ -54,6 +54,8 @@ These images render the app's actual Android layouts with demo channel data and 
 - **Useful Info controls:** channel name, number, clock, play/pause, favourites and a second level for available codec, resolution and bitrate information.
 - **Programme guide:** XMLTV from a file or link, including gzip files. Shows now/next and programme progress when guide IDs match the playlist.
 - **Playback options:** HLS, DASH, RTSP and compatible progressive streams, available audio/subtitle tracks, Fit/Fill/16:9/4:3 picture modes, reconnect attempts and a retry/next-channel error panel.
+- **Updates from Settings:** check the latest stable GitHub release, download it with progress, verify its checksum and CouchZap signing certificate, then open Android’s installer. Installation always requires your confirmation.
+- **Diagnostic reports:** preview, share or save an app-only log from Settings. It contains device/version details and error classes/stacks; playlist URLs, channel names, tokens and account data are excluded. Boxes without a sharing/file app can copy the report to the clipboard.
 - **Everyday conveniences:** last watched channel, numeric selection for large playlists, a 15/30/60/90-minute sleep timer and saved interface preferences.
 - **TV and phone support:** automatic device detection, manual TV/Phone modes, TV overscan padding, responsive phone layout and touch gestures.
 
@@ -136,9 +138,17 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-The 2.0.1 build passed **28 unit/Robolectric tests**, debug/release lint with no errors, and debug and optimized release assembly. Tests cover parsing, cache preservation, refresh identity, favourites, XMLTV/gzip/time zones, numeric entry, remote focus and list wrapping. The six screenshots are generated from native layouts by `ScreenRenderTest`. The [installed signed APK check](https://github.com/saeedt20/CouchZap/actions/runs/38491945542) also passes three cold launches and remote Menu navigation to settings on an Android TV 7 / API 24 emulator. Version 2.0.1 fixes the Android 7 launch-time font inflation crash.
+The 2.0.2 build passed **31 unit/Robolectric tests**, debug/release lint with no errors, and debug and optimized release assembly. Tests cover parsing, cache preservation, refresh identity, favourites, XMLTV/gzip/time zones, numeric entry, remote focus and list wrapping. The six screenshots are generated from native layouts by `ScreenRenderTest`. Version 2.0.1 fixed the Android 7 launch-time font inflation crash. Version 2.0.2 adds device integration checks for public playlist/catalog downloads, verified release downloads and the diagnostics UI on Android TV 7 / API 24. See the [network integration check](https://github.com/saeedt20/CouchZap/actions/runs/38533394609).
 
 Automated checks do not validate physical TV remotes, hardware decoders or live stream availability. Playback depends on the device's codec support and source availability. There is no provider-account login, DRM configuration, recording, catch-up service or SmoothStreaming module. Opaque HLS/DASH links use manifest hints or a server's HEAD content type; servers that supply neither may require a conventional manifest URL.
+
+## Updates and diagnostic logs
+
+Open **Settings → Check for updates**. Downloads come only from this repository’s stable GitHub Releases. CouchZap checks SHA-256, the application ID, version and the release signing certificate before offering installation. On Android 8+, allow CouchZap to install updates when Android asks; on Android 7, the device’s unknown-sources setting may be needed. Updates run only when requested.
+
+Open **Settings → Share diagnostic log** to preview and share a text report, or save it to a file. Import failures also offer a shortcut to that report. Nothing is sent automatically. Logs stay in private app storage and retain a bounded recent history; they contain Android/device/version information and sanitized exception traces, rather than whole-system logcat or your playlist contents. Attach the report to a GitHub issue or send it to the maintainer.
+
+Android 7 lacks the ISRG Root X1 certificate required by the public directory. CouchZap includes the official public root for the iptv-org and GitHub domains while keeping certificate-chain and hostname verification enabled. Other destinations continue to use system trust.
 
 ## Data and attribution
 

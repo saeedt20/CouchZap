@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.2 — 2026-10-14
+
+Fix Android 7 public-playlist TLS trust; add verified in-app GitHub updates, private diagnostic sharing and live Android 7 network regression checks. See [release notes](docs/releases/v2.0.2.md).
+
 ## 2.0.1 — 2026-10-14
 
 Fix Android 7 launch-time font inflation crash; defer player initialization and add installed API 24 startup regression checks. See [release notes](docs/releases/v2.0.1.md).

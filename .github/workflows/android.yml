@@ -53,8 +53,14 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  reviewed_release_android7:
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/android7-probe.yml
+
   release:
-    needs: checks
+    needs: [checks, reviewed_release_android7]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -70,22 +76,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          if gh release view v2.0.1 >/dev/null 2>&1; then
-            echo 'Release v2.0.1 already exists; leaving its assets unchanged.'
+          if gh release view v2.0.2 >/dev/null 2>&1; then
+            echo 'Release v2.0.2 already exists; leaving its assets unchanged.'
           else
-            startup_result=$(gh api "repos/$GH_REPO/actions/runs/38491945542" --jq '.conclusion')
+            startup_result=$(gh api "repos/$GH_REPO/actions/runs/38533394609" --jq '.conclusion')
             test "$startup_result" = success
             build_run=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['build_run_id'])")
-            gh run download "$build_run" --name couchzap-2.0.1-unsigned --dir "$RUNNER_TEMP/reviewed-build"
+            gh run download "$build_run" --name couchzap-2.0.2-unsigned --dir "$RUNNER_TEMP/reviewed-build"
             python3 scripts/assemble-reviewed-release.py \
               distribution/release-recipe.json \
               "$RUNNER_TEMP/reviewed-build/app-release-unsigned.apk" \
-              distribution/CouchZap-2.0.1.apk
-            (cd distribution && sha256sum --check CouchZap-2.0.1.apk.sha256)
-            gh release create v2.0.1 \
-              distribution/CouchZap-2.0.1.apk \
-              distribution/CouchZap-2.0.1.apk.sha256 \
+              distribution/CouchZap-2.0.2.apk
+            (cd distribution && sha256sum --check CouchZap-2.0.2.apk.sha256)
+            gh release create v2.0.2 \
+              distribution/CouchZap-2.0.2.apk \
+              distribution/CouchZap-2.0.2.apk.sha256 \
               --target "$GITHUB_SHA" \
-              --title 'CouchZap 2.0.1 — Android 7 startup fix' \
-              --notes-file docs/releases/v2.0.1.md
+              --title 'CouchZap 2.0.2 — Public channels, updates and diagnostics' \
+              --notes-file docs/releases/v2.0.2.md
           fi
