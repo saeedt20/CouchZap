@@ -6,7 +6,7 @@
     </base-config>
     <!-- Android 7 predates this public CA. Retain normal chain/hostname validation. -->
     <domain-config cleartextTrafficPermitted="false">
-        <domain>iptv-org.github.io</domain>
+        <domain includeSubdomains="false">iptv-org.github.io</domain>
         <domain includeSubdomains="true">github.com</domain>
         <domain includeSubdomains="true">githubusercontent.com</domain>
         <trust-anchors>
