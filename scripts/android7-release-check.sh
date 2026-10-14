@@ -24,8 +24,14 @@ PY
 timeout 60s adb install startup-results/candidate.apk
 timeout 15s adb shell am start -n com.couchzap.iptv/.MainActivity
 sleep 3
+dump language
+click language text 'English'
+sleep 1
 dump welcome
 click welcome resource-id com.couchzap.iptv:id/btn_public
+sleep 1
+dump providers
+click providers text 'iptv-org'
 sleep 1
 dump public
 click public text 'All public channels'
@@ -42,7 +48,16 @@ PY
 test "$loaded" = true
 timeout 10s adb shell input keyevent 82
 sleep 1
-for attempt in {1..6}; do
+dump settings
+click settings resource-id com.couchzap.iptv:id/btn_settings_crt
+sleep 1
+dump sound-enabled
+python3 - <<'CHECK_SOUND'
+import xml.etree.ElementTree as E
+assert any(n.attrib.get('resource-id')=='com.couchzap.iptv:id/btn_settings_crt' and n.attrib.get('checked')=='true' for n in E.parse('startup-results/sound-enabled-ui.xml').iter('node'))
+CHECK_SOUND
+click sound-enabled resource-id com.couchzap.iptv:id/btn_settings_crt
+for attempt in {1..8}; do
   dump settings
   if click settings resource-id com.couchzap.iptv:id/btn_settings_logs; then break; fi
   timeout 10s adb shell input swipe 180 600 180 180 400
@@ -55,7 +70,7 @@ texts=[n.attrib.get('text','') for n in E.parse('startup-results/report-ui.xml')
 assert any('CouchZap diagnostic report' in t and re.search(r'Playlist kind: public; channels: [1-9][0-9]*',t) for t in texts)
 PY
 timeout 10s adb shell input keyevent 4
-for attempt in {1..6}; do
+for attempt in {1..8}; do
   dump settings
   if click settings resource-id com.couchzap.iptv:id/btn_settings_update; then break; fi
   timeout 10s adb shell input swipe 180 250 180 600 400
@@ -64,5 +79,7 @@ sleep 4
 dump update
 python3 - <<'PY'
 import xml.etree.ElementTree as E
-assert any('2.0.2 is up to date' in n.attrib.get('text','') for n in E.parse('startup-results/update-ui.xml').iter('node'))
+assert any('2.1.0 is up to date' in n.attrib.get('text','') for n in E.parse('startup-results/update-ui.xml').iter('node'))
 PY
+
+timeout 10s adb shell pidof com.couchzap.iptv

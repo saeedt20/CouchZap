@@ -43,7 +43,7 @@ jobs:
         id: published
         run: |
           mkdir -p startup-results
-          if curl --fail --silent --location --retry 2 https://github.com/saeedt20/CouchZap/releases/download/v2.0.2/CouchZap-2.0.2.apk --output startup-results/candidate.apk; then
+          if curl --fail --silent --location --retry 2 https://github.com/saeedt20/CouchZap/releases/download/v2.1.0/CouchZap-2.1.0.apk --output startup-results/candidate.apk; then
             expected=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['signed_sha256'])")
             echo "$expected  startup-results/candidate.apk" | sha256sum --check
             echo 'found=true' >> "$GITHUB_OUTPUT"
@@ -53,9 +53,9 @@ jobs:
       - if: steps.published.outputs.found != 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: couchzap-2.0.2-unsigned
+          name: couchzap-2.1.0-unsigned
           path: startup-results
-          run-id: 38533394609
+          run-id: 38592458257
           github-token: ${{ github.token }}
       - name: Reconstruct the signed release under review
         if: steps.published.outputs.found != 'true'
