@@ -1021,7 +1021,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             !packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)
         isTvMode = mode == "TV" || (mode == "Auto" && detectedTv)
         requestedOrientation = if (isTvMode) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        binding.tvSettingsModeValue.text = getString(R.string.interface_label, when (mode) { "Auto" -> getString(R.string.automatic); "Phone" -> getString(R.string.touch_mode); else -> "TV" })
+        binding.tvSettingsModeValue.text = when (mode) { "Auto" -> getString(R.string.automatic); "Phone" -> getString(R.string.touch_mode); else -> "TV" }
         binding.btnQuickSettings.visibility = if (isTvMode) View.GONE else View.VISIBLE
         updateResponsiveLayout()
     }
@@ -1034,14 +1034,15 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         val tvHorizontalInset = if (isTvMode) (width * 0.05f).toInt() else 0
         val tvVerticalInset = if (isTvMode) (height * 0.05f).toInt() else 0
         val portrait = !isTvMode && resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+        val panelGravity = if (binding.root.layoutDirection == View.LAYOUT_DIRECTION_RTL) Gravity.RIGHT else Gravity.LEFT
         binding.viewChannelList.root.layoutParams = (binding.viewChannelList.root.layoutParams as FrameLayout.LayoutParams).apply {
             this.width = if (portrait) FrameLayout.LayoutParams.MATCH_PARENT else minOf(resources.getDimensionPixelSize(R.dimen.sidebar_width), width)
-            gravity = Gravity.LEFT
+            gravity = panelGravity
             setMargins(0, 0, 0, 0)
         }
         // Keep a modest TV edge inset without consuming 5% of the entire screen.
-        val channelLeftInset = if (isTvMode) maxOf(dp(24), (width * 0.03f).toInt()) else dp(24)
-        binding.viewChannelList.root.setPadding(channelLeftInset, maxOf(dp(24), tvVerticalInset), dp(24), maxOf(dp(24), tvVerticalInset))
+        val channelEdgeInset = if (isTvMode) maxOf(dp(24), (width * 0.03f).toInt()) else dp(24)
+        binding.viewChannelList.root.setPaddingRelative(channelEdgeInset, maxOf(dp(24), tvVerticalInset), dp(24), maxOf(dp(24), tvVerticalInset))
         binding.viewOsd.root.layoutParams = (binding.viewOsd.root.layoutParams as FrameLayout.LayoutParams).apply {
             this.width = minOf(resources.getDimensionPixelSize(R.dimen.sidebar_width), width - 2 * maxOf(dp(8), tvHorizontalInset))
             gravity = if (portrait) Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL else Gravity.TOP or Gravity.START
@@ -1050,10 +1051,10 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         binding.layoutSettings.layoutParams = (binding.layoutSettings.layoutParams as FrameLayout.LayoutParams).apply {
             this.width = if (portrait) FrameLayout.LayoutParams.MATCH_PARENT else minOf(resources.getDimensionPixelSize(R.dimen.sidebar_width), width)
             this.height = FrameLayout.LayoutParams.MATCH_PARENT
-            gravity = Gravity.LEFT
+            gravity = panelGravity
             setMargins(0, 0, 0, 0)
         }
-        binding.layoutSettings.setPadding(maxOf(dp(24), tvHorizontalInset), maxOf(dp(24), tvVerticalInset), dp(24), maxOf(dp(24), tvVerticalInset))
+        binding.layoutSettings.setPaddingRelative(maxOf(dp(24), tvHorizontalInset), maxOf(dp(24), tvVerticalInset), dp(24), maxOf(dp(24), tvVerticalInset))
         if (::importScreen.isInitialized) importScreen.updateLayout(isTvMode)
     }
 
@@ -1068,7 +1069,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             if (languageGate) { binding.settingsBack.visibility = View.GONE; binding.btnSettingsClose.visibility = View.GONE }
             playerController?.refreshPlaybackInfo(); osdController.refresh()
         }
-        updateResponsiveLayout()
+        applyInterfaceMode()
         setupFullscreen()
     }
 

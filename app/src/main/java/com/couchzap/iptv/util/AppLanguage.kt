@@ -76,7 +76,9 @@ object AppLanguage {
         root.findViewById<TextView>(R.id.btn_filter_groups)?.text = context.getString(R.string.groups)
         root.findViewById<TextView>(R.id.tv_empty_channels)?.text = context.getString(R.string.no_matches)
         root.findViewById<TextView>(R.id.localized_label_13)?.text = context.getString(R.string.favourite_hint)
-        root.findViewById<View>(R.id.btn_osd_favourite)?.contentDescription = context.getString(R.string.favourites)
+        root.findViewById<View>(R.id.btn_osd_favourite)?.let {
+            it.contentDescription = context.getString(if (it.isSelected) R.string.favourite_remove_action else R.string.favourite_add_action)
+        }
         root.findViewById<TextView>(R.id.localized_label_14)?.text = context.getString(R.string.buffering)
         root.findViewById<TextView>(R.id.tv_osd_action_label)?.text = context.getString(R.string.channels)
         root.findViewById<TextView>(R.id.localized_label_15)?.text = context.getString(R.string.details_hint)

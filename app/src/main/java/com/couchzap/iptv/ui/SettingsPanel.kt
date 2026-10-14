@@ -40,7 +40,7 @@ class SettingsPanel(private val activity: AppCompatActivity, private val binding
         generation++
         binding.settingsPages.getChildAt(0)?.let { Anim.finishAll(it); binding.settingsPages.removeView(it) }
         val body = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
-        val scroll = ScrollView(activity).apply { isFillViewport = true; isScrollbarFadingEnabled = false; isSmoothScrollingEnabled = false; addView(body) }
+        val scroll = ScrollView(activity).apply { isFillViewport = true; isVerticalScrollBarEnabled = false; isHorizontalScrollBarEnabled = false; isSmoothScrollingEnabled = false; addView(body) }
         stack.add(Page(key, title, scroll, leave = leave))
         binding.settingsPages.addView(scroll, ViewGroup.LayoutParams(-1, -1))
         build(body)

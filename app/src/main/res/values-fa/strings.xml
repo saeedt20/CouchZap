@@ -99,6 +99,8 @@
   <string name="interface_label">رابط: %s</string>
   <string name="favourite_added">به علاقه‌مندی‌ها اضافه شد</string>
   <string name="favourite_removed">از علاقه‌مندی‌ها حذف شد</string>
+  <string name="favourite_add_action">افزودن به علاقه‌مندی‌ها</string>
+  <string name="favourite_remove_action">حذف از علاقه‌مندی‌ها</string>
   <string name="about_body">پلی‌لیست شما، ریموت شما، مبل شما.\n\nپخش‌کنندهٔ CouchZap برای تلویزیون و تلفن اندرویدی.\n\nپلی‌لیست‌ها، علاقه‌مندی‌ها و تنظیمات روی دستگاه شما باقی می‌مانند. پلی‌لیست‌های عمومی را iptv-org و Free-TV فراهم می‌کنند؛ دسترسی شبکه‌ها ممکن است تغییر کند.</string>
   <string name="pick_failure">انتخابگر فایل نصب نیست. برای ورود پلی‌لیست، برنامهٔ سیستمی فایل‌ها را فعال کنید.</string>
   <string name="check_updates">بررسی به‌روزرسانی</string>

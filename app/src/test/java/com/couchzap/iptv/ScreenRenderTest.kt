@@ -123,9 +123,8 @@ class ScreenRenderTest {
                 val channels = activity.findViewById<View>(R.id.view_channel_list)
                 val settings = activity.findViewById<View>(R.id.layout_settings)
                 assertEquals(channels.layoutParams.width, settings.layoutParams.width)
-                assertEquals(0, channels.left)
-                assertEquals(0, settings.left)
-                assertTrue(channels.paddingLeft in 24..32)
+                assertEquals(if (language == "fa") 960 else channels.width, channels.right)
+                assertTrue(channels.paddingStart in 24..32)
                 val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
                 assertTrue(list.findViewHolderForAdapterPosition(0)!!.itemView.height >= 48)
                 save(activity, "stage4-channels-$language", 960, 540)
@@ -144,6 +143,7 @@ class ScreenRenderTest {
                 press(activity, KeyEvent.KEYCODE_BACK)
                 press(activity, KeyEvent.KEYCODE_MENU)
                 assertEquals(channels.width, settings.width)
+                assertEquals(if (language == "fa") 960 else 0, if (language == "fa") settings.right else settings.left)
                 val toggle = activity.findViewById<View>(R.id.btn_settings_crt)
                 assertTrue(toggle.height >= 48)
                 save(activity, "stage4-settings-$language", 960, 540)
@@ -165,6 +165,45 @@ class ScreenRenderTest {
             val scroll = activity.findViewById<android.widget.ScrollView>(R.id.settings_root_scroll)
             scroll.scrollTo(0, scroll.getChildAt(0).height)
             save(activity, "ui-fix-settings-phone-$language-api36", 360, 800)
+        }
+    }
+    @Test
+    @Config(sdk = [28, 36])
+    fun `favourite stays visibly distinct while focused and unfocused on phone and TV`() {
+        for (phone in listOf(false, true)) for (language in listOf("en", "fa")) {
+            RuntimeEnvironment.setQualifiers(if (phone) "w360dp-h800dp-port-mdpi" else "w960dp-h540dp-land-mdpi")
+            render(true, phone, language) { activity ->
+                val width = if (phone) 360 else 960
+                val height = if (phone) 800 else 540
+                activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
+                activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN))
+                layout(activity, width, height)
+                val star = activity.findViewById<android.widget.ImageButton>(R.id.btn_osd_favourite)
+                assertTrue(star.isSelected)
+                assertTrue(star.requestFocusFromTouch())
+                fun centerPixel(): Int {
+                    val bitmap = Bitmap.createBitmap(star.width, star.height, Bitmap.Config.ARGB_8888)
+                    star.draw(Canvas(bitmap))
+                    val color = bitmap.getPixel(bitmap.width / 2, bitmap.height / 2)
+                    bitmap.recycle(); return color
+                }
+                val stem = "stage7-info-$language-${if (phone) "phone" else "tv"}-api${android.os.Build.VERSION.SDK_INT}"
+                assertEquals(activity.getColor(R.color.item_focus_text), centerPixel())
+                save(activity, "$stem-favourite-on-focused", width, height)
+                star.performClick()
+                assertFalse(star.isSelected)
+                assertTrue(star.isFocused)
+                assertEquals(activity.getColor(R.color.item_focus), centerPixel())
+                save(activity, "$stem-favourite-off-focused", width, height)
+                star.clearFocus()
+                assertEquals(activity.getColor(R.color.item_normal), centerPixel())
+                save(activity, "$stem-favourite-off", width, height)
+                star.performClick()
+                assertTrue(star.isSelected)
+                assertEquals(activity.getColor(R.color.accent_gold), centerPixel())
+                assertEquals(star.contentDescription.toString(), activity.findViewById<android.widget.TextView>(R.id.tv_osd_action_label).text.toString())
+                save(activity, "$stem-favourite-on", width, height)
+            }
         }
     }
     private fun render(playlist: Boolean, phone: Boolean, language: String? = "en", block: (MainActivity) -> Unit) {
@@ -189,7 +228,8 @@ class ScreenRenderTest {
                 file:///demo/sports.mp4
                 #EXTINF:-1 tvg-id="cinema" group-title="Movies",Cinema
                 file:///demo/cinema.mp4""".trimIndent().byteInputStream(), com.couchzap.iptv.data.PlaylistSource("file", "file:///demo/channels.m3u", "Demo playlist"))
-            val channels = repo.loadCachedChannels(); repo.toggleFavourite(channels[0]); repo.toggleFavourite(channels[2])
+            val channels = repo.loadCachedChannels()
+            for (channel in listOf(channels[0], channels[2])) if (!repo.isFavourite(channel)) repo.toggleFavourite(channel)
         }
         val controller = Robolectric.buildActivity(MainActivity::class.java).create().visible()
         try {

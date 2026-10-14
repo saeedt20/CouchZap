@@ -42,6 +42,14 @@ class OsdController(
         override fun run() { updateStreamDetails(); handler.postDelayed(this, 60000) }
     }
     init {
+        binding.btnOsdFavourite.accessibilityDelegate = object : View.AccessibilityDelegate() {
+            override fun onInitializeAccessibilityNodeInfo(host: View, info: android.view.accessibility.AccessibilityNodeInfo) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.className = "android.widget.ToggleButton"
+                info.isCheckable = true
+                info.isChecked = host.isSelected
+            }
+        }
         listOf(binding.btnOsdChannels to onChannelsClick, binding.btnOsdPrev to onPrevClick,
             binding.btnOsdPlayPause to onPlayPauseClick, binding.btnOsdNext to onNextClick,
             binding.btnOsdAspect to onAspectClick, binding.btnOsdSettings to onSettingsClick,
@@ -65,7 +73,7 @@ class OsdController(
         binding.tvOsdChannelNumber.text = String.format(java.util.Locale.US, "%03d", channel.number)
         binding.tvOsdChannelName.text = channel.name
         binding.tvOsdChannelName.contentDescription = channel.name
-        binding.btnOsdFavourite.isSelected = isFavourite(channel)
+        updateFavourite(channel)
         if (changed) artwork?.bind(binding.ivOsdLogo, channel.logo)
         updateStreamDetails(); Anim.showOverlay(binding.osdContainer)
         handler.removeCallbacks(hideRunnable); handler.postDelayed(hideRunnable, if (autoHideMs > 0) autoHideMs else 5000L)
@@ -107,9 +115,17 @@ class OsdController(
         currentChannel?.let {
             val selected = isFavourite(it)
             if (binding.btnOsdFavourite.isSelected != selected && isVisible()) Anim.favourite(binding.btnOsdFavourite)
-            binding.btnOsdFavourite.isSelected = selected
+            updateFavourite(it)
         }
         updateStreamDetails()
+    }
+    private fun updateFavourite(channel: Channel) {
+        val button = binding.btnOsdFavourite
+        button.isSelected = isFavourite(channel)
+        button.contentDescription = binding.root.context.getString(
+            if (button.isSelected) R.string.favourite_remove_action else R.string.favourite_add_action
+        )
+        if (button.isFocused || lastFocused == button.id) binding.tvOsdActionLabel.text = button.contentDescription
     }
     private fun updateStreamDetails() {
         binding.tvOsdClock.text = StreamInfoFormatter.formatCurrentTime()

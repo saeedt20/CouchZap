@@ -98,6 +98,8 @@
     <string name="interface_label">Interface: %s</string>
     <string name="favourite_added">Added to favourites</string>
     <string name="favourite_removed">Removed from favourites</string>
+    <string name="favourite_add_action">Add to favourites</string>
+    <string name="favourite_remove_action">Remove from favourites</string>
     <string name="about_body">Your playlist. Your remote. Your couch.
 
 Native Android TV and phone player.

@@ -46,9 +46,9 @@
             android:layout_marginEnd="8dp"
             android:background="@drawable/bg_focus"
             android:padding="9dp"
-            android:src="@drawable/ic_star"
-            android:contentDescription="@string/favourites"
-            app:tint="@color/selector_channel_text" />
+            android:src="@drawable/ic_favourite"
+            android:contentDescription="@string/favourite_add_action"
+            app:tint="@color/selector_favourite_icon" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
