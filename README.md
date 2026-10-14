@@ -18,7 +18,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **CouchZap-2.0.0.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.0.0.apk.sha256) accompanies the signed APK.
+1. Download **CouchZap-2.0.1.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.0.1.apk.sha256) accompanies the signed APK.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. Choose **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
@@ -132,11 +132,11 @@ For a signed, optimized release, set these environment variables in your shell o
 adb install -r app/build/outputs/apk/release/app-release.apk
 ```
 
-Without a configured keystore, the release output is unsigned. Published 2.0.0 uses a dedicated release key. Updates must use the same key; Android cannot install it over a build signed with a different key. Uninstalling removes local playlists and preferences. Signing keys and passwords are excluded from this repository. Maintainers can read the [reviewed-release publishing notes](docs/releases/publishing.md).
+Without a configured keystore, the release output is unsigned. Published releases use a dedicated release key. Updates must use the same key; Android cannot install it over a build signed with a different key. Uninstalling removes local playlists and preferences. Signing keys and passwords are excluded from this repository. Maintainers can read the [reviewed-release publishing notes](docs/releases/publishing.md).
 
 ## Validation and limitations
 
-The 2.0.0 build passed **28 unit/Robolectric tests**, debug/release lint with no errors, and debug and optimized release assembly. Tests cover parsing, cache preservation, refresh identity, favourites, XMLTV/gzip/time zones, numeric entry, remote focus and list wrapping. The six screenshots are generated from native layouts by `ScreenRenderTest`.
+The 2.0.1 build passed **28 unit/Robolectric tests**, debug/release lint with no errors, and debug and optimized release assembly. Tests cover parsing, cache preservation, refresh identity, favourites, XMLTV/gzip/time zones, numeric entry, remote focus and list wrapping. The six screenshots are generated from native layouts by `ScreenRenderTest`. The [installed signed APK check](https://github.com/saeedt20/CouchZap/actions/runs/38491945542) also passes three cold launches and remote Menu navigation to settings on an Android TV 7 / API 24 emulator. Version 2.0.1 fixes the Android 7 launch-time font inflation crash.
 
 Automated checks do not validate physical TV remotes, hardware decoders or live stream availability. Playback depends on the device's codec support and source availability. There is no provider-account login, DRM configuration, recording, catch-up service or SmoothStreaming module. Opaque HLS/DASH links use manifest hints or a server's HEAD content type; servers that supply neither may require a conventional manifest URL.
 

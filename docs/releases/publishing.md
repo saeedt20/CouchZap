@@ -1,4 +1,4 @@
-# Publishing the reviewed 2.0.0 APK
+# Publishing the reviewed release APK
 
 The Android release key stays outside GitHub. A clean Actions build produces an unsigned APK; the maintainer signs those exact bytes privately with the existing CouchZap release key and verifies them with Android's `apksigner`.
 
