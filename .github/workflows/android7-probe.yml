@@ -1,9 +1,9 @@
-name: Installed APK startup probe on Android 7
+name: Signed Android 7 public flow check
 
 on:
   push:
-    branches: [codex/android7-startup]
-    paths: [.github/workflows/android7-probe.yml, scripts/android7-probe.sh]
+    branches: [codex/android7-network]
+    paths: [.github/workflows/android7-probe.yml, scripts/android7-release-check.sh]
   workflow_dispatch:
 
 permissions:
@@ -40,9 +40,9 @@ jobs:
           echo "ANDROID_SDK_ROOT=$sdk_dir" >> "$GITHUB_ENV"
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: couchzap-2.0.1-unsigned
+          name: couchzap-2.0.2-unsigned
           path: startup-results
-          run-id: 38491158095
+          run-id: 38533394609
           github-token: ${{ github.token }}
       - name: Reconstruct the signed release under review
         run: |
@@ -57,12 +57,13 @@ jobs:
           arch: x86
           ram-size: 2048M
           emulator-boot-timeout: 300
-          script: bash scripts/android7-startup-check.sh
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -skin 1280x720
+          script: bash scripts/android7-release-check.sh
       - name: Preserve startup reports
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: android7-installed-startup-reports
+          name: android7-signed-public-flow-reports
           path: |
             startup-results/logcat.txt
             startup-results/crash.txt
