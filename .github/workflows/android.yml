@@ -2,7 +2,7 @@ name: Android checks and release
 
 on:
   push:
-    branches: [main, codex/couchzap-2.0, codex/couchzap-2.1]
+    branches: [main, codex/couchzap-2.0, codex/couchzap-2.1, codex/settings-ui-fixes]
   pull_request:
   workflow_dispatch:
 
