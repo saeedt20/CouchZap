@@ -23,6 +23,7 @@ import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import com.couchzap.iptv.data.Channel
 import com.couchzap.iptv.util.Prefs
 import com.couchzap.iptv.R
+import com.couchzap.iptv.support.DiagnosticLog
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Timeline
 import androidx.media3.common.text.CueGroup
@@ -138,6 +139,7 @@ class PlayerController(
         override fun onCues(cueGroup: CueGroup) { subtitleView?.setCues(cueGroup.cues) }
 
         override fun onPlayerError(error: PlaybackException) {
+            DiagnosticLog.record("playback_error:${error.errorCode}", error)
             val channel = currentChannel ?: return
             mainHandler.removeCallbacks(retryRunnable)
             if (!desiredPlay) return

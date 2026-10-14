@@ -59,10 +59,15 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.media3.common.C
 import java.text.DateFormat
 import java.util.Date
+import com.couchzap.iptv.support.DiagnosticLog
+import com.couchzap.iptv.support.DiagnosticMenu
+import com.couchzap.iptv.support.UpdateMenu
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
+    private lateinit var updateMenu: UpdateMenu
+    private lateinit var diagnosticMenu: DiagnosticMenu
     private lateinit var binding: ActivityMainBinding
     private lateinit var repository: PlaylistRepository
     private lateinit var prefs: Prefs
@@ -146,6 +151,10 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        DiagnosticLog.initialize(this)
+        DiagnosticLog.record("app_start")
+        updateMenu = UpdateMenu(this)
+        diagnosticMenu = DiagnosticMenu(this, ::notice)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -345,6 +354,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         if (importInProgress) return
         if (refresh && channels.isNotEmpty()) repository.saveLastChannelIndex(currentIndex, channels[currentIndex])
         importInProgress = true
+        DiagnosticLog.record("playlist_import_start")
         lifecycleScope.launch {
             importScreen.show()
             importScreen.showProgress(getString(if (source?.kind == "file") R.string.loading_channels else R.string.download_playlist, 0))
@@ -352,6 +362,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
                 val parsedChannels = withContext(Dispatchers.IO) {
                     repository.importPlaylistFromStream(openStream(), source, refresh)
                 }
+                DiagnosticLog.record("playlist_import_downloaded")
                 if (parsedChannels.isEmpty()) {
                     Toast.makeText(this@MainActivity, R.string.no_channels_found, Toast.LENGTH_LONG).show()
                 } else {
@@ -371,7 +382,8 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
-                notice(getString(R.string.import_failed))
+                DiagnosticLog.record("playlist_import_failed", error)
+                showImportError(error)
             } finally {
                 importInProgress = false
                 importScreen.hideProgress()
@@ -524,6 +536,8 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             }.setNegativeButton(R.string.cancel, null).show()
         }
         binding.btnSettingsGuide.setOnClickListener { guideMenu() }
+        binding.btnSettingsUpdate.setOnClickListener { updateMenu.show() }
+        binding.btnSettingsLogs.setOnClickListener { diagnosticMenu.show(repository.source()?.kind, channels.size) }
         binding.btnSettingsAbout.setOnClickListener {
             AlertDialog.Builder(this).setTitle(R.string.about).setMessage(R.string.about_body).setPositiveButton(android.R.string.ok, null).show()
         }
@@ -945,9 +959,28 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
                 val count = withContext(Dispatchers.IO) { epg.import(open(), ids, url) }
                 osdController.refresh(); notice(getString(R.string.guide_loaded, count))
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { notice(getString(R.string.guide_failed)) }
+            catch (error: Exception) { DiagnosticLog.record("guide_import_failed", error); notice(getString(R.string.guide_failed)) }
         }
     }
+    private fun showImportError(error: Exception) {
+        val causes = generateSequence<Throwable>(error) { it.cause?.takeUnless { cause -> cause === it } }.take(6).toList()
+        val reason = when {
+            causes.any { it is javax.net.ssl.SSLException || it is java.security.cert.CertificateException } -> R.string.import_error_tls
+            causes.any { it is java.net.SocketTimeoutException } -> R.string.import_error_timeout
+            causes.any { it is java.net.UnknownHostException || it is java.net.ConnectException } -> R.string.import_error_network
+            else -> R.string.import_error_other
+        }
+        val message = getString(reason) + if (channels.isNotEmpty()) "\n\n" + getString(R.string.list_preserved) else ""
+        AlertDialog.Builder(this).setTitle(R.string.import_error_title).setMessage(message)
+            .setPositiveButton(R.string.diagnostic_log) { _, _ -> diagnosticMenu.show(repository.source()?.kind, channels.size) }
+            .setNegativeButton(android.R.string.ok, null).show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::updateMenu.isInitialized) updateMenu.onResume()
+    }
+
     private fun notice(message: String) { Toast.makeText(this, message, Toast.LENGTH_LONG).show() }
 
     // Hard Exit: "stop the app completely, no background usage"

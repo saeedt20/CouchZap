@@ -14,6 +14,7 @@ import com.couchzap.iptv.data.PlaylistRepository
 import com.couchzap.iptv.data.PlaylistSource
 import kotlinx.coroutines.*
 import org.json.JSONArray
+import com.couchzap.iptv.support.DiagnosticLog
 
 class PlaylistMenus(
     private val activity: AppCompatActivity,
@@ -81,7 +82,7 @@ class PlaylistMenus(
                 }
                 list.requestFocus()
             } catch (cancelled: CancellationException) { loading.dismiss(); throw cancelled }
-            catch (_: Exception) { loading.dismiss(); onNotice("Could not load public choices. Try again, or choose all channels.") }
+            catch (error: Exception) { DiagnosticLog.record("public_catalog_failed", error); loading.dismiss(); onNotice("Could not load public choices. Try again, or choose all channels.") }
         }
         loading.setOnCancelListener { job.cancel() }
         loading.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener { job.cancel(); loading.dismiss() }

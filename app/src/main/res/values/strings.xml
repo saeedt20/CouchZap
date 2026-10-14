@@ -98,8 +98,35 @@
     <string name="favourite_removed">Removed from favourites</string>
     <string name="about_body">Your playlist. Your remote. Your couch.
 
-CouchZap 2.0.1 · Native Android TV and phone player.
+CouchZap 2.0.2 · Native Android TV and phone player.
 
 Playlists, favourites and preferences stay on your device. Public playlists are provided by iptv-org; stream availability varies.</string>
     <string name="pick_failure">No file picker installed. Enable a system Files app to import playlists.</string>
+    <string name="check_updates">Check for updates</string>
+    <string name="checking_updates">Checking the latest GitHub release…</string>
+    <string name="up_to_date">CouchZap %s is up to date.</string>
+    <string name="update_available">CouchZap %s is available</string>
+    <string name="update_download_prompt">Download the official update (%d MB)? Your playlists and preferences will be kept.</string>
+    <string name="download_update">Download update</string>
+    <string name="update_progress">Downloading… %d%%</string>
+    <string name="update_ready">Update ready</string>
+    <string name="update_ready_body">The download and CouchZap signature have been verified. Android will ask you to confirm installation.</string>
+    <string name="install_update">Install update</string>
+    <string name="later">Later</string>
+    <string name="allow_updates">Allow CouchZap updates</string>
+    <string name="allow_updates_body">Enable “Allow from this source” for CouchZap, then return to install the verified update.</string>
+    <string name="open_settings">Open settings</string>
+    <string name="update_failed">Could not complete the update. Try again, or share the diagnostic log from Settings.</string>
+    <string name="diagnostic_log">Share diagnostic log</string>
+    <string name="share_log">Share log</string>
+    <string name="save_log">Save file</string>
+    <string name="log_saved">Diagnostic log saved</string>
+    <string name="log_save_failed">Could not save this log. Try Share log instead.</string>
+    <string name="log_copied">No sharing or file app is available. The diagnostic log was copied to the clipboard.</string>
+    <string name="import_error_title">Could not import playlist</string>
+    <string name="import_error_tls">The secure connection could not be verified. Check the device date and time, or share the diagnostic log.</string>
+    <string name="import_error_timeout">The playlist server took too long to respond. Try again, or choose a smaller country playlist.</string>
+    <string name="import_error_network">The playlist server could not be reached. Check the connection, or share the diagnostic log.</string>
+    <string name="import_error_other">The playlist could not be downloaded or read. Share the diagnostic log to help find the cause.</string>
+    <string name="list_preserved">Your previous playlist is preserved.</string>
 </resources>

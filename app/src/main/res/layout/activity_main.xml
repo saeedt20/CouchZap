@@ -275,6 +275,32 @@
                     android:textColor="@color/selector_channel_text" />
             </com.couchzap.iptv.ui.SettingRow>
             <Button
+                android:id="@+id/btn_settings_update"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_focus"
+                android:focusable="true"
+                android:text="@string/check_updates"
+                android:textAllCaps="false"
+                android:textColor="@color/selector_channel_text"
+                android:textSize="16sp"
+                android:gravity="start|center_vertical"
+                android:paddingStart="14dp" />
+            <Button
+                android:id="@+id/btn_settings_logs"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_focus"
+                android:focusable="true"
+                android:text="@string/diagnostic_log"
+                android:textAllCaps="false"
+                android:textColor="@color/selector_channel_text"
+                android:textSize="16sp"
+                android:gravity="start|center_vertical"
+                android:paddingStart="14dp" />
+            <Button
                 android:id="@+id/btn_settings_about"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
