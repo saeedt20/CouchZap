@@ -40,12 +40,14 @@ class DiagnosticMenu(private val activity: AppCompatActivity, private val notice
     private fun share() {
         runCatching {
             val dir = File(activity.cacheDir, "reports").apply { mkdirs() }
-            val file = File(dir, "CouchZap-diagnostics.txt").apply { writeText(pendingReport) }
+            dir.listFiles()?.sortedBy { it.lastModified() }?.dropLast(4)?.forEach { it.delete() }
+            val file = File(dir, "CouchZap-diagnostics-${java.util.UUID.randomUUID()}.txt").apply { writeText(pendingReport) }
             val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.files", file)
             val intent = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_STREAM, uri)
                 .putExtra(Intent.EXTRA_SUBJECT, "CouchZap diagnostic report")
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             intent.clipData = ClipData.newRawUri("Diagnostics", uri)
+            if (intent.resolveActivity(activity.packageManager) == null) { copy(); return }
             activity.startActivity(Intent.createChooser(intent, activity.getString(R.string.share_log)))
         }.onFailure { copy() }
     }

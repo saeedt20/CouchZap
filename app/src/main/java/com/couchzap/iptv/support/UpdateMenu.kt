@@ -42,7 +42,7 @@ class UpdateMenu(private val activity: AppCompatActivity) {
             finally { loading.dismiss(); busy = false }
         }
         loading.setOnCancelListener { job.cancel() }
-        loading.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener { job.cancel() }
+        loading.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener { job.cancel(); loading.dismiss() }
     }
     private fun download(release: ReleaseUpdater.Release) {
         if (busy) return
