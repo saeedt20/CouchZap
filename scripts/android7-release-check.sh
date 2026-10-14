@@ -79,7 +79,7 @@ sleep 4
 dump update
 python3 - <<'PY'
 import xml.etree.ElementTree as E
-assert any('2.1.1 is up to date' in n.attrib.get('text','') for n in E.parse('startup-results/update-ui.xml').iter('node'))
+assert any('2.1.2 is up to date' in n.attrib.get('text','') for n in E.parse('startup-results/update-ui.xml').iter('node'))
 PY
 
 timeout 10s adb shell pidof com.couchzap.iptv

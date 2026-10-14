@@ -8,6 +8,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.couchzap.iptv.R
 import com.couchzap.iptv.util.Anim
+import com.couchzap.iptv.support.DiagnosticLog
 import com.couchzap.iptv.databinding.ActivityMainBinding
 
 /** One focus owner and a retained view stack: returning preserves parent scroll and focus. */
@@ -71,6 +72,9 @@ class SettingsPanel(private val activity: AppCompatActivity, private val binding
                 }
             }
         })
+        val rootHighlight = android.os.Build.VERSION.SDK_INT >= 26 && binding.root.defaultFocusHighlightEnabled
+        val pageHighlight = android.os.Build.VERSION.SDK_INT >= 26 && pageView.defaultFocusHighlightEnabled
+        DiagnosticLog.record("settings_back:depth=${stack.size};focus=${activity.currentFocus?.id ?: -1};touch=${pageView.isInTouchMode};root_highlight=$rootHighlight;page_highlight=$pageHighlight")
         if (parent == null) onRootBack()
         return true
     }

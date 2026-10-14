@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.CouchZap" parent="Theme.AppCompat.NoActionBar">
+    <style name="BaseTheme.CouchZap" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@color/bg_black</item>
         <item name="android:colorBackground">@color/bg_black</item>
         <item name="android:windowNoTitle">true</item>
@@ -12,6 +12,7 @@
         <item name="buttonStyle">@style/Widget.CouchZap.FlatButton</item>
         <item name="android:buttonStyle">@style/Widget.CouchZap.FlatButton</item>
     </style>
+    <style name="Theme.CouchZap" parent="BaseTheme.CouchZap" />
     <!-- Our selectors provide pressed/focus feedback. Native button Z animations
          must not leave shadows when a retained settings page is reattached. -->
     <style name="Widget.CouchZap.FlatButton" parent="Widget.AppCompat.Button">

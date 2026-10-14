@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.CouchZap" parent="BaseTheme.CouchZap">
+        <!-- The root remains a keyboard focus fallback. Native focus ripples on
+             that root draw over every child, washing out the whole screen.
+             Interactive controls already supply their own focus selectors. -->
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+</resources>
