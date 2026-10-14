@@ -31,7 +31,13 @@ jobs:
           sdk_dir="$RUNNER_TEMP/android-sdk"
           tools_zip="$RUNNER_TEMP/android-command-line-tools.zip"
           mkdir -p "$sdk_dir/cmdline-tools"
-          curl --fail --location --retry 3 https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip --output "$tools_zip"
+          for attempt in 1 2 3; do
+            rm -f "$tools_zip"
+            if curl --fail --location --retry 3 https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip --output "$tools_zip" &&
+              echo "d313adb7aedccf6cf0cfca51ec180f0059f5f8f8  $tools_zip" | sha1sum --check; then
+              break
+            fi
+          done
           echo "d313adb7aedccf6cf0cfca51ec180f0059f5f8f8  $tools_zip" | sha1sum --check
           unzip -q "$tools_zip" -d "$sdk_dir/cmdline-tools"
           mv "$sdk_dir/cmdline-tools/cmdline-tools" "$sdk_dir/cmdline-tools/latest"
@@ -55,19 +61,10 @@ jobs:
 
   reviewed_release_android7:
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+    uses: ./.github/workflows/android7-probe.yml
     permissions:
       contents: read
       actions: read
-    steps:
-      - name: Validate the completed exact signed-APK probe
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          test "$(gh api "repos/$GH_REPO/actions/runs/38610290571" --jq '.conclusion')" = success
-          test "$(gh api "repos/$GH_REPO/actions/runs/38610290571" --jq '.head_sha')" = 81f1c9e9a4f46a1ac866e8801dcf147f206e427e
 
   release:
     needs: [checks, reviewed_release_android7]
@@ -86,29 +83,26 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          if gh release view v2.1.0 >/dev/null 2>&1; then
-            echo 'Release v2.1.0 already exists; leaving its assets unchanged.'
-          else
-            startup_result=$(gh api "repos/$GH_REPO/actions/runs/38610290571" --jq '.conclusion')
-            test "$startup_result" = success
-            for attempt in {1..40}; do
-              network_status=$(gh api "repos/$GH_REPO/actions/runs/38611939876" --jq '.status')
-              if test "$network_status" = completed; then break; fi
-              sleep 15
-            done
-            network_result=$(gh api "repos/$GH_REPO/actions/runs/38611939876" --jq '.conclusion')
-            test "$network_result" = success
-            build_run=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['build_run_id'])")
-            gh run download "$build_run" --name couchzap-2.1.0-unsigned --dir "$RUNNER_TEMP/reviewed-build"
-            python3 scripts/assemble-reviewed-release.py \
-              distribution/release-recipe.json \
-              "$RUNNER_TEMP/reviewed-build/app-release-unsigned.apk" \
-              distribution/CouchZap-2.1.0.apk
-            (cd distribution && sha256sum --check CouchZap-2.1.0.apk.sha256)
-            gh release create v2.1.0 \
-              distribution/CouchZap-2.1.0.apk \
-              distribution/CouchZap-2.1.0.apk.sha256 \
-              --target "$GITHUB_SHA" \
-              --title 'CouchZap 2.1.0 — Persian UI, public sources and calm TV controls' \
-              --notes-file docs/releases/v2.1.0.md
+          if gh release view v2.1.2 >/dev/null 2>&1; then
+            echo 'Release v2.1.2 already exists; leaving its assets unchanged.'
+            exit 0
           fi
+          build_run=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['build_run_id'])")
+          artifact_name=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['artifact_name'])")
+          source_commit=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['source_commit'])")
+          test "$(gh api "repos/$GH_REPO/actions/runs/$build_run" --jq '.conclusion')" = success
+          test "$(gh api "repos/$GH_REPO/actions/runs/$build_run" --jq '.head_sha')" = "$source_commit"
+          gh run download "$build_run" --name "$artifact_name" --dir "$RUNNER_TEMP/reviewed-build"
+          python3 scripts/assemble-reviewed-release.py \
+            distribution/release-recipe.json \
+            "$RUNNER_TEMP/reviewed-build/app-release-unsigned.apk" \
+            distribution/CouchZap-2.1.2.apk
+          gh run download "$GITHUB_RUN_ID" --name couchzap-2.1.2-unsigned --dir "$RUNNER_TEMP/current-build"
+          python3 scripts/verify-reviewed-release.py "$RUNNER_TEMP/current-build/app-release-unsigned.apk" distribution/CouchZap-2.1.2.apk
+          (cd distribution && sha256sum --check CouchZap-2.1.2.apk.sha256)
+          gh release create v2.1.2 \
+            distribution/CouchZap-2.1.2.apk \
+            distribution/CouchZap-2.1.2.apk.sha256 \
+            --target "$GITHUB_SHA" \
+            --title 'CouchZap 2.1.2 — Android 16 focus halo and settings fixes' \
+            --notes-file docs/releases/v2.1.2.md

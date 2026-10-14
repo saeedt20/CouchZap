@@ -18,7 +18,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **CouchZap-2.1.0.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.1.0.apk.sha256) accompanies the signed APK.
+1. Download **CouchZap-2.1.2.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.1.2.apk.sha256) accompanies the signed APK.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. Choose Persian or English, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
@@ -29,20 +29,23 @@ Public channel availability depends on the source and your location. CouchZap do
 
 ## Screenshots
 
-These images render the app's actual Android views using Robolectric 4.16.1 native graphics on API 28. Channel data and the illustrative background are fixtures. They are not live broadcasts or physical-device captures; motion is disabled for stable screenshots.
+These images render the app's actual Android views using Robolectric 4.16.1 native graphics on API 28 (TV/welcome) and API 36 (phone settings). Channel data and the illustrative background are fixtures. They are not live broadcasts or physical-device captures; motion is disabled for stable screenshots.
 
 | Screen | English | فارسی |
 | --- | --- | --- |
-| Welcome | ![English welcome](docs/work/phase04/screenshots/stage4-welcome-en.png) | ![ورود فارسی](docs/work/phase04/screenshots/stage4-welcome-fa.png) |
-| Channels | ![English channels](docs/work/phase04/screenshots/stage4-channels-en.png) | ![فهرست فارسی](docs/work/phase04/screenshots/stage4-channels-fa.png) |
-| Info | ![English Info](docs/work/phase04/screenshots/stage4-info-en.png) | ![اطلاعات فارسی](docs/work/phase04/screenshots/stage4-info-fa.png) |
-| Settings | ![English settings](docs/work/phase04/screenshots/stage4-settings-en.png) | ![تنظیمات فارسی](docs/work/phase04/screenshots/stage4-settings-fa.png) |
+| Welcome | ![English welcome](docs/screenshots/v2.1.2/stage4-welcome-en.png) | ![ورود فارسی](docs/screenshots/v2.1.2/stage4-welcome-fa.png) |
+| Channels | ![English channels](docs/screenshots/v2.1.2/stage4-channels-en.png) | ![فهرست فارسی](docs/screenshots/v2.1.2/stage4-channels-fa.png) |
+| Info | ![English Info](docs/screenshots/v2.1.2/stage4-info-en.png) | ![اطلاعات فارسی](docs/screenshots/v2.1.2/stage4-info-fa.png) |
+| Settings | ![English settings](docs/screenshots/v2.1.2/stage4-settings-en.png) | ![تنظیمات فارسی](docs/screenshots/v2.1.2/stage4-settings-fa.png) |
 
 <details>
-<summary>Phone welcome layouts</summary>
+<summary>Phone welcome and Android 16 settings</summary>
 
-<img src="docs/work/phase03/screenshots/stage3-welcome-phone-en.png" alt="English phone welcome" width="270">
-<img src="docs/work/phase03/screenshots/stage3-welcome-phone-fa.png" alt="Persian phone welcome" width="270">
+<img src="docs/screenshots/v2.1.2/stage3-welcome-phone-en.png" alt="English phone welcome" width="270">
+<img src="docs/screenshots/v2.1.2/stage3-welcome-phone-fa.png" alt="Persian phone welcome" width="270">
+
+<img src="docs/screenshots/v2.1.2/ui-fix-settings-phone-en-api36.png" alt="English Android 16 settings after Back" width="270">
+<img src="docs/screenshots/v2.1.2/ui-fix-settings-phone-fa-api36.png" alt="Persian Android 16 settings after Back" width="270">
 
 </details>
 
@@ -108,7 +111,7 @@ Android 7–9 also have a basic file-browser fallback if the system document pic
 
 | Tool | Version |
 | --- | --- |
-| JDK | 17 |
+| JDK | 21 |
 | Android SDK / target SDK | 35 |
 | Android Build Tools | 36.0.0 |
 | Android Gradle Plugin | 9.1.1 |
@@ -141,9 +144,10 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-The 2.1.0 implementation passed **89 unit/Robolectric cases** with zero failures or skips, debug/release lint with zero errors (124 warnings remain), and optimized release assembly. Behavioral tests use API 24 and API 28; native screenshots use API 28. Coverage includes remote repeat/offscreen focus, asynchronous playback errors, retained settings navigation, Persian/English switching, import cancellation and data preservation, public sources and ordering, interruptible motion, CRT mute/lifecycle policy and the sound asset. See the [four-stage handoff](docs/work/phase04-handoff.md) for local results and the [2.1.0 release notes](docs/releases/v2.1.0.md) for publication validation.
+The 2.1.2 implementation passed **98 unit/Robolectric cases** with zero failures or skips, debug/release lint with zero errors (126 debug and 125 release warnings remain), and optimized release assembly. Coverage includes API 24, 28 and 36, remote/touch sound toggles, settings spacing, retained focus and scroll, and the native focus overlay after returning from settings subpages. Native screenshots use API 28 and API 36 with fixture data. See the [settings fixes](docs/work/phase05-ui-fixes.md), [focus-halo regression](docs/work/phase06-focus-halo.md) and [2.1.2 release notes](docs/releases/v2.1.2.md).
 
-The [signed Android TV 7 flow check](https://github.com/saeedt20/CouchZap/actions/runs/38610290571) passed: clean installation, first language choice, public import, CRT toggle, diagnostics and update UI. Publication also gates on the [Android 7 network check](https://github.com/saeedt20/CouchZap/actions/runs/38611939876). The original Android 7 font-crash fix and TLS trust configuration are retained. Physical XDSR685 HDR and Android 16 phone testing, real startup/frame timing and perceived CRT sound loudness still need user testing.
+The user confirmed the white-halo fix in this exact APK on a Xiaomi M2101K7AG running **Android 16 / API 36**. Publication also checks the same signed APK on Android TV 7: clean installation, first language choice, public import, sound toggle, diagnostics and update UI. The original Android 7 font-crash fix and TLS trust configuration are retained; the [2.1.0 network integration results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) document the earlier network checks. Physical TV remote behavior, hardware decoding, startup/frame timing and perceived sound loudness still require device checks.
+
 Automated checks do not validate physical TV remotes, hardware decoders or live stream availability. Playback depends on the device's codec support and source availability. There is no provider-account login, DRM configuration, recording, catch-up service or SmoothStreaming module. Opaque HLS/DASH links use manifest hints or a server's HEAD content type; servers that supply neither may require a conventional manifest URL.
 
 ## Updates and diagnostic logs

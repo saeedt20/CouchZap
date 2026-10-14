@@ -28,7 +28,13 @@ jobs:
           sdk_dir="$RUNNER_TEMP/android-sdk"
           tools_zip="$RUNNER_TEMP/android-command-line-tools.zip"
           mkdir -p "$sdk_dir/cmdline-tools"
-          curl --fail --location --retry 3 https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip --output "$tools_zip"
+          for attempt in 1 2 3; do
+            rm -f "$tools_zip"
+            if curl --fail --location --retry 3 https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip --output "$tools_zip" &&
+              echo "d313adb7aedccf6cf0cfca51ec180f0059f5f8f8  $tools_zip" | sha1sum --check; then
+              break
+            fi
+          done
           echo "d313adb7aedccf6cf0cfca51ec180f0059f5f8f8  $tools_zip" | sha1sum --check
           unzip -q "$tools_zip" -d "$sdk_dir/cmdline-tools"
           mv "$sdk_dir/cmdline-tools/cmdline-tools" "$sdk_dir/cmdline-tools/latest"
@@ -39,31 +45,24 @@ jobs:
           "$sdk_manager" --sdk_root="$sdk_dir" 'platforms;android-35' 'build-tools;36.0.0'
           echo "ANDROID_HOME=$sdk_dir" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$sdk_dir" >> "$GITHUB_ENV"
-      - name: Use the published reviewed APK when available
-        id: published
+      - name: Reconstruct and verify the exact reviewed APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           mkdir -p startup-results
-          if curl --fail --silent --location --retry 2 https://github.com/saeedt20/CouchZap/releases/download/v2.1.0/CouchZap-2.1.0.apk --output startup-results/candidate.apk; then
-            expected=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['signed_sha256'])")
-            echo "$expected  startup-results/candidate.apk" | sha256sum --check
-            echo 'found=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'found=false' >> "$GITHUB_OUTPUT"
-          fi
-      - if: steps.published.outputs.found != 'true'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
-        with:
-          name: couchzap-2.1.0-unsigned
-          path: startup-results
-          run-id: 38592458257
-          github-token: ${{ github.token }}
-      - name: Reconstruct the signed release under review
-        if: steps.published.outputs.found != 'true'
-        run: |
+          build_run=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['build_run_id'])")
+          artifact_name=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['artifact_name'])")
+          source_commit=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['source_commit'])")
+          test "$(gh api "repos/$GH_REPO/actions/runs/$build_run" --jq '.conclusion')" = success
+          test "$(gh api "repos/$GH_REPO/actions/runs/$build_run" --jq '.head_sha')" = "$source_commit"
+          gh run download "$build_run" --name "$artifact_name" --dir startup-results
           python3 scripts/assemble-reviewed-release.py distribution/release-recipe.json startup-results/app-release-unsigned.apk startup-results/candidate.apk
+          python3 scripts/verify-reviewed-release.py startup-results/app-release-unsigned.apk startup-results/candidate.apk
       - name: Verify the reviewed APK and enable emulator acceleration
         run: |
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose startup-results/candidate.apk
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 4 startup-results/candidate.apk
           sudo chmod 666 /dev/kvm
       - name: Verify the exact signed release APK
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
