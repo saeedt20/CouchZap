@@ -20,7 +20,7 @@ for attempt in 1 2 3; do
   sleep 1
   timeout 15s adb shell uiautomator dump /sdcard/settings.xml
   adb pull /sdcard/settings.xml "startup-results/settings-$attempt-ui.xml"
-  python3 -c "from pathlib import Path; assert 'Playlist sources' in Path('startup-results/settings-$attempt-ui.xml').read_text()"
+  python3 -c "from pathlib import Path; assert 'com.couchzap.iptv:id/btn_settings_close' in Path('startup-results/settings-$attempt-ui.xml').read_text()"
   timeout 10s adb shell input keyevent 4
   timeout 15s adb shell am force-stop com.couchzap.iptv
  done
