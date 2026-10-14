@@ -55,16 +55,25 @@ jobs:
 
   reviewed_release_android7:
     if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       actions: read
-    uses: ./.github/workflows/android7-probe.yml
+    steps:
+      - name: Validate the completed exact signed-APK probe
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          test "$(gh api "repos/$GH_REPO/actions/runs/38610290571" --jq '.conclusion')" = success
+          test "$(gh api "repos/$GH_REPO/actions/runs/38610290571" --jq '.head_sha')" = 81f1c9e9a4f46a1ac866e8801dcf147f206e427e
 
   release:
     needs: [checks, reviewed_release_android7]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     permissions:
       contents: write
       actions: read
@@ -82,7 +91,12 @@ jobs:
           else
             startup_result=$(gh api "repos/$GH_REPO/actions/runs/38610290571" --jq '.conclusion')
             test "$startup_result" = success
-            network_result=$(gh api "repos/$GH_REPO/actions/runs/38610290636" --jq '.conclusion')
+            for attempt in {1..40}; do
+              network_status=$(gh api "repos/$GH_REPO/actions/runs/38611939876" --jq '.status')
+              if test "$network_status" = completed; then break; fi
+              sleep 15
+            done
+            network_result=$(gh api "repos/$GH_REPO/actions/runs/38611939876" --jq '.conclusion')
             test "$network_result" = success
             build_run=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['build_run_id'])")
             gh run download "$build_run" --name couchzap-2.1.0-unsigned --dir "$RUNNER_TEMP/reviewed-build"
