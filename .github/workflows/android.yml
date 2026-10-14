@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21' # Robolectric API 36 regression coverage requires Java 21.
           cache: gradle
       - name: Install SDK components
         run: |
@@ -48,7 +48,7 @@ jobs:
       - name: Upload unsigned release for signing
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: couchzap-2.1.0-unsigned
+          name: couchzap-2.1.1-unsigned
           path: app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error
           retention-days: 7

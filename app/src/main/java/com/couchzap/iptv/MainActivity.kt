@@ -593,7 +593,19 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun setupSettingsMenu() {
         binding.btnSettingsCrt.isChecked = prefs.isCrtSoundEnabled()
-        binding.btnSettingsCrt.setOnCheckedChangeListener { _, checked -> if (checked != prefs.isCrtSoundEnabled()) crtSound.setEnabled(checked) }
+        binding.btnSettingsCrtRow.setOnClickListener { binding.btnSettingsCrt.toggle() }
+        binding.btnSettingsCrtRow.accessibilityDelegate = object : View.AccessibilityDelegate() {
+            override fun onInitializeAccessibilityNodeInfo(host: View, info: android.view.accessibility.AccessibilityNodeInfo) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.className = "android.widget.Switch"
+                info.isCheckable = true
+                info.isChecked = binding.btnSettingsCrt.isChecked
+            }
+        }
+        binding.btnSettingsCrt.setOnCheckedChangeListener { _, checked ->
+            if (checked != prefs.isCrtSoundEnabled()) crtSound.setEnabled(checked)
+            binding.btnSettingsCrtRow.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)
+        }
         binding.btnQuickSettings.setOnClickListener { toggleSettingsMenu() }
         settingsPanel.onClick(binding.btnSettingsClose) { if (!languageGate) closeSettingsMenu() }
         settingsPanel.onClick(binding.btnSettingsMode) {
@@ -1027,7 +1039,9 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             gravity = Gravity.LEFT
             setMargins(0, 0, 0, 0)
         }
-        binding.viewChannelList.root.setPadding(maxOf(dp(24), tvHorizontalInset), maxOf(dp(24), tvVerticalInset), dp(24), maxOf(dp(24), tvVerticalInset))
+        // Keep a modest TV edge inset without consuming 5% of the entire screen.
+        val channelLeftInset = if (isTvMode) maxOf(dp(24), (width * 0.03f).toInt()) else dp(24)
+        binding.viewChannelList.root.setPadding(channelLeftInset, maxOf(dp(24), tvVerticalInset), dp(24), maxOf(dp(24), tvVerticalInset))
         binding.viewOsd.root.layoutParams = (binding.viewOsd.root.layoutParams as FrameLayout.LayoutParams).apply {
             this.width = minOf(resources.getDimensionPixelSize(R.dimen.sidebar_width), width - 2 * maxOf(dp(8), tvHorizontalInset))
             gravity = if (portrait) Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL else Gravity.TOP or Gravity.START

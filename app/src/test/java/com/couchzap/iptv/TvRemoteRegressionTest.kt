@@ -168,7 +168,7 @@ class TvRemoteRegressionTest {
         val params = panel.layoutParams as FrameLayout.LayoutParams
         assertEquals(0, params.leftMargin)
         assertEquals(0, panel.left)
-        assertTrue(panel.paddingLeft >= 48)
+        assertTrue(panel.paddingLeft in 24..32)
         assertTrue(panel.paddingTop >= 27)
         assertTrue(panel.paddingBottom >= 27)
         assertTrue(panel.bottom <= 540)

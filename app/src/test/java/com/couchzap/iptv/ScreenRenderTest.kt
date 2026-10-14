@@ -125,7 +125,7 @@ class ScreenRenderTest {
                 assertEquals(channels.layoutParams.width, settings.layoutParams.width)
                 assertEquals(0, channels.left)
                 assertEquals(0, settings.left)
-                assertTrue(channels.paddingLeft >= 48)
+                assertTrue(channels.paddingLeft in 24..32)
                 val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
                 assertTrue(list.findViewHolderForAdapterPosition(0)!!.itemView.height >= 48)
                 save(activity, "stage4-channels-$language", 960, 540)
@@ -148,6 +148,23 @@ class ScreenRenderTest {
                 assertTrue(toggle.height >= 48)
                 save(activity, "stage4-settings-$language", 960, 540)
             }
+        }
+    }
+    @Test
+    @Config(sdk = [36], qualifiers = "w360dp-h800dp-port-mdpi")
+    fun `Android 16 settings render after tapping the child page Back button`() {
+        for (language in listOf("en", "fa")) render(false, true, language) { activity ->
+            activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU))
+            activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MENU))
+            layout(activity, 360, 800)
+            activity.findViewById<View>(R.id.btn_settings_mode).performClick()
+            layout(activity, 360, 800)
+            shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(500))
+            activity.findViewById<View>(R.id.settings_back).performClick()
+            layout(activity, 360, 800)
+            val scroll = activity.findViewById<android.widget.ScrollView>(R.id.settings_root_scroll)
+            scroll.scrollTo(0, scroll.getChildAt(0).height)
+            save(activity, "ui-fix-settings-phone-$language-api36", 360, 800)
         }
     }
     private fun render(playlist: Boolean, phone: Boolean, language: String? = "en", block: (MainActivity) -> Unit) {

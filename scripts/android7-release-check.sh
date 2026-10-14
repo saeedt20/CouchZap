@@ -49,14 +49,14 @@ test "$loaded" = true
 timeout 10s adb shell input keyevent 82
 sleep 1
 dump settings
-click settings resource-id com.couchzap.iptv:id/btn_settings_crt
+click settings resource-id com.couchzap.iptv:id/btn_settings_crt_row
 sleep 1
 dump sound-enabled
 python3 - <<'CHECK_SOUND'
 import xml.etree.ElementTree as E
-assert any(n.attrib.get('resource-id')=='com.couchzap.iptv:id/btn_settings_crt' and n.attrib.get('checked')=='true' for n in E.parse('startup-results/sound-enabled-ui.xml').iter('node'))
+assert any(n.attrib.get('resource-id')=='com.couchzap.iptv:id/btn_settings_crt_row' and n.attrib.get('checked')=='true' for n in E.parse('startup-results/sound-enabled-ui.xml').iter('node'))
 CHECK_SOUND
-click sound-enabled resource-id com.couchzap.iptv:id/btn_settings_crt
+click sound-enabled resource-id com.couchzap.iptv:id/btn_settings_crt_row
 for attempt in {1..8}; do
   dump settings
   if click settings resource-id com.couchzap.iptv:id/btn_settings_logs; then break; fi
@@ -79,7 +79,7 @@ sleep 4
 dump update
 python3 - <<'PY'
 import xml.etree.ElementTree as E
-assert any('2.1.0 is up to date' in n.attrib.get('text','') for n in E.parse('startup-results/update-ui.xml').iter('node'))
+assert any('2.1.1 is up to date' in n.attrib.get('text','') for n in E.parse('startup-results/update-ui.xml').iter('node'))
 PY
 
 timeout 10s adb shell pidof com.couchzap.iptv

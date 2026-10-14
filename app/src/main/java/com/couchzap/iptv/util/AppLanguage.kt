@@ -22,7 +22,8 @@ object AppLanguage {
         translate(context, root)
     }
     fun translate(context: Context, root: View) {
-        root.findViewById<TextView>(R.id.btn_settings_crt)?.text = context.getString(R.string.crt_sound)
+        root.findViewById<TextView>(R.id.tv_settings_crt_label)?.text = context.getString(R.string.crt_sound)
+        root.findViewById<View>(R.id.btn_settings_crt_row)?.contentDescription = context.getString(R.string.crt_sound)
         root.findViewById<TextView>(R.id.import_eyebrow)?.text = context.getString(R.string.welcome_eyebrow)
         root.findViewById<TextView>(R.id.own_playlist_label)?.text = context.getString(R.string.own_playlist_label)
         root.findViewById<View>(R.id.btn_import_language)?.contentDescription = context.getString(R.string.language)
