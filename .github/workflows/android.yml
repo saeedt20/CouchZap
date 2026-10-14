@@ -77,22 +77,24 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          if gh release view v2.0.2 >/dev/null 2>&1; then
-            echo 'Release v2.0.2 already exists; leaving its assets unchanged.'
+          if gh release view v2.1.0 >/dev/null 2>&1; then
+            echo 'Release v2.1.0 already exists; leaving its assets unchanged.'
           else
-            startup_result=$(gh api "repos/$GH_REPO/actions/runs/38533394609" --jq '.conclusion')
+            startup_result=$(gh api "repos/$GH_REPO/actions/runs/38610290571" --jq '.conclusion')
             test "$startup_result" = success
+            network_result=$(gh api "repos/$GH_REPO/actions/runs/38610290636" --jq '.conclusion')
+            test "$network_result" = success
             build_run=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['build_run_id'])")
-            gh run download "$build_run" --name couchzap-2.0.2-unsigned --dir "$RUNNER_TEMP/reviewed-build"
+            gh run download "$build_run" --name couchzap-2.1.0-unsigned --dir "$RUNNER_TEMP/reviewed-build"
             python3 scripts/assemble-reviewed-release.py \
               distribution/release-recipe.json \
               "$RUNNER_TEMP/reviewed-build/app-release-unsigned.apk" \
-              distribution/CouchZap-2.0.2.apk
-            (cd distribution && sha256sum --check CouchZap-2.0.2.apk.sha256)
-            gh release create v2.0.2 \
-              distribution/CouchZap-2.0.2.apk \
-              distribution/CouchZap-2.0.2.apk.sha256 \
+              distribution/CouchZap-2.1.0.apk
+            (cd distribution && sha256sum --check CouchZap-2.1.0.apk.sha256)
+            gh release create v2.1.0 \
+              distribution/CouchZap-2.1.0.apk \
+              distribution/CouchZap-2.1.0.apk.sha256 \
               --target "$GITHUB_SHA" \
-              --title 'CouchZap 2.0.2 — Public channels, updates and diagnostics' \
-              --notes-file docs/releases/v2.0.2.md
+              --title 'CouchZap 2.1.0 — Persian UI, public sources and calm TV controls' \
+              --notes-file docs/releases/v2.1.0.md
           fi
