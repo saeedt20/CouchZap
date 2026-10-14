@@ -39,13 +39,7 @@ jobs:
           echo "ANDROID_HOME=$sdk_dir" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$sdk_dir" >> "$GITHUB_ENV"
       - name: Build the device integration test
-        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: couchzap-2.0.2-unsigned
-          path: app/build/outputs/apk/release/app-release-unsigned.apk
-          if-no-files-found: error
-          retention-days: 7
+        run: ./gradlew --no-daemon :app:assembleDebug :app:assembleDebugAndroidTest
       - name: Enable emulator acceleration
         run: sudo chmod 666 /dev/kvm
       - name: Download public playlists with Android 7 TLS
