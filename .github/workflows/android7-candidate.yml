@@ -3,7 +3,7 @@ name: Android 7 compatibility candidate
 on:
   push:
     branches: [codex/android7-startup]
-    paths: [app/**, gradle/**]
+    paths: [app/**, gradle/**, scripts/android7-startup-check.sh]
   workflow_dispatch:
 
 permissions:
@@ -93,19 +93,7 @@ jobs:
           arch: x86
           ram-size: 2048M
           emulator-boot-timeout: 300
-          script: |
-            adb install startup-results/candidate.apk
-            adb logcat -c
-            adb shell am start -W -n com.couchzap.iptv/.MainActivity
-            sleep 5
-            adb shell pidof com.couchzap.iptv
-            adb shell am force-stop com.couchzap.iptv
-            adb shell am start -W -n com.couchzap.iptv/.MainActivity
-            sleep 5
-            adb logcat -d > startup-results/logcat.txt
-            adb logcat -d -b crash > startup-results/crash.txt
-            cat startup-results/crash.txt
-            adb shell pidof com.couchzap.iptv
+          script: bash scripts/android7-startup-check.sh
       - name: Preserve startup logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -114,4 +102,5 @@ jobs:
           path: |
             startup-results/logcat.txt
             startup-results/crash.txt
+            startup-results/*-ui.xml
           retention-days: 7
