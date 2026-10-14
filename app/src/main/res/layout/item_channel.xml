@@ -2,9 +2,9 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="64dp"
-    android:layout_marginBottom="6dp"
-    android:background="@drawable/bg_focus"
+    android:layout_height="56dp"
+    android:layout_marginBottom="4dp"
+    android:background="@drawable/bg_row"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center_vertical"
@@ -34,31 +34,17 @@
         android:orientation="vertical"
         android:duplicateParentState="true">
         <TextView
-            android:id="@+id/tv_item_channel_name"
+            android:id="@+id/tv_item_channel_name" android:textAlignment="viewStart"
             android:duplicateParentState="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/selector_channel_text"
-            android:textSize="17sp"
+            android:textSize="18sp"
             android:maxLines="1"
             android:ellipsize="end" />
-        <TextView
-            android:id="@+id/tv_item_channel_group"
-            android:duplicateParentState="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:textColor="@color/selector_channel_text"
-            android:textSize="12sp"
-            android:maxLines="1"
-            android:ellipsize="end" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:duplicateParentState="true" android:layout_marginTop="2dp">
+            <TextView android:id="@+id/tv_item_channel_group" android:textAlignment="viewStart" android:duplicateParentState="true" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:textColor="@color/selector_channel_text" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/tv_item_channel_status" android:duplicateParentState="true" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:textColor="@color/selector_channel_text" android:textSize="13sp" />
+        </LinearLayout>
     </LinearLayout>
-    <TextView
-        android:id="@+id/tv_item_channel_status"
-        android:duplicateParentState="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:textColor="@color/selector_channel_text"
-        android:textSize="12sp" />
 </LinearLayout>

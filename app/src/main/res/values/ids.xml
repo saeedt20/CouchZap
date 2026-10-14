@@ -1,1 +1,1 @@
-<resources><item name="artwork_request" type="id"/></resources>
+<resources><item name="artwork_request" type="id"/><item name="motion_token" type="id"/><item name="motion_target" type="id"/></resources>

@@ -9,16 +9,15 @@
     android:orientation="vertical"
     android:padding="20dp"
     android:visibility="gone">
-    <RelativeLayout
+    <LinearLayout android:orientation="horizontal" android:gravity="center_vertical"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_marginBottom="12dp">
+        android:layout_height="56dp"
+        android:layout_marginBottom="8dp">
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp" android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:orientation="vertical">
-            <TextView
+            <TextView android:id="@+id/localized_label_12" android:visibility="gone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/app_name"
@@ -31,27 +30,27 @@
                 android:layout_marginTop="4dp"
                 android:text="@string/channels"
                 android:textColor="@color/text_white"
-                android:textSize="28sp"
+                android:textSize="24sp"
                 android:fontFamily="sans-serif-medium" />
         </LinearLayout>
         <ImageButton
             android:id="@+id/btn_close_channel_list"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
+
+
             android:background="@drawable/bg_focus"
             android:contentDescription="@string/close"
             android:focusable="true"
             android:padding="12dp"
             android:src="@drawable/ic_close"
             app:tint="@color/selector_channel_text" />
-    </RelativeLayout>
+    </LinearLayout>
     <EditText
         android:id="@+id/et_channel_search"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/bg_focus"
         android:paddingStart="14dp"
         android:paddingEnd="14dp"
@@ -65,7 +64,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="8dp"
         android:orientation="horizontal">
         <Button
             android:id="@+id/btn_filter_all"
@@ -105,7 +104,7 @@
         android:id="@+id/tv_empty_channels"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="8dp"
         android:text="@string/no_matches"
         android:textColor="@color/text_gray"
         android:textSize="16sp"
@@ -119,11 +118,11 @@
         android:clipToPadding="false"
         android:focusable="true"
         android:scrollbars="vertical" />
-    <TextView
+    <TextView android:id="@+id/localized_label_13"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:text="@string/favourite_hint"
         android:textColor="@color/text_gray"
-        android:textSize="12sp" />
+        android:textSize="13sp" />
 </LinearLayout>

@@ -3,4 +3,5 @@
     <dimen name="osd_margin">24dp</dimen>
     <dimen name="osd_padding">16dp</dimen>
     <dimen name="osd_corner_radius">8dp</dimen>
+    <dimen name="sidebar_width">420dp</dimen>
 </resources>

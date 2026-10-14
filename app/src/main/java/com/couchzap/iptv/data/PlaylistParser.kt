@@ -5,11 +5,13 @@ import java.io.InputStream
 import java.io.InputStreamReader
 
 class PlaylistParser {
-    var epgUrl: String? = null
+    var epgUrls: List<String> = emptyList()
         private set
+    val epgUrl: String? get() = epgUrls.firstOrNull()
+    val drmUrls = mutableSetOf<String>()
 
-    fun parse(inputStream: InputStream): List<Channel> {
-        epgUrl = null
+    fun parse(inputStream: InputStream, checkActive: () -> Unit = {}): List<Channel> {
+        epgUrls = emptyList(); drmUrls.clear()
         val reader = BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8))
         val channels = mutableListOf<Channel>()
         val seenUrls = HashSet<String>()
@@ -22,11 +24,13 @@ class PlaylistParser {
         var pendingUserAgent: String? = null
         var pendingReferer: String? = null
 
+        var pendingDrm = false
         var currentGroupHeader: String? = null
         var lineCount = 0
 
         var line: String? = reader.readLine()
         while (line != null) {
+            checkActive()
             lineCount++
             // Strip BOM if on first line
             var cleanLine = if (lineCount == 1 && line!!.startsWith("\uFEFF")) {
@@ -41,13 +45,17 @@ class PlaylistParser {
             }
 
             if (cleanLine.startsWith("#EXTM3U")) {
-                epgUrl = extractAttribute(cleanLine, "x-tvg-url") ?: extractAttribute(cleanLine, "url-tvg")
+                epgUrls = (extractAttribute(cleanLine, "x-tvg-url") ?: extractAttribute(cleanLine, "url-tvg"))
+                    ?.split(Regex("[,\\s]+(?=(?:https?|file|content)://)", RegexOption.IGNORE_CASE))?.map(String::trim)?.filter { url -> HttpStreams.validUrl(url) || runCatching {
+                        val uri = java.net.URI(url); uri.scheme in listOf("file", "content") && !uri.path.isNullOrBlank()
+                    }.getOrDefault(false) }?.distinct().orEmpty()
                 line = reader.readLine()
                 continue
             }
 
             if (cleanLine.startsWith("#EXTINF:")) {
                 val parsedInf = parseExtInf(cleanLine)
+                pendingDrm = false; pendingUserAgent = null; pendingReferer = null
                 pendingName = parsedInf.name
                 pendingGroup = parsedInf.group
                 pendingLogo = parsedInf.logo
@@ -76,6 +84,10 @@ class PlaylistParser {
                 }
                 line = reader.readLine()
                 continue
+            }
+
+            if (cleanLine.startsWith("#KODIPROP:inputstream.adaptive.license_", ignoreCase = true)) {
+                pendingDrm = true; line = reader.readLine(); continue
             }
 
             if (cleanLine.startsWith("#EXTHTTP:")) {
@@ -151,17 +163,18 @@ class PlaylistParser {
             if (channelName != null && isValidUrl(url)) {
                 if (!seenUrls.contains(url)) {
                     seenUrls.add(url)
+                    if (pendingDrm) drmUrls.add(url)
                     val channelNumber = channels.size + 1
                     channels.add(
                         Channel(
                             number = channelNumber,
                             name = requireNotNull(channelName),
                             url = url,
-                            group = group,
-                            logo = logo,
-                            userAgent = userAgent,
-                            referer = referer,
-                            tvgId = pendingId,
+                            group = group?.takeIf { it.isNotBlank() },
+                            logo = logo?.takeIf { it.isNotBlank() },
+                            userAgent = userAgent?.takeIf { it.isNotBlank() },
+                            referer = referer?.takeIf { it.isNotBlank() },
+                            tvgId = pendingId?.takeIf { it.isNotBlank() },
                             mimeType = pendingMime
                         )
                     )
@@ -204,7 +217,7 @@ class PlaylistParser {
         val logo = extractAttribute(metadata, "tvg-logo")
         val group = extractAttribute(metadata, "group-title")
 
-        return ParsedInf(name = name, group = group, logo = logo)
+        return ParsedInf(name = name, group = group?.takeIf { it.isNotBlank() }, logo = logo)
     }
 
     private fun extractAttribute(text: String, key: String): String? {

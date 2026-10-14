@@ -12,50 +12,53 @@
   <a href="https://github.com/saeedt20/CouchZap/issues">Report an issue</a>
 </p>
 
-CouchZap brings your playlist to the living room with a sage-green interface, clear focus states and uncluttered playback controls. Add a local file or playlist link, or start with public channels from [iptv-org](https://github.com/iptv-org/iptv).
+CouchZap brings your playlist to the living room with a sage-green interface, clear focus states and uncluttered playback controls. Add a local file or playlist link, or optionally start with public channels from [iptv-org](https://github.com/iptv-org/iptv) or [Free-TV](https://github.com/Free-TV/IPTV).
 
 Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account required
 
 ## Download and start
 
-1. Download **CouchZap-2.0.2.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.0.2.apk.sha256) accompanies the signed APK.
+1. Download **CouchZap-2.1.0.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.1.0.apk.sha256) accompanies the signed APK.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
-3. Choose **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
+3. Choose Persian or English, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
 
-Use **Settings → Playlist sources** to import an HTTP(S) link, choose another source or refresh the current playlist. Public channels can be selected by country, language or category, or imported together.
+Use **Settings → Playlist sources** to import an HTTP(S) link, choose another source or refresh the current playlist. Choose a provider, then a country/language/category for iptv-org or a country/themed list for Free-TV. Choose source order or natural name order; source channel numbers remain unchanged. Public imports are opt-in.
 
 Public channel availability depends on the source and your location. CouchZap downloads playlists when requested; it does not bundle streams or provide a subscription service.
 
 ## Screenshots
 
-These images render the app's actual Android layouts with demo channel data and an illustrative background. They show the interface rather than a live broadcast or hardware playback test.
+These images render the app's actual Android views using Robolectric 4.16.1 native graphics on API 28. Channel data and the illustrative background are fixtures. They are not live broadcasts or physical-device captures; motion is disabled for stable screenshots.
 
-| Welcome | Channels |
-| --- | --- |
-| ![TV welcome screen](docs/screenshots/welcome-tv.png) | ![Left-docked channel browser](docs/screenshots/channels-tv.png) |
-| **Playback info** | **Settings** |
-| ![Compact playback information](docs/screenshots/info-tv.png) | ![Left-docked settings](docs/screenshots/settings-tv.png) |
+| Screen | English | فارسی |
+| --- | --- | --- |
+| Welcome | ![English welcome](docs/work/phase04/screenshots/stage4-welcome-en.png) | ![ورود فارسی](docs/work/phase04/screenshots/stage4-welcome-fa.png) |
+| Channels | ![English channels](docs/work/phase04/screenshots/stage4-channels-en.png) | ![فهرست فارسی](docs/work/phase04/screenshots/stage4-channels-fa.png) |
+| Info | ![English Info](docs/work/phase04/screenshots/stage4-info-en.png) | ![اطلاعات فارسی](docs/work/phase04/screenshots/stage4-info-fa.png) |
+| Settings | ![English settings](docs/work/phase04/screenshots/stage4-settings-en.png) | ![تنظیمات فارسی](docs/work/phase04/screenshots/stage4-settings-fa.png) |
 
 <details>
-<summary>Stream details and phone layout</summary>
+<summary>Phone welcome layouts</summary>
 
-![Expanded stream details](docs/screenshots/info-details-tv.png)
-
-<img src="docs/screenshots/welcome-phone.png" alt="Phone welcome screen" width="270">
+<img src="docs/work/phase03/screenshots/stage3-welcome-phone-en.png" alt="English phone welcome" width="270">
+<img src="docs/work/phase03/screenshots/stage3-welcome-phone-fa.png" alt="Persian phone welcome" width="270">
 
 </details>
 
 ## Features
 
 - **A calmer interface:** couch-and-lightning identity, warm sage accents, generous buttons and visible remote focus.
-- **A better channel browser:** left-docked panel, search, groups, favourites, channel logos and a distinct playing marker. Up from the first visible channel wraps to the last; Down wraps back to the first.
-- **Flexible playlist sources:** local files, HTTP(S) links and the public iptv-org directory. Cached channels remain available between launches; failed imports preserve the previous playlist.
+- **A better channel browser:** left-docked panel, search, groups, favourites, channel logos and a distinct playback-status label. Focus and the currently selected channel remain separate, including during asynchronous connection errors. Up from the first visible channel wraps to the last; Down wraps back to the first.
+- **Flexible playlist sources:** local files, HTTP(S) links and selectable public iptv-org and Free-TV directories. Cached channels remain available between launches; failed imports preserve the previous playlist.
 - **Useful Info controls:** channel name, number, clock, play/pause, favourites and a second level for available codec, resolution and bitrate information.
 - **Programme guide:** XMLTV from a file or link, including gzip files. Shows now/next and programme progress when guide IDs match the playlist.
 - **Playback options:** HLS, DASH, RTSP and compatible progressive streams, available audio/subtitle tracks, Fit/Fill/16:9/4:3 picture modes, reconnect attempts and a retry/next-channel error panel.
 - **Updates from Settings:** check the latest stable GitHub release, download it with progress, verify its checksum and CouchZap signing certificate, then open Android’s installer. Installation always requires your confirmation.
 - **Diagnostic reports:** preview, share or save an app-only log from Settings. It contains device/version details and error classes/stacks; playlist URLs, channel names, tokens and account data are excluded. Boxes without a sharing/file app can copy the report to the clipboard.
+- **Persian and English:** switch language inside the settings panel, with RTL Persian content and LTR English. Channels and settings remain docked on the left. Settings subpages retain parent focus and scroll when you press Back.
+- **Light welcome motion:** a one-time intro that completes on the first key or touch while still handling that input. System animation settings are respected; Android 7 panels open immediately.
+- **Optional CRT click:** enable **Settings → Playback → Channel switch sound** for an original, quiet 160ms sample. It is off by default, previews when enabled and plays only on committed channel changes; browsing, retries and reconnects stay silent. Media volume and mute are respected.
 - **Everyday conveniences:** last watched channel, numeric selection for large playlists, a 15/30/60/90-minute sleep timer and saved interface preferences.
 - **TV and phone support:** automatic device detection, manual TV/Phone modes, TV overscan padding, responsive phone layout and touch gestures.
 
@@ -89,7 +92,7 @@ Tap the video to show/hide controls, double-tap to play/pause, swipe left/right 
 
 ## Playlists and programme guide
 
-M3U metadata includes `tvg-id`, `tvg-logo`, `group-title`, User-Agent/Referer fields and HLS/DASH manifest hints. Duplicate stream URLs are removed; channel numbers follow playlist order. TXT accepts `Name,URL` entries or bare stream URLs.
+M3U metadata includes `tvg-id`, `tvg-logo`, `group-title`, User-Agent/Referer fields and HLS/DASH manifest hints. Duplicate stream URLs are removed; channel numbers follow playlist order and stay unchanged when the displayed list is sorted by name. TXT accepts `Name,URL` entries or bare stream URLs.
 
 ```m3u
 #EXTM3U x-tvg-url="https://example.org/guide.xml.gz"
@@ -138,8 +141,9 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-The 2.0.2 build passed **31 unit/Robolectric tests**, debug/release lint with no errors, and debug and optimized release assembly. Tests cover parsing, cache preservation, refresh identity, favourites, XMLTV/gzip/time zones, numeric entry, remote focus and list wrapping. The six screenshots are generated from native layouts by `ScreenRenderTest`. Version 2.0.1 fixed the Android 7 launch-time font inflation crash. Version 2.0.2 adds device integration checks for public playlist/catalog downloads, verified release downloads and the diagnostics UI on Android TV 7 / API 24. See the [network integration check](https://github.com/saeedt20/CouchZap/actions/runs/38533394609).
+The 2.1.0 implementation passed **89 unit/Robolectric cases** with zero failures or skips, debug/release lint with zero errors (124 warnings remain), and optimized release assembly. Behavioral tests use API 24 and API 28; native screenshots use API 28. Coverage includes remote repeat/offscreen focus, asynchronous playback errors, retained settings navigation, Persian/English switching, import cancellation and data preservation, public sources and ordering, interruptible motion, CRT mute/lifecycle policy and the sound asset. See the [four-stage handoff](docs/work/phase04-handoff.md) for local results and the [2.1.0 release notes](docs/releases/v2.1.0.md) for publication validation.
 
+The original Android 7 font-crash fix and TLS trust configuration are retained. Physical XDSR685 HDR and Android 16 phone testing, real startup/frame timing and perceived CRT sound loudness still need user testing.
 Automated checks do not validate physical TV remotes, hardware decoders or live stream availability. Playback depends on the device's codec support and source availability. There is no provider-account login, DRM configuration, recording, catch-up service or SmoothStreaming module. Opaque HLS/DASH links use manifest hints or a server's HEAD content type; servers that supply neither may require a conventional manifest URL.
 
 ## Updates and diagnostic logs
@@ -152,8 +156,10 @@ Android 7 lacks the ISRG Root X1 certificate required by the public directory. C
 
 ## Data and attribution
 
-Playlists, guides, favourites and preferences stay in private app storage. CouchZap has no analytics, advertising or account service. It connects to playlist, guide, artwork and stream servers that you select; the public directory connects to iptv-org. HTTP sources are supported, so transport security depends on the source.
+Playlists, guides, favourites and preferences stay in private app storage. CouchZap has no analytics, advertising or account service. It connects to playlist, guide, artwork and stream servers that you select; public directories connect to the chosen iptv-org or Free-TV source. HTTP sources are supported, so transport security depends on the source.
 
-Thanks to [iptv-org](https://github.com/iptv-org/iptv) for its public playlist directory and metadata API, [AndroidX Media3](https://github.com/androidx/media) for playback, [AndroidSVG](https://github.com/BigBadaboom/androidsvg) for SVG artwork, and [Robolectric](https://github.com/robolectric/robolectric) for Android regression testing.
+The [original CRT sample](docs/assets/crt_sound.md) is synthesized locally without third-party recordings and dedicated under CC0 1.0.
+
+Thanks to [Free-TV](https://github.com/Free-TV/IPTV), [iptv-org](https://github.com/iptv-org/iptv) for its public playlist directory and metadata API, [AndroidX Media3](https://github.com/androidx/media) for playback, [AndroidSVG](https://github.com/BigBadaboom/androidsvg) for SVG artwork, and [Robolectric](https://github.com/robolectric/robolectric) for Android regression testing.
 
 For bugs, include device/Android version, reproduction steps and sanitized logs in [GitHub Issues](https://github.com/saeedt20/CouchZap/issues).

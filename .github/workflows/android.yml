@@ -2,7 +2,7 @@ name: Android checks and release
 
 on:
   push:
-    branches: [main, codex/couchzap-2.0]
+    branches: [main, codex/couchzap-2.0, codex/couchzap-2.1]
   pull_request:
   workflow_dispatch:
 
@@ -48,12 +48,13 @@ jobs:
       - name: Upload unsigned release for signing
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: couchzap-release-unsigned
+          name: couchzap-2.1.0-unsigned
           path: app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error
           retention-days: 7
 
   reviewed_release_android7:
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       actions: read

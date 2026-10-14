@@ -4,6 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
@@ -13,6 +17,7 @@ import java.io.InputStreamReader
 
 class PlaylistRepository(private val context: Context) {
 
+    private val writeLock = Mutex()
     private val prefs: SharedPreferences =
         context.getSharedPreferences("couchzap_prefs", Context.MODE_PRIVATE)
 
@@ -32,7 +37,7 @@ class PlaylistRepository(private val context: Context) {
 
     fun saveLastChannelIndex(index: Int, channel: Channel? = null) {
         prefs.edit().putInt("last_channel_index", index).apply {
-            if (channel != null) putString("last_channel_id", channel.stableId)
+            if (channel != null) { putString("last_channel_id", channel.stableId); putString("last_channel_url", channel.url) }
         }.apply()
     }
 
@@ -51,25 +56,42 @@ class PlaylistRepository(private val context: Context) {
     fun updatedAt(): Long = prefs.getLong("playlist_updated_at", 0)
     fun playlistEpgUrl(): String? = prefs.getString("playlist_epg_url", null)
 
-    suspend fun importPlaylistFromStream(
-        inputStream: InputStream,
-        source: PlaylistSource? = null,
-        preserveSelection: Boolean = false
-    ): List<Channel> = withContext(Dispatchers.IO) {
+    fun playlistEpgUrls(): List<String> = runCatching {
+        val json = org.json.JSONArray(prefs.getString("playlist_epg_urls", "[]"))
+        (0 until json.length()).map { json.getString(it) }
+    }.getOrDefault(emptyList()).ifEmpty { listOfNotNull(playlistEpgUrl()) }
+    fun unsupportedCount(): Int = prefs.getInt("playlist_unsupported", 0)
+    data class PreparedPlaylist(val channels: List<Channel>, val epgUrls: List<String>, val skipped: Int)
+    suspend fun preparePlaylist(input: InputStream, source: PlaylistSource? = null): PreparedPlaylist = withContext(Dispatchers.IO) {
+        val coroutine = currentCoroutineContext()
         val parser = PlaylistParser()
-        val channels = inputStream.use { parser.parse(it) }
-        if (channels.isNotEmpty()) {
-            val previousId = prefs.getString("last_channel_id", null)
-            val restored = if (preserveSelection) channels.indexOfFirst { it.stableId == previousId }.coerceAtLeast(0) else 0
-            saveChannelsToTsv(channels)
-            prefs.edit().putBoolean("playlist_ready", true).putInt("last_channel_index", restored)
-                .putString("last_channel_id", channels[restored].stableId)
-                .putLong("playlist_updated_at", System.currentTimeMillis())
-                .putString("playlist_epg_url", parser.epgUrl)
-                .apply { if (source != null) putString("playlist_source", source.toJson().toString()) }.apply()
-        }
-
+        val parsed = input.use { parser.parse(it) { coroutine.ensureActive() } }
+        coroutine.ensureActive()
+        val supported = if (source?.kind == "public") parsed.filterNot { PublicChannelOrder.isWebPage(it) || it.url in parser.drmUrls } else parsed
+        val ordered = if (source?.kind == "public") PublicChannelOrder.sorted(supported) else supported
+        PreparedPlaylist(ordered, if (source?.kind == "public") parser.epgUrls.filter(HttpStreams::validUrl) else parser.epgUrls, parsed.size - supported.size)
+    }
+    /** Cancellation is checked before the atomic write. Once commit begins it completes as one operation. */
+    suspend fun commitPlaylist(prepared: PreparedPlaylist, source: PlaylistSource?, preserveSelection: Boolean = false): List<Channel> = writeLock.withLock {
+        currentCoroutineContext().ensureActive()
+        val channels = prepared.channels
+        if (channels.isEmpty()) return@withLock emptyList()
+        val previousId = prefs.getString("last_channel_id", null)
+        val previousUrl = prefs.getString("last_channel_url", null)
+        val exact = if (preserveSelection) channels.indexOfFirst { it.stableId == previousId && it.url == previousUrl } else -1
+        val restored = if (exact >= 0) exact else if (preserveSelection) channels.indexOfFirst { it.stableId == previousId }.coerceAtLeast(0) else 0
+        saveChannelsToTsv(channels)
+        prefs.edit().putBoolean("playlist_ready", true).putInt("last_channel_index", restored)
+            .putString("last_channel_id", channels[restored].stableId).putString("last_channel_url", channels[restored].url)
+            .putLong("playlist_updated_at", System.currentTimeMillis())
+            .putString("playlist_epg_url", prepared.epgUrls.firstOrNull())
+            .putString("playlist_epg_urls", org.json.JSONArray(prepared.epgUrls).toString()).putInt("playlist_unsupported", prepared.skipped)
+            .apply { if (source != null) putString("playlist_source", source.toJson().toString()) else remove("playlist_source") }.apply()
         channels
+    }
+    suspend fun importPlaylistFromStream(inputStream: InputStream, source: PlaylistSource? = null, preserveSelection: Boolean = false): List<Channel> {
+        val prepared = preparePlaylist(inputStream, source)
+        return withContext(Dispatchers.IO) { commitPlaylist(prepared, source, preserveSelection) }
     }
 
     suspend fun loadCachedChannels(): List<Channel> = withContext(Dispatchers.IO) {
@@ -137,7 +159,8 @@ class PlaylistRepository(private val context: Context) {
 
     fun clearPlaylist() {
         prefs.edit().putBoolean("playlist_ready", false).putInt("last_channel_index", 0)
-            .remove("last_channel_id").remove("playlist_source").remove("playlist_updated_at").apply()
+            .remove("last_channel_id").remove("last_channel_url").remove("playlist_source").remove("playlist_updated_at")
+            .remove("playlist_epg_url").remove("playlist_epg_urls").remove("playlist_unsupported").apply()
         if (playlistSrcFile.exists()) playlistSrcFile.delete()
         if (channelsTsvFile.exists()) channelsTsvFile.delete()
     }

@@ -1,15 +1,21 @@
 package com.couchzap.iptv
 
+import android.content.Context
+import android.widget.LinearLayout
+import com.couchzap.iptv.ui.SettingsPanel
+import com.couchzap.iptv.ui.WelcomeIntro
+import com.couchzap.iptv.player.CrtSwitchSound
+import com.couchzap.iptv.util.AppLanguage
 import android.app.UiModeManager
 import android.content.res.Configuration
 import android.content.pm.ActivityInfo
 import android.view.Gravity
 import android.widget.FrameLayout
 import androidx.activity.OnBackPressedCallback
-import androidx.core.view.doOnNextLayout
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ensureActive
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -23,6 +29,9 @@ import android.view.GestureDetector
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import android.view.FocusFinder
+import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,6 +46,8 @@ import com.couchzap.iptv.data.Channel
 import com.couchzap.iptv.data.PlaylistRepository
 import com.couchzap.iptv.databinding.ActivityMainBinding
 import com.couchzap.iptv.player.PlayerController
+import com.couchzap.iptv.player.ChannelPlaybackStatus
+import com.couchzap.iptv.ui.ChannelListNavigation
 import com.couchzap.iptv.ui.ChannelListAdapter
 import com.couchzap.iptv.ui.ImportFragmentlessScreen
 import com.couchzap.iptv.ui.NumberEntryController
@@ -66,6 +77,12 @@ import com.couchzap.iptv.support.UpdateMenu
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
+    private lateinit var welcomeIntro: WelcomeIntro
+    private lateinit var crtSound: CrtSwitchSound
+    private lateinit var settingsPanel: SettingsPanel
+    private var languageGate = false
+    override fun attachBaseContext(newBase: Context) { super.attachBaseContext(AppLanguage.wrap(newBase)) }
+
     private lateinit var updateMenu: UpdateMenu
     private lateinit var diagnosticMenu: DiagnosticMenu
     private lateinit var binding: ActivityMainBinding
@@ -81,17 +98,29 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private lateinit var epg: EpgRepository
     private lateinit var artwork: ChannelArtwork
     private lateinit var playlistMenus: PlaylistMenus
+    private lateinit var channelNavigation: ChannelListNavigation
+    private var playbackStatus = ChannelPlaybackStatus.CONNECTING
+    private var confirmChannelId: String? = null
+    private var confirmLongHandled = false
+    private val longConfirm = Runnable {
+        val id = confirmChannelId
+        val channel = channelNavigation.targetChannel()
+        if (id != null && channel?.stableId == id && binding.viewChannelList.root.visibility == View.VISIBLE) {
+            confirmLongHandled = true
+            toggleFavourite(channel)
+        }
+    }
     private var favouritesOnly = false
     private var selectedGroup: String? = null
     private var previousWatchedId: String? = null
     private var guidePicker = false
-    private var wrappedKey = KeyEvent.KEYCODE_UNKNOWN
     private var sleepExpired = false
     private val sleepHandler = Handler(Looper.getMainLooper())
     private val sleepRunnable = Runnable {
         sleepExpired = true
         playerController?.pause()
         if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) notice(getString(R.string.timer_done))
+        sleepMinutes = 0
         binding.tvSettingsSleepValue.text = getString(R.string.off)
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
@@ -106,7 +135,13 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private val aspectRatios = arrayOf(Prefs.ASPECT_FIT, Prefs.ASPECT_FILL, Prefs.ASPECT_16_9, Prefs.ASPECT_4_3)
     private var currentAspectIndex = 0
     private var isTvMode = false
+    private var importMessage = R.string.download_playlist
+    private var renderImport: (() -> Unit)? = null
     private var importInProgress = false
+    private var importCommitting = false
+    private var importGeneration = 0
+    private var importJob: kotlinx.coroutines.Job? = null
+    private var welcomeFlowOrigin: View? = null
     private var pickerOpen = false
     private var consumeConfirmRelease = false
 
@@ -142,10 +177,10 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                fileBrowser.openAtRoot()
+                showFallbackBrowser()
             } else {
                 if (channels.isEmpty()) importScreen.show()
-                Toast.makeText(this, "Storage permission required for file picker", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.storage_permission), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -153,19 +188,26 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         super.onCreate(savedInstanceState)
         DiagnosticLog.initialize(this)
         DiagnosticLog.record("app_start")
-        updateMenu = UpdateMenu(this)
-        diagnosticMenu = DiagnosticMenu(this, ::notice)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.layoutDirection = if (Prefs(this).getLanguage() == "fa") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
 
         repository = PlaylistRepository(this)
         prefs = Prefs(this)
+        crtSound = CrtSwitchSound.create(this, prefs)
+        welcomeIntro = WelcomeIntro(binding.viewImport, prefs)
+        settingsPanel = SettingsPanel(this, binding).also { panel ->
+            panel.onClose = { if (!languageGate && !importCommitting) closeSettingsMenu() }
+            panel.onRootBack = { if (welcomeFlowOrigin != null && !languageGate) closeSettingsMenu() }
+        }
+        updateMenu = UpdateMenu(this, settingsPanel)
+        diagnosticMenu = DiagnosticMenu(this, settingsPanel, ::notice)
         epg = EpgRepository(this)
         artwork = ChannelArtwork(lifecycleScope)
         playlistMenus = PlaylistMenus(this, repository, lifecycleScope,
-            onFile = { closeSettingsMenu(); launchImportPicker() },
-            onSource = { source, refresh -> closeSettingsMenu(); importSource(source, refresh) },
-            onNotice = ::notice)
+            onFile = { launchImportPicker() },
+            onSource = { source, refresh -> importSource(source, refresh) },
+            onNotice = ::notice, panel = settingsPanel, onOpen = { if (binding.layoutSettings.visibility != View.VISIBLE) toggleSettingsMenu() })
         currentAspectIndex = aspectRatios.indexOf(prefs.getAspectRatioMode()).coerceAtLeast(0)
 
         setupFullscreen()
@@ -190,7 +232,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         numberEntryController = NumberEntryController(
             tvDigitGhost = binding.tvDigitGhost,
             tvToastMsg = binding.tvToastMsg,
-            totalChannelCount = { channels.size },
+            totalChannelCount = { channels.maxOfOrNull { it.number } ?: 0 },
             onCommitChannelNumber = { channelNum ->
                 jumpToChannelNumber(channelNum)
             }
@@ -198,10 +240,9 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
         importScreen = ImportFragmentlessScreen(
             binding = binding.viewImport,
-            onImportButtonClicked = {
-                launchImportPicker()
-            },
-            onPublicButtonClicked = { playlistMenus.publicChoices() }
+            onImportButtonClicked = { openWelcomeFlow(binding.viewImport.btnImport) { playlistMenus.ownChoices() } },
+            onPublicButtonClicked = { openWelcomeFlow(binding.viewImport.btnPublic) { playlistMenus.publicChoices() } },
+            onLanguageButtonClicked = { openWelcomeFlow(binding.viewImport.btnImportLanguage) { languageMenu() } }
         )
 
         fileBrowser = SimpleFileBrowser(
@@ -209,10 +250,12 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             tvPath = binding.tvFileBrowserPath,
             rvFiles = binding.rvFileBrowser,
             onFileSelected = { file ->
+                if (binding.layoutSettings.visibility == View.VISIBLE && settingsPanel.depth > 0) settingsPanel.back()
                 if (guidePicker) importGuide(Uri.fromFile(file).toString()) { file.inputStream() } else importFile(file)
             },
             onCloseRequested = {
-                if (channels.isEmpty()) importScreen.show()
+                if (binding.layoutSettings.visibility == View.VISIBLE && settingsPanel.depth > 0) settingsPanel.back()
+                else if (channels.isEmpty()) importScreen.show()
             }
         )
 
@@ -232,10 +275,13 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
         // Check if playlist is ready
         if (repository.isPlaylistReady()) {
+            prefs.markIntroSeen()
             importScreen.hide()
             loadChannelsAndStartPlayback()
         } else {
             importScreen.show()
+            if (prefs.getLanguage() == null) { languageGate = true; toggleSettingsMenu(); importScreen.hide(); languageMenu() }
+            else welcomeIntro.start()
         }
     }
 
@@ -254,17 +300,23 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     override fun onStart() {
         super.onStart()
+        crtSound.resume()
         osdController.resume()
         // The welcome screen does not need codecs, audio focus or a player surface.
         if (channels.isNotEmpty() && !sleepExpired) {
             playCurrentChannel()
         }
+        if (binding.viewChannelList.root.visibility == View.VISIBLE) focusCurrentChannel()
+        updatePlaybackErrorFocus()
     }
 
     override fun onStop() {
         super.onStop()
+        welcomeIntro.finish(); crtSound.pause(); Anim.finishAll(binding.root)
         osdController.pause()
         consumeConfirmRelease = false
+        cancelRowConfirm()
+        channelNavigation.cancel()
         handler.removeCallbacksAndMessages(null)
         numberEntryController.cancel()
         pendingIndex = currentIndex
@@ -280,7 +332,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                Toast.makeText(this@MainActivity, "Could not read the saved playlist. Please import it again.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@MainActivity, getString(R.string.saved_playlist_failed), Toast.LENGTH_LONG).show()
                 emptyList()
             }
             if (cached.isNotEmpty()) {
@@ -335,11 +387,25 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         ) {
             requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
         } else {
+            showFallbackBrowser()
+        }
+    }
+
+    private fun showFallbackBrowser() {
+        if (binding.layoutSettings.visibility != View.VISIBLE) toggleSettingsMenu()
+        val browser = binding.layoutFileBrowser
+        settingsPanel.page("files", R.string.btn_import_playlist, leave = {
+            fileBrowser.close(); (browser.parent as? ViewGroup)?.removeView(browser)
+            binding.root.addView(browser, FrameLayout.LayoutParams(-1, -1))
+        }) { body ->
+            (browser.parent as? ViewGroup)?.removeView(browser)
+            browser.descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
+            body.addView(browser, LinearLayout.LayoutParams(-1, settingsPanel.dp(320)))
             fileBrowser.openAtRoot()
         }
     }
 
-    private fun importUri(uri: Uri) = importPlaylist(PlaylistSource("file", uri.toString(), uri.lastPathSegment?.substringAfterLast('/') ?: "Playlist file")) {
+    private fun importUri(uri: Uri) = importPlaylist(PlaylistSource("file", uri.toString(), uri.lastPathSegment?.substringAfterLast('/') ?: getString(R.string.playlist_file))) {
         contentResolver.openInputStream(uri) ?: error("Could not open the selected file")
     }
 
@@ -350,45 +416,78 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         else HttpStreams.open(source.location)
     }
 
+    private fun cancelPlaylistImport(): Boolean {
+        if (importCommitting) { notice(getString(R.string.finishing_import)); return false }
+        if (!importInProgress) return true
+        importGeneration++; importJob?.cancel(); importJob = null; importInProgress = false
+        importScreen.hideProgress(); notice(getString(R.string.import_cancelled))
+        return true
+    }
+
     private fun importPlaylist(source: PlaylistSource? = null, refresh: Boolean = false, openStream: () -> InputStream) {
         if (importInProgress) return
-        if (refresh && channels.isNotEmpty()) repository.saveLastChannelIndex(currentIndex, channels[currentIndex])
+        val before = channels.getOrNull(currentIndex)
+        if (refresh && before != null) repository.saveLastChannelIndex(currentIndex, before)
+        val token = ++importGeneration
         importInProgress = true
+        importCommitting = false
         DiagnosticLog.record("playlist_import_start")
-        lifecycleScope.launch {
-            importScreen.show()
-            importScreen.showProgress(getString(if (source?.kind == "file") R.string.loading_channels else R.string.download_playlist, 0))
+        importMessage = if (source?.kind == "file") R.string.loading_channels else R.string.download_playlist
+        if (binding.layoutSettings.visibility != View.VISIBLE) toggleSettingsMenu()
+        settingsPanel.page("playlist-import", R.string.playlist_sources, leave = {
+            renderImport = null
+            if (importInProgress && !importCommitting) cancelPlaylistImport()
+        }) { body ->
+            val status = settingsPanel.text(body, "")
+            val cancel = settingsPanel.button(body, getString(R.string.cancel)) { if (cancelPlaylistImport()) settingsPanel.back() }
+            renderImport = {
+                status.text = if (importCommitting) getString(R.string.finishing_import)
+                    else if (importMessage == R.string.loading_channels) getString(R.string.loading_channels, 0) else getString(importMessage)
+                cancel.isEnabled = !importCommitting
+            }; renderImport?.invoke()
+        }
+        importScreen.showProgress(getString(R.string.download_playlist))
+        importJob = lifecycleScope.launch {
+            var succeeded = false
             try {
-                val parsedChannels = withContext(Dispatchers.IO) {
-                    repository.importPlaylistFromStream(openStream(), source, refresh)
+                val prepared = withContext(Dispatchers.IO) { repository.preparePlaylist(openStream(), source) }
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                if (token != importGeneration) return@launch
+                if (prepared.channels.isEmpty()) {
+                    importMessage = R.string.no_channels_found; renderImport?.invoke()
+                    notice(getString(R.string.no_channels_found)); return@launch
                 }
-                DiagnosticLog.record("playlist_import_downloaded")
-                if (parsedChannels.isEmpty()) {
-                    Toast.makeText(this@MainActivity, R.string.no_channels_found, Toast.LENGTH_LONG).show()
-                } else {
-                    handler.removeCallbacksAndMessages(null)
-                    numberEntryController.cancel()
-                    channels.clear()
-                    channels.addAll(parsedChannels)
-                    currentIndex = repository.getLastChannelIndex().coerceIn(channels.indices)
-                    pendingIndex = currentIndex
-                    previousWatchedId = null
-                    favouritesOnly = false; selectedGroup = null
+                // UI cancellation is accepted until this short atomic commit begins.
+                importCommitting = true; renderImport?.invoke()
+                val parsedChannels = withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
+                    repository.commitPlaylist(prepared, source, refresh)
+                }
+                if (token != importGeneration || isDestroyed) return@launch
+                handler.removeCallbacksAndMessages(null); numberEntryController.cancel()
+                channels.clear(); channels.addAll(parsedChannels)
+                currentIndex = repository.getLastChannelIndex().coerceIn(channels.indices); pendingIndex = currentIndex
+                val after = channels[currentIndex]
+                val samePlayback = refresh && before?.stableId == after.stableId && before.url == after.url
+                if (!refresh) {
+                    previousWatchedId = null; favouritesOnly = false; selectedGroup = null
                     binding.viewChannelList.etChannelSearch.setText("")
-                    updateChannelListAdapter()
-                    if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) playCurrentChannel()
-                    notice(getString(R.string.loaded_channels, parsedChannels.size))
                 }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (error: Exception) {
-                DiagnosticLog.record("playlist_import_failed", error)
-                showImportError(error)
+                updateChannelListAdapter()
+                if (!samePlayback && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) playCurrentChannel()
+                else osdController.refreshChannel(after)
+                succeeded = true
+                DiagnosticLog.record("playlist_import_success")
+                notice(getString(R.string.loaded_channels, parsedChannels.size) + if (prepared.skipped > 0) "\n" + getString(R.string.unsupported_skipped, prepared.skipped) else "")
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (error: Exception) {
+                if (token == importGeneration) { importMessage = R.string.import_failed; renderImport?.invoke(); DiagnosticLog.record("playlist_import_failed", error); showImportError(error) }
             } finally {
-                importInProgress = false
-                importScreen.hideProgress()
-                if (channels.isNotEmpty()) importScreen.hide()
-                if (channels.isNotEmpty() && !refresh && source != null && source.kind != "file") openChannelListOverlay()
+                if (token == importGeneration) {
+                    importInProgress = false; importCommitting = false; importScreen.hideProgress()
+                    if (channels.isNotEmpty()) importScreen.hide()
+                    if (succeeded && !refresh) { closeSettingsMenu(); if (source?.kind != "file") openChannelListOverlay() }
+                    else if (succeeded && settingsPanel.currentKey == "playlist-import") { settingsPanel.back(); updateSourceLabel() }
+                }
             }
         }
     }
@@ -396,15 +495,14 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private fun setupChannelListOverlay() {
         binding.viewChannelList.rvChannels.layoutManager = LinearLayoutManager(this)
         binding.viewChannelList.rvChannels.itemAnimator = null
-        val adapter = ChannelListAdapter(artwork = artwork, onFavourite = ::toggleFavourite) { channel ->
-            val index = channels.indexOf(channel)
-            if (index != -1) {
-                pendingIndex = index
-                executeZap()
-            }
-            closeChannelListOverlay()
+        val adapter = ChannelListAdapter(artwork = artwork, onFavourite = ::toggleFavourite,
+            onFocused = { channel -> channelNavigation.remember(channel) }) { channel ->
+            selectChannel(channel)
         }
         binding.viewChannelList.rvChannels.adapter = adapter
+        channelNavigation = ChannelListNavigation(binding.viewChannelList.rvChannels, adapter,
+            isActive = { binding.viewChannelList.root.visibility == View.VISIBLE && !isFinishing && !isDestroyed },
+            isTv = { isTvMode }, onEmpty = { binding.viewChannelList.etChannelSearch.requestFocus() })
         binding.viewChannelList.btnCloseChannelList.setOnClickListener {
             closeChannelListOverlay()
         }
@@ -423,6 +521,9 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun updateChannelListAdapter() {
         val adapter = binding.viewChannelList.rvChannels.adapter as? ChannelListAdapter
+        val restoreRow = ::channelNavigation.isInitialized && binding.viewChannelList.root.visibility == View.VISIBLE &&
+            (channelNavigation.hasPending || channelNavigation.focusedPosition() >= 0)
+        if (::channelNavigation.isInitialized) channelNavigation.cancel()
         val query = binding.viewChannelList.etChannelSearch.text.toString().trim()
         val favourites = repository.favouriteIds()
         val filtered = channels.filter { (!favouritesOnly || it.stableId in favourites) &&
@@ -430,11 +531,13 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             (query.isEmpty() || it.name.contains(query, true) || it.number.toString().startsWith(query)) }
         val playingId = channels.getOrNull(currentIndex)?.stableId
         adapter?.setChannels(filtered, filtered.indexOfFirst { it.stableId == playingId }, favourites)
+        adapter?.updatePlayback(playingId, playbackStatus)
         binding.viewChannelList.tvEmptyChannels.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
         binding.viewChannelList.tvChannelListHeader.text = getString(R.string.channels) + " · " + filtered.size
         binding.viewChannelList.btnFilterAll.isSelected = !favouritesOnly && selectedGroup == null
         binding.viewChannelList.btnFilterFavourites.isSelected = favouritesOnly
         binding.viewChannelList.btnFilterGroups.isSelected = selectedGroup != null
+        if (restoreRow) focusCurrentChannel()
     }
 
     private fun toggleChannelListOverlay() {
@@ -450,28 +553,16 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         osdController.hideOsd()
         binding.btnQuickSettings.visibility = View.GONE
         Anim.showOverlay(binding.viewChannelList.channelListContainer)
+        updatePlaybackErrorFocus()
         updateChannelListAdapter()
         focusCurrentChannel()
     }
 
     private fun focusCurrentChannel() {
-        val adapter = binding.viewChannelList.rvChannels.adapter as ChannelListAdapter
-        focusChannel(channels.getOrNull(currentIndex)?.let { adapter.indexOfId(it.stableId) }?.coerceAtLeast(0) ?: 0)
+        channelNavigation.restore(channels.getOrNull(currentIndex)?.stableId)
     }
     private fun focusChannel(position: Int) {
-        val list = binding.viewChannelList.rvChannels
-        if (list.adapter!!.itemCount == 0) { binding.viewChannelList.etChannelSearch.requestFocus(); return }
-        val target = position.coerceIn(0, list.adapter!!.itemCount - 1)
-        val holder = list.findViewHolderForAdapterPosition(target)
-        if (holder == null) { binding.root.requestFocus(); (list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(target, 0) }
-        else if (isTvMode) holder.itemView.requestFocusFromTouch() else holder.itemView.requestFocus()
-        list.doOnNextLayout {
-            if (binding.viewChannelList.root.visibility == View.VISIBLE) {
-                val view = list.findViewHolderForAdapterPosition(target)?.itemView
-                if (isTvMode) view?.requestFocusFromTouch() else view?.requestFocus()
-            }
-        }
-        list.requestLayout()
+        channelNavigation.focus(position)
     }
     private fun toggleFavourite(channel: Channel) {
         val list = binding.viewChannelList.rvChannels
@@ -483,64 +574,97 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         notice(getString(if (added) R.string.favourite_added else R.string.favourite_removed))
     }
 
+    private fun selectChannel(channel: Channel) {
+        val index = channels.indexOf(channel)
+        if (index < 0) return
+        pendingIndex = index
+        executeZap()
+        closeChannelListOverlay()
+    }
+
     private fun closeChannelListOverlay() {
+        cancelRowConfirm()
+        channelNavigation.cancel()
         Anim.hideOverlay(binding.viewChannelList.channelListContainer)
         binding.root.requestFocus()
+        updatePlaybackErrorFocus()
         binding.btnQuickSettings.visibility = if (isTvMode) View.GONE else View.VISIBLE
     }
 
     private fun setupSettingsMenu() {
+        binding.btnSettingsCrt.isChecked = prefs.isCrtSoundEnabled()
+        binding.btnSettingsCrt.setOnCheckedChangeListener { _, checked -> if (checked != prefs.isCrtSoundEnabled()) crtSound.setEnabled(checked) }
         binding.btnQuickSettings.setOnClickListener { toggleSettingsMenu() }
-        binding.btnSettingsMode.setOnClickListener {
-            val modes = arrayOf("Auto", "TV", "Phone")
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Interface mode")
-                .setSingleChoiceItems(modes, modes.indexOf(prefs.getInterfaceMode())) { dialog, which ->
-                    prefs.setInterfaceMode(modes[which])
-                    applyInterfaceMode()
-                    dialog.dismiss()
-                }.setNegativeButton("Cancel", null).show()
+        settingsPanel.onClick(binding.btnSettingsClose) { if (!languageGate) closeSettingsMenu() }
+        settingsPanel.onClick(binding.btnSettingsMode) {
+            val modes = listOf("Auto", "TV", "Phone")
+            settingsPanel.choices("mode", R.string.interface_mode,
+                listOf(getString(R.string.automatic), "TV", getString(R.string.touch_mode)), modes.indexOf(prefs.getInterfaceMode())) { which ->
+                prefs.setInterfaceMode(modes[which]); applyInterfaceMode(); settingsPanel.back()
+            }
         }
-        binding.btnSettingsClose.setOnClickListener {
-            closeSettingsMenu()
+        settingsPanel.onClick(binding.btnSettingsReimport) { playlistMenus.show() }
+        settingsPanel.onClick(binding.btnSettingsAspect) {
+            settingsPanel.choices("aspect", R.string.choose_aspect,
+                listOf(getString(R.string.aspect_fit), getString(R.string.aspect_fill), "16:9", "4:3"), currentAspectIndex) { which ->
+                currentAspectIndex = which; prefs.setAspectRatioMode(aspectRatios[which])
+                playerController?.setAspectRatioMode(aspectRatios[which]); updateAspectLabel(); settingsPanel.back()
+            }
         }
-
-        binding.btnSettingsReimport.setOnClickListener {
-            playlistMenus.show()
-        }
-
-        binding.btnSettingsAspect.setOnClickListener {
-            val labels = arrayOf(getString(R.string.aspect_fit), getString(R.string.aspect_fill), "16:9", "4:3")
-            AlertDialog.Builder(this).setTitle(R.string.choose_aspect).setSingleChoiceItems(labels, currentAspectIndex) { dialog, which ->
-                currentAspectIndex = which; prefs.setAspectRatioMode(aspectRatios[which]); playerController?.setAspectRatioMode(aspectRatios[which]); updateAspectLabel(); dialog.dismiss()
-            }.setNegativeButton(R.string.cancel, null).show()
-        }
-
-        binding.btnSettingsExit.setOnClickListener {
-            hardExit()
-        }
-        binding.btnSettingsTracks.setOnClickListener {
-            AlertDialog.Builder(this).setTitle(R.string.audio_subtitles).setItems(arrayOf(getString(R.string.audio), getString(R.string.subtitles))) { _, which ->
+        settingsPanel.onClick(binding.btnSettingsExit) { hardExit() }
+        settingsPanel.onClick(binding.btnSettingsTracks) {
+            settingsPanel.choices("tracks", R.string.audio_subtitles, listOf(getString(R.string.audio), getString(R.string.subtitles))) { which ->
                 chooseTrack(if (which == 0) C.TRACK_TYPE_AUDIO else C.TRACK_TYPE_TEXT)
-            }.setNegativeButton(R.string.cancel, null).show()
+            }
         }
-        binding.btnSettingsSleep.setOnClickListener {
+        settingsPanel.onClick(binding.btnSettingsSleep) {
             val times = intArrayOf(0, 15, 30, 60, 90)
-            val labels = times.map { if (it == 0) getString(R.string.off) else "$it min" }.toTypedArray()
-            AlertDialog.Builder(this).setTitle(R.string.sleep_timer).setItems(labels) { _, index ->
-                sleepHandler.removeCallbacks(sleepRunnable); sleepExpired = false
-                val minutes = times[index]
-                if (minutes > 0) sleepHandler.postDelayed(sleepRunnable, minutes * 60000L)
-                binding.tvSettingsSleepValue.text = if (minutes == 0) getString(R.string.off) else "$minutes min"
-                notice(getString(if (minutes == 0) R.string.timer_off else R.string.timer_minutes, minutes))
-            }.setNegativeButton(R.string.cancel, null).show()
+            settingsPanel.choices("sleep", R.string.sleep_timer,
+                times.map { if (it == 0) getString(R.string.off) else getString(R.string.minutes, it) }, times.indexOf(sleepMinutes)) { index ->
+                sleepHandler.removeCallbacks(sleepRunnable); sleepExpired = false; sleepMinutes = times[index]
+                if (sleepMinutes > 0) sleepHandler.postDelayed(sleepRunnable, sleepMinutes * 60000L)
+                updateSleepLabel(); notice(getString(if (sleepMinutes == 0) R.string.timer_off else R.string.timer_minutes, sleepMinutes))
+                settingsPanel.back()
+            }
         }
-        binding.btnSettingsGuide.setOnClickListener { guideMenu() }
-        binding.btnSettingsUpdate.setOnClickListener { updateMenu.show() }
-        binding.btnSettingsLogs.setOnClickListener { diagnosticMenu.show(repository.source()?.kind, channels.size) }
-        binding.btnSettingsAbout.setOnClickListener {
-            AlertDialog.Builder(this).setTitle(R.string.about).setMessage(R.string.about_body).setPositiveButton(android.R.string.ok, null).show()
+        settingsPanel.onClick(binding.btnSettingsLanguage) { languageMenu() }
+        settingsPanel.onClick(binding.btnSettingsGuide) { guideMenu() }
+        settingsPanel.onClick(binding.btnSettingsUpdate) { updateMenu.show() }
+        settingsPanel.onClick(binding.btnSettingsLogs) { diagnosticMenu.show(repository.source()?.kind, channels.size) }
+        settingsPanel.onClick(binding.btnSettingsAbout) {
+            settingsPanel.page("about", R.string.about) { body ->
+                settingsPanel.text(body, getString(R.string.about_body))
+                val version = packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
+                settingsPanel.text(body, getString(R.string.version_label, androidx.core.text.BidiFormatter.getInstance(prefs.getLanguage() == "fa").unicodeWrap(version, false)))
+                settingsPanel.button(body, getString(R.string.github)) {
+                    runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/saeedt20/CouchZap"))) }
+                        .onFailure { notice(getString(R.string.update_failed)) }
+                }
+            }
         }
+    }
+
+    private var guideJob: kotlinx.coroutines.Job? = null
+    private var guideMessage: Pair<Int, Int>? = null
+    private var renderGuide: (() -> Unit)? = null
+    private var sleepMinutes = 0
+    private fun updateSleepLabel() { binding.tvSettingsSleepValue.text = if (sleepMinutes == 0) getString(R.string.off) else getString(R.string.minutes, sleepMinutes) }
+    private fun languageMenu() {
+        welcomeIntro.finish(); Anim.finishAll(binding.root)
+        settingsPanel.choices("language", if (languageGate) R.string.choose_language else R.string.language,
+            listOf("فارسی", "English"), listOf("fa", "en").indexOf(prefs.getLanguage())) { which ->
+            val language = if (which == 0) "fa" else "en"
+            prefs.setLanguage(language)
+            AppLanguage.apply(this, binding.root, language)
+            AppLanguage.translate(this, binding.settingsRootScroll)
+            settingsPanel.back(); settingsPanel.header()
+            applyInterfaceMode(); updateAspectLabel(); updateSleepLabel(); updateSourceLabel()
+            binding.viewChannelList.rvChannels.adapter?.notifyDataSetChanged()
+            playerController?.refreshPlaybackInfo()
+            osdController.refresh()
+            if (languageGate) { languageGate = false; binding.btnSettingsClose.visibility = View.VISIBLE; importScreen.show(); closeSettingsMenu(); welcomeIntro.start() }
+        }
+        if (languageGate) { binding.settingsBack.visibility = View.GONE; binding.btnSettingsClose.visibility = View.GONE }
     }
 
     private fun cycleAspectRatio() {
@@ -564,30 +688,48 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         binding.btnSettingsAspect.contentDescription = getString(R.string.settings_aspect, modeName)
     }
 
+    private fun openWelcomeFlow(origin: View, action: () -> Unit) {
+        if (languageGate) return
+        welcomeFlowOrigin = origin
+        if (binding.layoutSettings.visibility != View.VISIBLE) toggleSettingsMenu()
+        action()
+    }
+
     private fun toggleSettingsMenu() {
         if (binding.layoutSettings.visibility == View.VISIBLE) {
             closeSettingsMenu()
         } else {
             closeChannelListOverlay()
             osdController.hideOsd()
-            binding.layoutSettings.visibility = View.VISIBLE
+            Anim.showOverlay(binding.layoutSettings)
+            updatePlaybackErrorFocus()
             binding.layoutSettings.bringToFront()
             binding.viewImport.root.descendantFocusability = android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS
             binding.layoutFileBrowser.descendantFocusability = android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS
             binding.btnQuickSettings.visibility = View.GONE
-            val source = repository.source()
-            binding.tvSettingsSource.text = if (source == null) getString(R.string.playlist_not_added) else source.label + "\n" +
-                getString(R.string.source_updated, DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(repository.updatedAt())))
-            if (isTvMode) binding.btnSettingsAspect.requestFocusFromTouch() else binding.btnSettingsAspect.requestFocus()
+            updateSourceLabel()
+            settingsPanel.header(); settingsPanel.focusFirst()
         }
     }
 
+    private fun updateSourceLabel() {
+        val source = repository.source()
+        val label = source?.label?.let { androidx.core.text.BidiFormatter.getInstance(prefs.getLanguage() == "fa").unicodeWrap(it) }
+        binding.tvSettingsSource.text = if (source == null) getString(R.string.playlist_not_added) else label + "\n" +
+            getString(R.string.source_updated, DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(repository.updatedAt())))
+    }
+
     private fun closeSettingsMenu() {
-        binding.layoutSettings.visibility = View.GONE
+        if (importCommitting) { notice(getString(R.string.finishing_import)); return }
+        val origin = welcomeFlowOrigin
+        welcomeFlowOrigin = null
+        settingsPanel.reset()
+        Anim.hideOverlay(binding.layoutSettings)
         binding.viewImport.root.descendantFocusability = android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS
         binding.layoutFileBrowser.descendantFocusability = android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS
-        if (importScreen.isVisible()) binding.viewImport.btnImport.requestFocus()
+        if (importScreen.isVisible()) (origin ?: binding.viewImport.btnImport).requestFocusFromTouch()
         binding.btnQuickSettings.visibility = if (isTvMode) View.GONE else View.VISIBLE
+        updatePlaybackErrorFocus()
     }
 
     private fun setupGesturesAndTouch() {
@@ -669,6 +811,11 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         }
     }
 
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN && ::welcomeIntro.isInitialized) welcomeIntro.finish()
+        return super.dispatchTouchEvent(event)
+    }
+
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (event != null && ::gestureDetector.isInitialized && gestureDetector.onTouchEvent(event)) {
             return true
@@ -677,8 +824,8 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN && ::welcomeIntro.isInitialized) welcomeIntro.finish()
         val key = event.keyCode
-        if (key == wrappedKey && event.action == KeyEvent.ACTION_UP) { wrappedKey = KeyEvent.KEYCODE_UNKNOWN; return true }
         // A press that opens the menu must not release onto a newly focused row.
         if (Keys.isConfirmKey(key) && consumeConfirmRelease) {
             if (event.action == KeyEvent.ACTION_UP) {
@@ -690,26 +837,41 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             consumeConfirmRelease = false
         }
         if (Keys.isBackKey(key)) {
+            cancelRowConfirm()
             if (event.action == KeyEvent.ACTION_UP) handleBack()
             return true
         }
         if (Keys.isMenuKey(key) && !importInProgress) {
-            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) toggleSettingsMenu()
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !languageGate) toggleSettingsMenu()
             return true
         }
-        if (binding.viewChannelList.root.visibility == View.VISIBLE && key in listOf(KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN)) {
+        if (binding.viewChannelList.root.visibility == View.VISIBLE) {
             val list = binding.viewChannelList.rvChannels
-            val row = list.findFocus()?.let { list.findContainingItemView(it) }
-            val index = row?.let { list.getChildAdapterPosition(it) } ?: -1
-            val count = list.adapter!!.itemCount
-            val wraps = count > 0 && ((key == KeyEvent.KEYCODE_DPAD_UP && index == 0) || (key == KeyEvent.KEYCODE_DPAD_DOWN && index == count - 1))
-            if (wraps && event.action == KeyEvent.ACTION_DOWN) { wrappedKey = key; focusChannel(if (key == KeyEvent.KEYCODE_DPAD_UP) count - 1 else 0); return true }
-        }
-        if (binding.viewChannelList.root.visibility == View.VISIBLE && key == KeyEvent.KEYCODE_DPAD_LEFT && binding.viewChannelList.rvChannels.hasFocus()) {
-            if (event.action == KeyEvent.ACTION_DOWN) {
-                val filter = when { favouritesOnly -> binding.viewChannelList.btnFilterFavourites; selectedGroup != null -> binding.viewChannelList.btnFilterGroups; else -> binding.viewChannelList.btnFilterAll }
-                filter.requestFocusFromTouch()
+            if (Keys.isConfirmKey(key) && (list.hasFocus() || channelNavigation.hasPending || confirmChannelId != null)) {
+                handleRowConfirm(event)
+                return true
             }
+            if (key == KeyEvent.KEYCODE_DPAD_UP || key == KeyEvent.KEYCODE_DPAD_DOWN) {
+                if (list.hasFocus() || channelNavigation.hasPending || !binding.viewChannelList.root.hasFocus()) {
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        if (!binding.viewChannelList.root.hasFocus()) recordFocusState("focus_recovered", "channels")
+                        cancelRowConfirm()
+                        channelNavigation.move(if (key == KeyEvent.KEYCODE_DPAD_UP) -1 else 1)
+                    }
+                    return true
+                }
+            }
+            if (key == (if (binding.root.layoutDirection == View.LAYOUT_DIRECTION_RTL) KeyEvent.KEYCODE_DPAD_RIGHT else KeyEvent.KEYCODE_DPAD_LEFT) && (list.hasFocus() || channelNavigation.hasPending)) {
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    cancelRowConfirm()
+                    channelNavigation.cancel()
+                    val filter = when { favouritesOnly -> binding.viewChannelList.btnFilterFavourites; selectedGroup != null -> binding.viewChannelList.btnFilterGroups; else -> binding.viewChannelList.btnFilterAll }
+                    if (isTvMode) filter.requestFocusFromTouch() else filter.requestFocus()
+                }
+                return true
+            }
+            if (dispatchPanelDirection(binding.viewChannelList.root, event)) return true
+        } else if (binding.layoutSettings.visibility == View.VISIBLE && dispatchPanelDirection(binding.layoutSettings, event)) {
             return true
         }
         val overlay = importScreen.isVisible() || fileBrowser.isVisible() ||
@@ -751,10 +913,79 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         return true
     }
 
+    private fun cancelRowConfirm() {
+        handler.removeCallbacks(longConfirm)
+        confirmChannelId = null
+        confirmLongHandled = false
+    }
+
+    private fun handleRowConfirm(event: KeyEvent) {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            if (event.repeatCount == 0) {
+                cancelRowConfirm()
+                confirmChannelId = channelNavigation.targetChannel()?.stableId
+                if (confirmChannelId != null) handler.postDelayed(longConfirm, ViewConfiguration.getLongPressTimeout().toLong())
+            } else if (event.isLongPress && !confirmLongHandled) longConfirm.run()
+        } else if (event.action == KeyEvent.ACTION_UP) {
+            val channel = channelNavigation.targetChannel()
+            val select = !event.isCanceled && !confirmLongHandled && confirmChannelId != null && channel?.stableId == confirmChannelId
+            cancelRowConfirm()
+            if (select && channel != null) selectChannel(channel)
+        }
+    }
+
+    /** Search only inside the active panel; global traversal can reach background controls. */
+    private fun dispatchPanelDirection(panel: ViewGroup, event: KeyEvent): Boolean {
+        val direction = when (event.keyCode) {
+            KeyEvent.KEYCODE_DPAD_UP -> View.FOCUS_UP
+            KeyEvent.KEYCODE_DPAD_DOWN -> View.FOCUS_DOWN
+            KeyEvent.KEYCODE_DPAD_LEFT -> View.FOCUS_LEFT
+            KeyEvent.KEYCODE_DPAD_RIGHT -> View.FOCUS_RIGHT
+            else -> return false
+        }
+        if (currentFocus is android.widget.EditText && direction in listOf(View.FOCUS_LEFT, View.FOCUS_RIGHT)) return false
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            cancelRowConfirm()
+            val focused = currentFocus?.takeIf { isWithin(it, panel) }
+            if (focused == null) recordFocusState("focus_recovered", if (panel === binding.viewChannelList.root) "channels" else "settings")
+            val next = FocusFinder.getInstance().findNextFocus(panel, focused, direction)
+            if (panel === binding.viewChannelList.root) channelNavigation.cancel()
+            if (next != null) {
+                if (isTvMode) next.requestFocusFromTouch() else next.requestFocus()
+            } else if (focused == null) {
+                if (panel === binding.viewChannelList.root) focusCurrentChannel()
+                else settingsPanel.focusFirst()
+            }
+        }
+        return true
+    }
+
+    private fun isWithin(view: View, parent: ViewGroup): Boolean {
+        var node: android.view.ViewParent? = view.parent
+        while (node != null) { if (node === parent) return true; node = node.parent }
+        return view === parent
+    }
+
+    private fun updatePlaybackErrorFocus() {
+        val covered = binding.viewChannelList.root.visibility == View.VISIBLE || binding.layoutSettings.visibility == View.VISIBLE ||
+            importScreen.isVisible() || fileBrowser.isVisible()
+        binding.layoutPlaybackError.descendantFocusability = if (covered) ViewGroup.FOCUS_BLOCK_DESCENDANTS else ViewGroup.FOCUS_AFTER_DESCENDANTS
+        binding.btnRetry.isFocusable = !covered
+        binding.btnErrorNext.isFocusable = !covered
+        binding.btnRetry.isEnabled = !covered
+        binding.btnErrorNext.isEnabled = !covered
+        if (!covered && binding.layoutPlaybackError.visibility == View.VISIBLE && !osdController.isVisible()) binding.btnRetry.requestFocus()
+    }
+
+    private fun recordFocusState(event: String, panel: String) {
+        // Only fixed tags, numeric view/row positions and an enum: no channel names, IDs or URLs.
+        DiagnosticLog.record("$event:p:$panel:f:${currentFocus?.id ?: 0}:r:${channelNavigation.focusedPosition()}:s:${playbackStatus.name.lowercase(java.util.Locale.ROOT)}")
+    }
+
     private fun handleBack() {
         when {
-            importInProgress -> Toast.makeText(this, "Finishing playlist import…", Toast.LENGTH_SHORT).show()
-            binding.layoutSettings.visibility == View.VISIBLE -> closeSettingsMenu()
+            binding.layoutSettings.visibility == View.VISIBLE -> { if (importCommitting) notice(getString(R.string.finishing_import)) else if (fileBrowser.isVisible()) fileBrowser.handleBack() else if (languageGate) notice(getString(R.string.language_required)) else if (!settingsPanel.back()) closeSettingsMenu() }
+            importInProgress -> Toast.makeText(this, getString(R.string.finishing_import), Toast.LENGTH_SHORT).show()
             fileBrowser.isVisible() -> fileBrowser.handleBack()
             numberEntryController.isTyping() -> numberEntryController.cancel()
             binding.viewChannelList.channelListContainer.visibility == View.VISIBLE -> closeChannelListOverlay()
@@ -778,7 +1009,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             !packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)
         isTvMode = mode == "TV" || (mode == "Auto" && detectedTv)
         requestedOrientation = if (isTvMode) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        binding.tvSettingsModeValue.text = "$mode (${if (isTvMode) "TV" else "Phone"})"
+        binding.tvSettingsModeValue.text = getString(R.string.interface_label, when (mode) { "Auto" -> getString(R.string.automatic); "Phone" -> getString(R.string.touch_mode); else -> "TV" })
         binding.btnQuickSettings.visibility = if (isTvMode) View.GONE else View.VISIBLE
         updateResponsiveLayout()
     }
@@ -792,32 +1023,37 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         val tvVerticalInset = if (isTvMode) (height * 0.05f).toInt() else 0
         val portrait = !isTvMode && resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
         binding.viewChannelList.root.layoutParams = (binding.viewChannelList.root.layoutParams as FrameLayout.LayoutParams).apply {
-            this.width = if (portrait) FrameLayout.LayoutParams.MATCH_PARENT else minOf(dp(420), width)
+            this.width = if (portrait) FrameLayout.LayoutParams.MATCH_PARENT else minOf(resources.getDimensionPixelSize(R.dimen.sidebar_width), width)
             gravity = Gravity.LEFT
             setMargins(0, 0, 0, 0)
         }
-        binding.viewChannelList.root.setPadding(maxOf(dp(20), tvHorizontalInset), maxOf(dp(20), tvVerticalInset), dp(20), maxOf(dp(20), tvVerticalInset))
+        binding.viewChannelList.root.setPadding(maxOf(dp(24), tvHorizontalInset), maxOf(dp(24), tvVerticalInset), dp(24), maxOf(dp(24), tvVerticalInset))
         binding.viewOsd.root.layoutParams = (binding.viewOsd.root.layoutParams as FrameLayout.LayoutParams).apply {
-            this.width = minOf(dp(400), width - dp(if (isTvMode) 48 else 16))
+            this.width = minOf(resources.getDimensionPixelSize(R.dimen.sidebar_width), width - 2 * maxOf(dp(8), tvHorizontalInset))
             gravity = if (portrait) Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL else Gravity.TOP or Gravity.START
-            setMargins(dp(if (isTvMode) 24 else 8), dp(8), dp(8), dp(16))
+            setMargins(maxOf(dp(8), tvHorizontalInset), maxOf(dp(8), tvVerticalInset), maxOf(dp(8), tvHorizontalInset), maxOf(dp(16), tvVerticalInset))
         }
         binding.layoutSettings.layoutParams = (binding.layoutSettings.layoutParams as FrameLayout.LayoutParams).apply {
-            this.width = minOf(dp(360), width)
+            this.width = if (portrait) FrameLayout.LayoutParams.MATCH_PARENT else minOf(resources.getDimensionPixelSize(R.dimen.sidebar_width), width)
             this.height = FrameLayout.LayoutParams.MATCH_PARENT
             gravity = Gravity.LEFT
             setMargins(0, 0, 0, 0)
         }
         binding.layoutSettings.setPadding(maxOf(dp(24), tvHorizontalInset), maxOf(dp(24), tvVerticalInset), dp(24), maxOf(dp(24), tvVerticalInset))
-        binding.viewImport.importContent.layoutParams = binding.viewImport.importContent.layoutParams.apply { this.width = minOf(dp(620), width - dp(48)) }
-        binding.viewImport.tvImportTitle.textSize = if (isTvMode) 38f else 27f
-        binding.viewImport.tvImportRemote.visibility = if (isTvMode) View.VISIBLE else View.GONE
-        binding.viewImport.tvImportTitle.gravity = Gravity.CENTER
-        binding.viewImport.tvImportHint.gravity = Gravity.CENTER
+        if (::importScreen.isInitialized) importScreen.updateLayout(isTvMode)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        if (::binding.isInitialized && ::prefs.isInitialized) {
+            welcomeIntro.finish(); Anim.finishAll(binding.root)
+            AppLanguage.apply(this, binding.root, prefs.getLanguage() ?: "en")
+            AppLanguage.translate(this, binding.settingsRootScroll)
+            updateAspectLabel(); updateSleepLabel(); updateSourceLabel()
+            settingsPanel.header()
+            if (languageGate) { binding.settingsBack.visibility = View.GONE; binding.btnSettingsClose.visibility = View.GONE }
+            playerController?.refreshPlaybackInfo(); osdController.refresh()
+        }
         updateResponsiveLayout()
         setupFullscreen()
     }
@@ -839,7 +1075,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         if (targetIndex != -1) {
             pendingIndex = targetIndex
             executeZap()
-        }
+        } else notice(getString(R.string.no_channel_number, channelNum.toString()))
     }
 
     private fun scheduleDebouncedZap() {
@@ -858,12 +1094,14 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private fun executeZap() {
         handler.removeCallbacks(zapRunnable)
         if (channels.isEmpty()) return
-        if (currentIndex != pendingIndex) previousWatchedId = channels.getOrNull(currentIndex)?.stableId
+        val priorChannel = channels.getOrNull(currentIndex)
+        if (currentIndex != pendingIndex) previousWatchedId = priorChannel?.stableId
         currentIndex = pendingIndex
         sleepExpired = false
         binding.layoutPlaybackError.visibility = View.GONE
         val channel = channels[currentIndex]
-
+        crtSound.committed(priorChannel, channel)
+        playbackStatus = ChannelPlaybackStatus.CONNECTING
         updateChannelListAdapter()
 
         playerController?.stop()
@@ -879,14 +1117,19 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun playCurrentChannel() {
         if (channels.isEmpty()) return
+        playbackStatus = ChannelPlaybackStatus.CONNECTING
+        (binding.viewChannelList.rvChannels.adapter as ChannelListAdapter).updatePlayback(channels[currentIndex].stableId, playbackStatus)
         if (playerController == null) {
             playerController = PlayerController(this, binding.surfaceView, binding.videoFrame, this, binding.subtitleView)
             playerController?.setAspectRatioMode(prefs.getAspectRatioMode())
         }
         binding.layoutPlaybackError.visibility = View.GONE
+        updatePlaybackErrorFocus()
         val channel = channels[currentIndex]
         playerController?.playChannel(channel)
-        osdController.showOsd(channel, autoHideMs = 5000L)
+        if (binding.viewChannelList.root.visibility != View.VISIBLE && binding.layoutSettings.visibility != View.VISIBLE) {
+            osdController.showOsd(channel, autoHideMs = 5000L)
+        }
     }
 
     // PlayerEventListener Callbacks
@@ -911,10 +1154,23 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     }
 
     override fun onChannelFailed(channel: Channel) {
+        if (channel.stableId != channels.getOrNull(currentIndex)?.stableId || channel.url != channels.getOrNull(currentIndex)?.url) return
+        onChannelPlaybackChanged(channel, ChannelPlaybackStatus.UNAVAILABLE)
+        recordFocusState("playback_failed", when {
+            binding.viewChannelList.root.visibility == View.VISIBLE -> "channels"
+            binding.layoutSettings.visibility == View.VISIBLE -> "settings"
+            else -> "playback"
+        })
         Anim.fadeOutShutter(binding.vShutter)
         osdController.hideOsd()
         binding.layoutPlaybackError.visibility = View.VISIBLE
-        if (binding.viewChannelList.root.visibility != View.VISIBLE && binding.layoutSettings.visibility != View.VISIBLE) binding.btnRetry.requestFocus()
+        updatePlaybackErrorFocus()
+    }
+
+    override fun onChannelPlaybackChanged(channel: Channel, status: ChannelPlaybackStatus) {
+        if (channel.stableId != channels.getOrNull(currentIndex)?.stableId || channel.url != channels.getOrNull(currentIndex)?.url) return
+        playbackStatus = status
+        (binding.viewChannelList.rvChannels.adapter as? ChannelListAdapter)?.updatePlayback(channel.stableId, status)
     }
 
     override fun onPlaybackInfo(playWhenReady: Boolean, isLive: Boolean, status: String) {
@@ -929,37 +1185,59 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         if (index >= 0) { pendingIndex = index; executeZap() } else notice(getString(R.string.no_previous))
     }
     private fun chooseTrack(type: Int) {
-        val player = playerController ?: return
-        val tracks = player.choices(type)
+        val player = playerController
+        val tracks = player?.choices(type).orEmpty()
+        val title = if (type == C.TRACK_TYPE_AUDIO) R.string.audio else R.string.subtitles
         if (tracks.isEmpty() || (type == C.TRACK_TYPE_AUDIO && tracks.size < 2)) {
-            notice(getString(if (type == C.TRACK_TYPE_AUDIO) R.string.no_audio_choice else R.string.no_subtitle_choice)); return
+            settingsPanel.page("track-$type", title) { settingsPanel.text(it, getString(if (type == C.TRACK_TYPE_AUDIO) R.string.no_audio_choice else R.string.no_subtitle_choice)) }; return
         }
-        val labels = arrayOf(getString(if (type == C.TRACK_TYPE_TEXT) R.string.off else R.string.automatic)) + tracks.map { it.label }
-        AlertDialog.Builder(this).setTitle(if (type == C.TRACK_TYPE_AUDIO) R.string.audio else R.string.subtitles).setItems(labels) { _, which ->
-            player.selectTrack(type, tracks.getOrNull(which - 1), type == C.TRACK_TYPE_TEXT && which == 0)
-        }.setNegativeButton(R.string.cancel, null).show()
+        val labels = listOf(getString(if (type == C.TRACK_TYPE_TEXT) R.string.off else R.string.automatic)) + tracks.map { it.label }
+        settingsPanel.choices("track-$type", title, labels) { which ->
+            player?.selectTrack(type, tracks.getOrNull(which - 1), type == C.TRACK_TYPE_TEXT && which == 0); settingsPanel.back()
+        }
     }
     private fun guideMenu() {
-        val labels = arrayOf(getString(R.string.guide_link), getString(R.string.guide_file), getString(R.string.guide_refresh), getString(R.string.guide_clear))
-        AlertDialog.Builder(this).setTitle(R.string.programme_guide).setItems(labels) { _, which -> when (which) {
-            0 -> playlistMenus.link(R.string.guide_link) { url -> importGuide(url) { HttpStreams.open(url) } }
-            1 -> { closeSettingsMenu(); launchImportPicker(true) }
-            2 -> (epg.sourceUrl() ?: repository.playlistEpgUrl())?.let { url -> importGuide(url) {
-                if (HttpStreams.validUrl(url)) HttpStreams.open(url) else contentResolver.openInputStream(Uri.parse(url)) ?: error("Could not read guide")
-            } } ?: notice(getString(R.string.guide_not_added))
-            3 -> { epg.clear(); osdController.refresh(); notice(getString(R.string.guide_not_added)) }
-        } }.setNegativeButton(R.string.cancel, null).show()
+        settingsPanel.page("guide", R.string.programme_guide, leave = { renderGuide = null }) { body ->
+            val status = settingsPanel.text(body, "")
+            renderGuide = {
+                val message = guideMessage?.let { (id, count) -> getString(id, count) }
+                    ?: getString(R.string.guide_status, getString(if (epg.sourceUrl() == null) R.string.guide_not_added else R.string.guide_added))
+                status.text = message
+            }
+            renderGuide?.invoke()
+            if (repository.playlistEpgUrls().isNotEmpty()) settingsPanel.button(body, getString(R.string.guide_playlist_sources)) { choosePlaylistGuide() }
+            settingsPanel.button(body, getString(R.string.guide_link)) { playlistMenus.link(R.string.guide_link) { url -> importGuide(url) { HttpStreams.open(url) } } }
+            settingsPanel.button(body, getString(R.string.guide_file)) { launchImportPicker(true) }
+            settingsPanel.button(body, getString(R.string.guide_refresh)) {
+                if (epg.sourceUrl() == null && repository.playlistEpgUrls().size > 1) choosePlaylistGuide()
+                else (epg.sourceUrl() ?: repository.playlistEpgUrl())?.let { url -> importGuide(url) {
+                    if (HttpStreams.validUrl(url)) HttpStreams.open(url) else contentResolver.openInputStream(Uri.parse(url)) ?: error("Could not read guide")
+                } } ?: notice(getString(R.string.guide_not_added))
+            }
+            settingsPanel.button(body, getString(R.string.guide_clear)) { if (guideJob?.isActive != true) { epg.clear(); guideMessage = null; osdController.refresh(); renderGuide?.invoke() } }
+        }
+    }
+    private fun choosePlaylistGuide() {
+        val urls = repository.playlistEpgUrls()
+        settingsPanel.choices("playlist-guides", R.string.guide_playlist_sources, urls.mapIndexed { i, url ->
+            getString(R.string.guide_source_number, i + 1) + " · " + runCatching { java.net.URI(url).host }.getOrDefault("")
+        }) { index -> val url = urls[index]; importGuide(url) {
+            if (HttpStreams.validUrl(url)) HttpStreams.open(url) else contentResolver.openInputStream(Uri.parse(url)) ?: error("Could not read guide")
+        } }
     }
     private fun importGuide(url: String? = null, open: () -> InputStream) {
         val ids = channels.mapNotNull { it.tvgId }.toSet()
         if (ids.isEmpty()) { notice(getString(R.string.guide_need_ids)); return }
+        if (guideJob?.isActive == true) return
+        guideMessage = R.string.guide_loading to 0; renderGuide?.invoke()
         notice(getString(R.string.guide_loading))
-        lifecycleScope.launch {
+        guideJob = lifecycleScope.launch {
             try {
                 val count = withContext(Dispatchers.IO) { epg.import(open(), ids, url) }
+                guideMessage = R.string.guide_loaded to count; renderGuide?.invoke()
                 osdController.refresh(); notice(getString(R.string.guide_loaded, count))
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (error: Exception) { DiagnosticLog.record("guide_import_failed", error); notice(getString(R.string.guide_failed)) }
+            catch (error: Exception) { guideMessage = R.string.guide_failed to 0; renderGuide?.invoke(); DiagnosticLog.record("guide_import_failed", error); notice(getString(R.string.guide_failed)) }
         }
     }
     private fun showImportError(error: Exception) {
@@ -971,14 +1249,30 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             else -> R.string.import_error_other
         }
         val message = getString(reason) + if (channels.isNotEmpty()) "\n\n" + getString(R.string.list_preserved) else ""
-        AlertDialog.Builder(this).setTitle(R.string.import_error_title).setMessage(message)
-            .setPositiveButton(R.string.diagnostic_log) { _, _ -> diagnosticMenu.show(repository.source()?.kind, channels.size) }
-            .setNegativeButton(android.R.string.ok, null).show()
+        if (binding.layoutSettings.visibility != View.VISIBLE) toggleSettingsMenu()
+        settingsPanel.page("import-error", R.string.import_error_title) { body ->
+            settingsPanel.text(body, message)
+            settingsPanel.button(body, getString(R.string.diagnostic_log)) { diagnosticMenu.show(repository.source()?.kind, channels.size) }
+            settingsPanel.button(body, getString(R.string.back)) { settingsPanel.back() }
+        }
     }
 
     override fun onResume() {
         super.onResume()
         if (::updateMenu.isInitialized) updateMenu.onResume()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (!::channelNavigation.isInitialized) return
+        if (!hasFocus) {
+            cancelRowConfirm()
+            channelNavigation.cancel()
+            return
+        }
+        if (binding.viewChannelList.root.visibility == View.VISIBLE &&
+            (binding.viewChannelList.rvChannels.hasFocus() || !binding.viewChannelList.root.hasFocus())) focusCurrentChannel()
+        else if (binding.layoutSettings.visibility == View.VISIBLE && !binding.layoutSettings.hasFocus()) settingsPanel.focusFirst()
     }
 
     private fun notice(message: String) { Toast.makeText(this, message, Toast.LENGTH_LONG).show() }
@@ -1007,11 +1301,13 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        welcomeIntro.finish(); crtSound.close(); Anim.finishAll(binding.root)
         playerController?.release()
         playerController = null
         osdController.destroy()
         numberEntryController.cancel()
         handler.removeCallbacksAndMessages(null)
+        if (::channelNavigation.isInitialized) channelNavigation.destroy()
         sleepHandler.removeCallbacksAndMessages(null)
     }
 }

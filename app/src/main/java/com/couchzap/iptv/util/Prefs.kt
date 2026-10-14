@@ -22,6 +22,18 @@ class Prefs(context: Context) {
         prefs.edit().putString("interface_mode", mode).apply()
     }
 
+    fun getLanguage(): String? = prefs.getString("language", null)?.takeIf { it == "fa" || it == "en" }
+
+    fun setLanguage(language: String) {
+        require(language == "fa" || language == "en")
+        prefs.edit().putString("language", language).apply()
+    }
+
+    fun hasSeenIntro(): Boolean = prefs.getBoolean("welcome_intro_seen", false)
+    fun markIntroSeen() { prefs.edit().putBoolean("welcome_intro_seen", true).apply() }
+    fun isCrtSoundEnabled(): Boolean = prefs.getBoolean("crt_sound", false)
+    fun setCrtSoundEnabled(value: Boolean) { prefs.edit().putBoolean("crt_sound", value).apply() }
+
     companion object {
         const val ASPECT_FIT = 0
         const val ASPECT_FILL = 1

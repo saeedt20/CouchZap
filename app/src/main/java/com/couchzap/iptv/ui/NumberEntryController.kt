@@ -84,7 +84,7 @@ class NumberEntryController(
     }
 
     private fun flashInvalidChannelMessage(number: Int) {
-        tvToastMsg.text = "No channel $number"
+        tvToastMsg.text = tvToastMsg.context.getString(com.couchzap.iptv.R.string.no_channel_number, number.toString())
         tvToastMsg.visibility = View.VISIBLE
         handler.removeCallbacks(hideToastRunnable)
         handler.postDelayed(hideToastRunnable, 1200L)

@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">CouchZap</string>
-    <string name="import_title">Take a seat. Start watching.</string>
+    <string name="import_title">Take a seat.\nStart watching.</string>
     <string name="import_hint">Add your playlist, or start with public channels.</string>
     <string name="btn_import_playlist">Import playlist</string>
     <string name="loading_channels">Loading channels… %d found</string>
@@ -20,7 +20,7 @@
     <string name="public_channels">Start with public channels</string>
     <string name="playlist_formats">M3U · M3U8 · TXT</string>
     <string name="no_playlist">Don’t have a playlist?</string>
-    <string name="public_credit">Public playlist by iptv-org</string>
+    <string name="public_credit">iptv-org · Free-TV</string>
     <string name="remote_hint">↑ ↓ Navigate   ·   OK Select</string>
     <string name="channels">Channels</string>
     <string name="settings">Settings</string>
@@ -34,6 +34,8 @@
     <string name="channel_count">%d channels</string>
     <string name="favourite_hint">Hold OK to favourite · Back to close</string>
     <string name="playing">Playing</string>
+    <string name="channel_unavailable_short">Unavailable</string>
+    <string name="playback_ended">Ended</string>
     <string name="paused">Paused</string>
     <string name="connecting">Connecting…</string>
     <string name="live">Live</string>
@@ -98,9 +100,9 @@
     <string name="favourite_removed">Removed from favourites</string>
     <string name="about_body">Your playlist. Your remote. Your couch.
 
-CouchZap 2.0.2 · Native Android TV and phone player.
+Native Android TV and phone player.
 
-Playlists, favourites and preferences stay on your device. Public playlists are provided by iptv-org; stream availability varies.</string>
+Playlists, favourites and preferences stay on your device. Public playlists are provided by iptv-org and Free-TV; stream availability varies.</string>
     <string name="pick_failure">No file picker installed. Enable a system Files app to import playlists.</string>
     <string name="check_updates">Check for updates</string>
     <string name="checking_updates">Checking the latest GitHub release…</string>
@@ -129,4 +131,52 @@ Playlists, favourites and preferences stay on your device. Public playlists are 
     <string name="import_error_network">The playlist server could not be reached. Check the connection, or share the diagnostic log.</string>
     <string name="import_error_other">The playlist could not be downloaded or read. Share the diagnostic log to help find the cause.</string>
     <string name="list_preserved">Your previous playlist is preserved.</string>
+    <string name="back">Back</string>
+    <string name="language">Language</string>
+    <string name="choose_language">Choose your language / زبان خود را انتخاب کنید</string>
+    <string name="copy_log">Copy log</string>
+    <string name="log_copy_done">Diagnostic log copied</string>
+    <string name="minutes">%d minutes</string>
+    <string name="touch_mode">Touch</string>
+    <string name="github">GitHub project</string>
+    <string name="loading_choices">Loading choices…</string>
+    <string name="search">Search</string>
+    <string name="catalog_failed">Could not load public choices. Try again, or choose all channels.</string>
+    <string name="playlist_link">Playlist link</string>
+    <string name="storage_permission">Storage permission required for file picker</string>
+    <string name="finishing_import">Finishing playlist import…</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="track_number">Track %d</string>
+    <string name="confirm_replace">Replace the current playlist? Your favourites will be kept.</string>
+    <string name="replace_playlist">Replace playlist</string>
+    <string name="guide_status">Programme guide: %s</string>
+    <string name="guide_added">Guide available</string>
+    <string name="version_label">Version %s</string>
+    <string name="video">Video</string>
+    <string name="audio_codec">Audio</string>
+    <string name="bitrate">Bitrate %s</string>
+    <string name="retry_update">Try again</string>
+    <string name="update_cancelled">Update cancelled</string>
+    <string name="catalog_empty">No matching choices</string>
+    <string name="system_picker">Choose a file using Android</string>
+    <string name="language_required">Choose فارسی or English to continue</string>
+    <string name="saved_playlist_failed">Could not read the saved playlist. Please import it again.</string>
+    <string name="playlist_file">Playlist file</string>
+    <string name="empty_files">%s — no playlist files. Press Back to go up.</string>
+    <string name="previous_channel">Previous channel</string>
+    <string name="choose_provider">Choose a public source</string>
+    <string name="iptv_org_description">A worldwide collection. Browse by country, language or category.</string>
+    <string name="free_tv_description">A curated collection. Browse its available countries and themed lists.</string>
+    <string name="public_support_note">Direct streams are supported. Links to video websites and DRM streams are skipped. Availability may vary by region.</string>
+    <string name="unsupported_skipped">%d entries needing a different player were skipped.</string>
+    <string name="own_playlist_help">Choose a file on your device, or enter your playlist link.</string>
+    <string name="import_file">Choose a playlist file</string>
+    <string name="welcome_eyebrow">YOUR NEXT CHANNEL STARTS HERE</string>
+    <string name="own_playlist_label">Already have a playlist?</string>
+    <string name="import_cancelled">Playlist import cancelled. Your previous list is preserved.</string>
+    <string name="guide_playlist_sources">Choose a guide from the playlist</string>
+    <string name="guide_source_number">Guide %d</string>
+    <string name="source_scope_note">Your selection is saved for refresh.</string>
+    <string name="crt_sound">Channel switch sound</string>
 </resources>

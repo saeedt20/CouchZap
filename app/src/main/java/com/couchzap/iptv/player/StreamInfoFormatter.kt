@@ -69,13 +69,13 @@ object StreamInfoFormatter {
         }
     }
 
-    fun buildStreamInfoString(videoFormat: Format?, audioFormat: Format?): String {
+    fun buildStreamInfoString(videoFormat: Format?, audioFormat: Format?, context: android.content.Context? = null): String {
         val parts = mutableListOf<String>()
 
         // 2. Video Codec
         if (videoFormat != null) {
             val vCodec = formatVideoCodec(videoFormat.sampleMimeType)
-            if (vCodec.isNotEmpty()) parts.add(vCodec)
+            if (vCodec.isNotEmpty()) parts.add(if (vCodec == "Video" && context != null) context.getString(com.couchzap.iptv.R.string.video) else vCodec)
 
             // 3. Resolution
             val res = formatResolution(videoFormat.width, videoFormat.height, videoFormat.frameRate)
@@ -85,13 +85,13 @@ object StreamInfoFormatter {
 
             // 5. Bitrate
             val bitrateStr = formatBitrate(videoFormat.bitrate)
-            if (bitrateStr.isNotEmpty()) parts.add("Bitrate $bitrateStr")
+            if (bitrateStr.isNotEmpty()) parts.add(context?.getString(com.couchzap.iptv.R.string.bitrate, bitrateStr) ?: "Bitrate $bitrateStr")
         }
 
         // 6. Audio Codec
         if (audioFormat != null) {
             val aCodec = formatAudioCodec(audioFormat.sampleMimeType)
-            if (aCodec.isNotEmpty()) parts.add(aCodec)
+            if (aCodec.isNotEmpty()) parts.add(if (aCodec == "Audio" && context != null) context.getString(com.couchzap.iptv.R.string.audio_codec) else aCodec)
         }
 
         return parts.joinToString("  •  ")

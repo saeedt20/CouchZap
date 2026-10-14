@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import androidx.media3.common.Format
@@ -39,7 +40,7 @@ class ScreenRenderTest {
             val first = activity.findViewById<Button>(R.id.btn_import)
             val second = activity.findViewById<Button>(R.id.btn_public)
             assertEquals(first.width, second.width)
-            assertTrue(first.width >= 500)
+            assertTrue(first.width >= 320)
             assertTrue(first.isFocused)
             val bounds = Rect(); second.getGlobalVisibleRect(bounds)
             assertEquals(second.height, bounds.height())
@@ -71,8 +72,90 @@ class ScreenRenderTest {
             save(activity, "info-details-tv", 960, 540)
         }
     }
-    private fun render(playlist: Boolean, phone: Boolean, block: (MainActivity) -> Unit) {
+    @Test fun `stage two English and Persian settings render from native Android views`() {
+        for (language in listOf("en", "fa")) render(false, false, language) { activity ->
+            press(activity, KeyEvent.KEYCODE_MENU)
+            save(activity, "stage2-settings-$language", 960, 540)
+            activity.findViewById<View>(R.id.btn_settings_about).performClick()
+            save(activity, "stage2-about-$language", 960, 540)
+            press(activity, KeyEvent.KEYCODE_BACK)
+            activity.findViewById<View>(R.id.btn_settings_reimport).performClick()
+            val pages = activity.findViewById<ViewGroup>(R.id.settings_pages)
+            fun findButton(view: View): Button? {
+                if (view is Button && view.text == activity.getString(R.string.import_link)) return view
+                if (view is ViewGroup) for (i in 0 until view.childCount) findButton(view.getChildAt(i))?.let { return it }
+                return null
+            }
+            requireNotNull(findButton(pages)).performClick()
+            save(activity, "stage2-link-$language", 960, 540)
+        }
+        render(false, false, null) { activity -> save(activity, "stage2-first-language", 960, 540) }
+    }
+    @Test fun `stage three welcome adapts to English Persian TV and phone`() {
+        for (language in listOf("en", "fa")) {
+            RuntimeEnvironment.setQualifiers("w960dp-h540dp-land-mdpi")
+            render(false, false, language) { activity ->
+                val first = activity.findViewById<Button>(R.id.btn_import)
+                val second = activity.findViewById<Button>(R.id.btn_public)
+                val rect = Rect(); assertTrue(second.getGlobalVisibleRect(rect)); assertEquals(second.height, rect.height())
+                assertEquals(first.width, second.width)
+                val columns = activity.findViewById<android.widget.LinearLayout>(R.id.import_columns)
+                assertEquals(android.widget.LinearLayout.HORIZONTAL, columns.orientation)
+                save(activity, "stage3-welcome-tv-$language", 960, 540)
+                second.performClick(); save(activity, "stage3-providers-$language", 960, 540)
+                press(activity, KeyEvent.KEYCODE_BACK)
+                assertEquals(View.GONE, activity.findViewById<View>(R.id.layout_settings).visibility)
+            }
+            RuntimeEnvironment.setQualifiers("w360dp-h800dp-port-mdpi")
+            render(false, true, language) { activity ->
+                assertEquals(android.widget.LinearLayout.VERTICAL, activity.findViewById<android.widget.LinearLayout>(R.id.import_columns).orientation)
+                assertTrue(activity.findViewById<Button>(R.id.btn_import).width <= 312)
+                save(activity, "stage3-welcome-phone-$language", 360, 800)
+            }
+        }
+    }
+    @Test fun `stage four English and Persian screens share safe panel geometry`() {
+        for (language in listOf("en", "fa")) {
+            RuntimeEnvironment.setQualifiers("w960dp-h540dp-land-mdpi")
+            render(false, false, language) { activity -> save(activity, "stage4-welcome-$language", 960, 540) }
+            render(true, false, language) { activity ->
+                press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+                val channels = activity.findViewById<View>(R.id.view_channel_list)
+                val settings = activity.findViewById<View>(R.id.layout_settings)
+                assertEquals(channels.layoutParams.width, settings.layoutParams.width)
+                assertEquals(0, channels.left)
+                assertEquals(0, settings.left)
+                assertTrue(channels.paddingLeft >= 48)
+                val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
+                assertTrue(list.findViewHolderForAdapterPosition(0)!!.itemView.height >= 48)
+                save(activity, "stage4-channels-$language", 960, 540)
+                press(activity, KeyEvent.KEYCODE_BACK)
+                press(activity, KeyEvent.KEYCODE_DPAD_DOWN)
+                val info = activity.findViewById<View>(R.id.view_osd)
+                assertTrue(info.left >= 48)
+                assertTrue(info.top >= 27)
+                assertTrue(info.right <= 912)
+                val clock = activity.findViewById<View>(R.id.tv_osd_clock)
+                val name = activity.findViewById<View>(R.id.tv_osd_channel_name)
+                val clockBounds = Rect(); clock.getGlobalVisibleRect(clockBounds)
+                val nameBounds = Rect(); name.getGlobalVisibleRect(nameBounds)
+                assertTrue(clockBounds.top >= nameBounds.bottom)
+                save(activity, "stage4-info-$language", 960, 540)
+                press(activity, KeyEvent.KEYCODE_BACK)
+                press(activity, KeyEvent.KEYCODE_MENU)
+                assertEquals(channels.width, settings.width)
+                val toggle = activity.findViewById<View>(R.id.btn_settings_crt)
+                assertTrue(toggle.height >= 48)
+                save(activity, "stage4-settings-$language", 960, 540)
+            }
+        }
+    }
+    private fun render(playlist: Boolean, phone: Boolean, language: String? = "en", block: (MainActivity) -> Unit) {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        if (language == null) context.getSharedPreferences("couchzap_prefs", 0).edit().remove("language").commit()
+        else Prefs(context).setLanguage(language)
+        Prefs(context).markIntroSeen()
+        android.provider.Settings.Global.putFloat(context.contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 0f)
         Prefs(context).setInterfaceMode(if (phone) "Phone" else "TV")
         val repo = PlaylistRepository(context); repo.clearPlaylist(); EpgRepository(context).clear()
         if (playlist) runBlocking {

@@ -1,121 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/import_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/bg_black"
-    android:fillViewport="true"
-    android:scrollbars="none">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="24dp">
-        <LinearLayout
-            android:id="@+id/import_content"
-            android:layout_width="540dp"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
-            <ImageView
-                android:layout_width="112dp"
-                android:layout_height="96dp"
-                android:src="@drawable/ic_brand"
-                android:contentDescription="@string/app_name" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:textSize="28sp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="@color/text_white"
-                android:gravity="center" />
-            <TextView
-                android:id="@+id/tv_import_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/import_title"
-                android:textSize="38sp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="@color/text_white"
-                android:gravity="center" />
-            <TextView
-                android:id="@+id/tv_import_hint"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="@string/import_hint"
-                android:textColor="@color/text_gray"
-                android:textSize="18sp"
-                android:gravity="center" />
-            <Button
-                android:id="@+id/btn_import"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/bg_focus"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:text="@string/btn_import_playlist"
-                android:textAllCaps="false"
-                android:textColor="@color/selector_channel_text"
-                android:textSize="20sp" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="@string/playlist_formats"
-                android:textSize="14sp"
-                android:textColor="@color/text_gray"
-                android:gravity="center" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:text="@string/no_playlist"
-                android:textSize="16sp"
-                android:textColor="@color/text_gray"
-                android:gravity="center" />
-            <Button
-                android:id="@+id/btn_public"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_focus"
-                android:focusable="true"
-                android:text="@string/public_channels"
-                android:textAllCaps="false"
-                android:textColor="@color/selector_channel_text"
-                android:textSize="20sp" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="@string/public_credit"
-                android:textSize="14sp"
-                android:textColor="@color/text_gray"
-                android:gravity="center" />
-            <TextView
-                android:id="@+id/tv_import_progress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:textSize="16sp"
-                android:textColor="@color/accent_gold"
-                android:gravity="center"
-                android:visibility="gone" />
-            <TextView
-                android:id="@+id/tv_import_remote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="@string/remote_hint"
-                android:textSize="14sp"
-                android:textColor="@color/text_gray"
-                android:gravity="center" />
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/import_container" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg_black" android:fillViewport="true" android:scrollbars="vertical">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:gravity="center" android:padding="24dp">
+        <LinearLayout android:id="@+id/import_content" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <LinearLayout android:id="@+id/import_header" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="36dp">
+                <FrameLayout android:layout_width="64dp" android:layout_height="56dp">
+                    <ImageView android:id="@+id/localized_label_1" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/ic_brand" android:contentDescription="@string/app_name" />
+                    <ImageView android:id="@+id/intro_bolt" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/ic_brand_flash" android:alpha="0" android:importantForAccessibility="no" />
+                </FrameLayout>
+                <TextView android:id="@+id/localized_label_2" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:textAlignment="viewStart" android:gravity="start|center_vertical" android:text="@string/app_name" android:textSize="25sp" android:fontFamily="sans-serif-medium" android:textColor="@color/text_white" />
+                <Button android:id="@+id/btn_import_language" android:layout_width="wrap_content" android:layout_height="48dp" android:minWidth="112dp" android:text="فارسی / EN" android:contentDescription="@string/language" android:background="@drawable/bg_focus" android:textColor="@color/selector_channel_text" android:textAllCaps="false" android:textSize="16sp" android:paddingStart="16dp" android:paddingEnd="16dp" android:focusable="true" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/import_columns" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+                <LinearLayout android:id="@+id/import_intro" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:paddingEnd="36dp">
+                    <TextView android:id="@+id/import_eyebrow" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/welcome_eyebrow" android:textColor="@color/accent_gold" android:textSize="15sp" />
+                    <TextView android:id="@+id/tv_import_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="@string/import_title" android:textSize="36sp" android:fontFamily="sans-serif-medium" android:textColor="@color/text_white" android:gravity="start" />
+                    <TextView android:id="@+id/tv_import_hint" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="@string/import_hint" android:textColor="@color/text_gray" android:textSize="18sp" android:gravity="start" />
+                </LinearLayout>
+                <LinearLayout android:id="@+id/import_actions" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+                    <TextView android:id="@+id/own_playlist_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/own_playlist_label" android:textColor="@color/text_gray" android:textSize="15sp" android:layout_marginBottom="8dp" />
+                    <Button android:id="@+id/btn_import" android:layout_width="match_parent" android:layout_height="64dp" android:background="@drawable/bg_focus" android:focusable="true" android:focusableInTouchMode="true" android:text="@string/btn_import_playlist" android:textAllCaps="false" android:textColor="@color/selector_channel_text" android:textSize="19sp" android:gravity="start|center_vertical" android:paddingStart="20dp" android:paddingEnd="20dp" />
+                    <TextView android:id="@+id/localized_label_3" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/playlist_formats" android:textSize="14sp" android:textColor="@color/text_dim" />
+                    <TextView android:id="@+id/localized_label_4" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:layout_marginBottom="8dp" android:text="@string/no_playlist" android:textSize="15sp" android:textColor="@color/text_gray" />
+                    <Button android:id="@+id/btn_public" android:layout_width="match_parent" android:layout_height="64dp" android:background="@drawable/bg_focus" android:focusable="true" android:text="@string/public_channels" android:textAllCaps="false" android:textColor="@color/selector_channel_text" android:textSize="19sp" android:gravity="start|center_vertical" android:paddingStart="20dp" android:paddingEnd="20dp" />
+                    <TextView android:id="@+id/localized_label_5" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/public_credit" android:textSize="14sp" android:textColor="@color/text_dim" />
+                </LinearLayout>
+            </LinearLayout>
+            <TextView android:id="@+id/tv_import_progress" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:textSize="16sp" android:textColor="@color/accent_gold" android:visibility="gone" />
+            <TextView android:id="@+id/tv_import_remote" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="32dp" android:text="@string/remote_hint" android:textSize="15sp" android:textColor="@color/text_gray" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

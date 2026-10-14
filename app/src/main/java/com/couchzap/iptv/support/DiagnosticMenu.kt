@@ -7,13 +7,13 @@ import android.content.Intent
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
+import com.couchzap.iptv.ui.SettingsPanel
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.couchzap.iptv.R
 import java.io.File
 
-class DiagnosticMenu(private val activity: AppCompatActivity, private val notice: (String) -> Unit) {
+class DiagnosticMenu(private val activity: AppCompatActivity, private val panel: SettingsPanel, private val notice: (String) -> Unit) {
     private var pendingReport = ""
     private val save = activity.registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
         if (uri != null) runCatching {
@@ -24,18 +24,14 @@ class DiagnosticMenu(private val activity: AppCompatActivity, private val notice
     }
     fun show(sourceKind: String?, channelCount: Int) {
         pendingReport = DiagnosticLog.report(activity, sourceKind, channelCount)
-        val text = TextView(activity).apply {
-            text = pendingReport; textSize = 13f; setTextIsSelectable(true)
-            val padding = (16 * resources.displayMetrics.density).toInt(); setPadding(padding, padding, padding, padding)
-        }
-        val scroll = ScrollView(activity).apply { addView(text) }
-        AlertDialog.Builder(activity).setTitle(R.string.diagnostic_log).setView(scroll)
-            .setPositiveButton(R.string.share_log) { _, _ -> share() }
-            .setNeutralButton(R.string.save_log) { _, _ ->
+        panel.page("diagnostics", R.string.diagnostic_log) { body ->
+            panel.button(body, activity.getString(R.string.copy_log)) { copy(true) }
+            panel.button(body, activity.getString(R.string.save_log)) {
                 runCatching { save.launch("CouchZap-diagnostics.txt") }.onFailure { copy() }
-            }.setNegativeButton(R.string.cancel, null).show().also {
-                scroll.layoutParams = scroll.layoutParams.apply { height = (300 * activity.resources.displayMetrics.density).toInt() }
             }
+            panel.button(body, activity.getString(R.string.share_log)) { share() }
+            panel.text(body, pendingReport, technical = true).apply { textSize = 13f; setTextIsSelectable(true) }
+        }
     }
     private fun share() {
         runCatching {
@@ -51,9 +47,9 @@ class DiagnosticMenu(private val activity: AppCompatActivity, private val notice
             activity.startActivity(Intent.createChooser(intent, activity.getString(R.string.share_log)))
         }.onFailure { copy() }
     }
-    private fun copy() {
+    private fun copy(explicit: Boolean = false) {
         (activity.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)
             ?.setPrimaryClip(ClipData.newPlainText("CouchZap diagnostics", pendingReport))
-        notice(activity.getString(R.string.log_copied))
+        notice(activity.getString(if (explicit) R.string.log_copy_done else R.string.log_copied))
     }
 }

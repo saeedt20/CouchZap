@@ -78,7 +78,7 @@ class OsdController(
     fun showPendingZapOsd(channel: Channel, nextChannelName: String?) {
         showOsd(channel)
         if (!nextChannelName.isNullOrBlank()) {
-            tvGhostNext.text = "↑ NEXT: $nextChannelName"; tvGhostNext.visibility = View.VISIBLE
+            tvGhostNext.text = binding.root.context.getString(R.string.next_channel_ghost, nextChannelName); tvGhostNext.visibility = View.VISIBLE
             handler.removeCallbacks(hideGhostRunnable); handler.postDelayed(hideGhostRunnable, 1200)
         }
     }
@@ -93,16 +93,29 @@ class OsdController(
     fun setPlaybackInfo(playWhenReady: Boolean, isLive: Boolean, state: String) {
         status = if (isLive && state == binding.root.context.getString(R.string.playing)) binding.root.context.getString(R.string.live) else state
         binding.btnOsdPlayPause.setImageResource(if (playWhenReady) R.drawable.ic_pause else R.drawable.ic_play)
-        binding.btnOsdPlayPause.contentDescription = if (playWhenReady) "Pause" else "Play"
+        binding.btnOsdPlayPause.contentDescription = binding.root.context.getString(if (playWhenReady) R.string.pause else R.string.play)
         updateStreamDetails()
     }
     fun setBuffering(buffering: Boolean) { binding.osdBufferingLayout.visibility = if (buffering) View.VISIBLE else View.GONE }
-    fun refresh() { currentChannel?.let { binding.btnOsdFavourite.isSelected = isFavourite(it) }; updateStreamDetails() }
+    fun refreshChannel(channel: Channel) {
+        currentChannel = channel
+        binding.tvOsdChannelName.text = channel.name
+        binding.tvOsdChannelNumber.text = String.format(java.util.Locale.US, "%03d", channel.number)
+        refresh()
+    }
+    fun refresh() {
+        currentChannel?.let {
+            val selected = isFavourite(it)
+            if (binding.btnOsdFavourite.isSelected != selected && isVisible()) Anim.favourite(binding.btnOsdFavourite)
+            binding.btnOsdFavourite.isSelected = selected
+        }
+        updateStreamDetails()
+    }
     private fun updateStreamDetails() {
         binding.tvOsdClock.text = StreamInfoFormatter.formatCurrentTime()
         val resolution = video?.takeIf { it.height > 0 }?.let { "${it.height}p" }
         binding.tvOsdStreamDetails.text = listOfNotNull(status, resolution).joinToString(" · ")
-        binding.tvOsdTechnical.text = StreamInfoFormatter.buildStreamInfoString(video, audio)
+        binding.tvOsdTechnical.text = StreamInfoFormatter.buildStreamInfoString(video, audio, binding.root.context)
         val (now, next) = currentChannel?.let(programmes) ?: (null to null)
         val time = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT)
         val lines = listOfNotNull(now?.let { binding.root.context.getString(R.string.now_programme, "${time.format(java.util.Date(it.start))}–${time.format(java.util.Date(it.stop))} · ${it.title}") },

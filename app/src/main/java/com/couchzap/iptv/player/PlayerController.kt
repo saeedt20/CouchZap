@@ -47,6 +47,7 @@ class PlayerController(
         fun onError(message: String)
         fun onChannelFailed(channel: Channel)
         fun onPlaybackInfo(playWhenReady: Boolean, isLive: Boolean, status: String) {}
+        fun onChannelPlaybackChanged(channel: Channel, status: ChannelPlaybackStatus) {}
     }
 
     private var exoPlayer: ExoPlayer? = null
@@ -55,6 +56,10 @@ class PlayerController(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var preparationJob: Job? = null
     private var desiredPlay = false
+    private var requestGeneration = 0L
+    private var activeMediaId = ""
+    private var preparing = false
+    private var failed = false
     private var resolvedMime: String? = null
     private var currentTracks: Tracks = Tracks.EMPTY
     private var aspectMode = Prefs.ASPECT_FIT
@@ -82,13 +87,17 @@ class PlayerController(
     private var activeVideoFormat: Format? = null
     private var activeAudioFormat: Format? = null
 
-    private val playerListener = object : Player.Listener {
+    private var playerListener = createPlayerListener(0L)
+
+    private fun createPlayerListener(token: Long): Player.Listener = object : Player.Listener {
+        private fun isCurrentRequest() = token == requestGeneration && isCurrentMedia()
 
         override fun onRenderedFirstFrame() {
-            listener.onRenderedFirstFrame()
+            if (isCurrentRequest()) listener.onRenderedFirstFrame()
         }
 
         override fun onTracksChanged(tracks: Tracks) {
+            if (!isCurrentRequest()) return
             currentTracks = tracks
             var vFormat: Format? = null
             var aFormat: Format? = null
@@ -117,6 +126,7 @@ class PlayerController(
         }
 
         override fun onVideoSizeChanged(videoSize: VideoSize) {
+            if (!isCurrentRequest()) return
             if (videoSize.height > 0 && videoSize.width > 0) {
                 videoAspect = videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height
                 if (videoSize.unappliedRotationDegrees == 90 || videoSize.unappliedRotationDegrees == 270) {
@@ -128,17 +138,19 @@ class PlayerController(
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
+            if (!isCurrentRequest()) return
             val isBuffering = playbackState == Player.STATE_BUFFERING
             listener.onPlaybackStateChanged(playbackState, isBuffering)
             publishPlaybackInfo()
         }
 
-        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) { publishPlaybackInfo() }
-        override fun onIsPlayingChanged(isPlaying: Boolean) { publishPlaybackInfo() }
-        override fun onTimelineChanged(timeline: Timeline, reason: Int) { publishPlaybackInfo() }
-        override fun onCues(cueGroup: CueGroup) { subtitleView?.setCues(cueGroup.cues) }
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) { if (token == requestGeneration) publishPlaybackInfo() }
+        override fun onIsPlayingChanged(isPlaying: Boolean) { if (token == requestGeneration) publishPlaybackInfo() }
+        override fun onTimelineChanged(timeline: Timeline, reason: Int) { if (token == requestGeneration) publishPlaybackInfo() }
+        override fun onCues(cueGroup: CueGroup) { if (isCurrentRequest()) subtitleView?.setCues(cueGroup.cues) }
 
         override fun onPlayerError(error: PlaybackException) {
+            if (!isCurrentRequest()) return
             DiagnosticLog.record("playback_error:${error.errorCode}", error)
             val channel = currentChannel ?: return
             mainHandler.removeCallbacks(retryRunnable)
@@ -157,9 +169,12 @@ class PlayerController(
 
             if (retryCount < 3) {
                 retryCount++
+                listener.onChannelPlaybackChanged(channel, ChannelPlaybackStatus.CONNECTING)
                 listener.onPlaybackInfo(true, false, context.getString(R.string.retrying, retryCount, 3))
                 mainHandler.postDelayed(retryRunnable, 1200L * retryCount)
             } else {
+                failed = true
+                listener.onChannelPlaybackChanged(channel, ChannelPlaybackStatus.UNAVAILABLE)
                 listener.onChannelFailed(channel)
             }
         }
@@ -206,9 +221,18 @@ class PlayerController(
     fun playChannel(channel: Channel) {
         val player = exoPlayer ?: return
         cancelRetry()
+        val token = ++requestGeneration
+        player.removeListener(playerListener)
+        playerListener = createPlayerListener(token)
+        player.addListener(playerListener)
+        activeMediaId = "couchzap:$token"
+        preparing = true
+        failed = false
         currentChannel = channel
         desiredPlay = true
         preparationJob?.cancel()
+        player.stop()
+        player.clearMediaItems()
         subtitleView?.setCues(emptyList())
         currentTracks = Tracks.EMPTY
         trackSelector?.setParameters(trackSelector!!.buildUponParameters().clearVideoSizeConstraints())
@@ -219,32 +243,61 @@ class PlayerController(
         hasDecoderFallbackAttempted = false
 
         listener.onPlaybackInfo(true, false, context.getString(R.string.connecting))
+        listener.onChannelPlaybackChanged(channel, ChannelPlaybackStatus.CONNECTING)
         preparationJob = scope.launch {
             resolvedMime = withContext(Dispatchers.IO) { StreamTypeResolver.resolve(channel) }
             ensureActive()
-            if (currentChannel == channel && desiredPlay) prepare(channel)
+            if (token == requestGeneration && currentChannel == channel && desiredPlay) prepare(channel)
         }
     }
 
     private fun prepare(channel: Channel) {
         val player = exoPlayer ?: return
-        val item = MediaItem.Builder().setUri(channel.url).setMimeType(resolvedMime ?: channel.mimeType).build()
+        val item = MediaItem.Builder().setMediaId(activeMediaId).setUri(channel.url).setMimeType(resolvedMime ?: channel.mimeType).build()
         player.setMediaSource(createMediaSourceFactoryForChannel(channel).createMediaSource(item))
+        preparing = false
         player.prepare()
         player.playWhenReady = desiredPlay
     }
 
+    fun refreshPlaybackInfo() { publishPlaybackInfo() }
+
     private fun publishPlaybackInfo() {
         val player = exoPlayer ?: return
+        val channel = currentChannel ?: return
+        if (preparing) {
+            val status = if (desiredPlay) ChannelPlaybackStatus.CONNECTING else ChannelPlaybackStatus.PAUSED
+            listener.onChannelPlaybackChanged(channel, status)
+            listener.onPlaybackInfo(desiredPlay, false, context.getString(if (desiredPlay) R.string.connecting else R.string.paused))
+            return
+        }
+        if (!isCurrentMedia()) return
+        val status = when {
+            failed -> ChannelPlaybackStatus.UNAVAILABLE
+            !desiredPlay || !player.playWhenReady -> ChannelPlaybackStatus.PAUSED
+            player.playbackState == Player.STATE_BUFFERING -> ChannelPlaybackStatus.BUFFERING
+            player.playbackState == Player.STATE_ENDED -> ChannelPlaybackStatus.ENDED
+            player.isPlaying -> ChannelPlaybackStatus.PLAYING
+            player.playbackState == Player.STATE_READY -> ChannelPlaybackStatus.PAUSED
+            else -> ChannelPlaybackStatus.CONNECTING
+        }
+        listener.onChannelPlaybackChanged(channel, status)
         val state = when {
-            !desiredPlay -> context.getString(R.string.paused)
-            player.playbackState == Player.STATE_BUFFERING -> context.getString(R.string.buffering)
-            player.playbackState != Player.STATE_READY -> context.getString(R.string.connecting)
-            player.isCurrentMediaItemLive -> context.getString(R.string.live)
-            else -> context.getString(R.string.playing)
+            status == ChannelPlaybackStatus.PLAYING && player.isCurrentMediaItemLive -> context.getString(R.string.live)
+            else -> context.getString(when (status) {
+                ChannelPlaybackStatus.CONNECTING -> R.string.connecting
+                ChannelPlaybackStatus.BUFFERING -> R.string.buffering
+                ChannelPlaybackStatus.PLAYING -> R.string.playing
+                ChannelPlaybackStatus.PAUSED -> R.string.paused
+                ChannelPlaybackStatus.UNAVAILABLE -> R.string.channel_unavailable_short
+                ChannelPlaybackStatus.ENDED -> R.string.playback_ended
+            })
         }
         listener.onPlaybackInfo(desiredPlay, player.isCurrentMediaItemLive, state)
     }
+
+    private fun isCurrentMedia(): Boolean = !preparing && currentChannel != null &&
+        exoPlayer?.currentMediaItem?.mediaId == activeMediaId
 
     private fun createMediaSourceFactoryForChannel(channel: Channel): DefaultMediaSourceFactory {
         val httpFactory = DefaultHttpDataSource.Factory()
@@ -264,6 +317,7 @@ class PlayerController(
     private fun String?.isNull_or_empty(): Boolean = this == null || this.trim().isEmpty()
 
     fun stop() {
+        requestGeneration++
         preparationJob?.cancel()
         desiredPlay = false
         subtitleView?.setCues(emptyList())
@@ -288,8 +342,8 @@ class PlayerController(
     fun choices(type: Int): List<TrackChoice> = currentTracks.groups.filter { it.type == type }.flatMap { group ->
         (0 until group.length).filter { group.isTrackSupported(it) }.map { index ->
             val format = group.getTrackFormat(index)
-            val language = format.language?.let { java.util.Locale.forLanguageTag(it).displayLanguage }
-            val label = format.label ?: language?.takeIf { it.isNotBlank() } ?: "Track ${index + 1}"
+            val language = format.language?.let { java.util.Locale.forLanguageTag(it).getDisplayLanguage(context.resources.configuration.locales[0]) }
+            val label = format.label ?: language?.takeIf { it.isNotBlank() } ?: context.getString(R.string.track_number, index + 1)
             TrackChoice(label, group.mediaTrackGroup, index)
         }
     }

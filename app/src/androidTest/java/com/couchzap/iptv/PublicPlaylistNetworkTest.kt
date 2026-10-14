@@ -4,6 +4,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.couchzap.iptv.data.HttpStreams
 import com.couchzap.iptv.data.PlaylistParser
 import com.couchzap.iptv.data.PlaylistSource
+import com.couchzap.iptv.data.PlaylistRepository
+import com.couchzap.iptv.data.PublicChannelOrder
+import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import com.couchzap.iptv.support.ReleaseUpdater
 import androidx.test.platform.app.InstrumentationRegistry
@@ -20,6 +23,14 @@ class PublicPlaylistNetworkTest {
     @Test fun officialPublicPlaylistDownloadsAndParses() {
         val channels = HttpStreams.open(PlaylistSource.public().location).use { PlaylistParser().parse(it) }
         assertTrue("Public playlist returned no channels", channels.isNotEmpty())
+    }
+    @Test fun officialFreeTvPlaylistDownloadsAndPrepares() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val source = PlaylistSource.freeTv("playlist_iran.m3u8", "Iran")
+        val prepared = PlaylistRepository(context).preparePlaylist(HttpStreams.open(source.location), source)
+        assertTrue("Free-TV returned no direct streams", prepared.channels.isNotEmpty())
+        assertTrue("Public list was not sorted", prepared.channels == PublicChannelOrder.sorted(prepared.channels))
+        assertTrue("Combined guide URL was not separated", prepared.epgUrls.none { it.contains(',') })
     }
     @Test fun officialReleaseDownloadsAndVerifies() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext

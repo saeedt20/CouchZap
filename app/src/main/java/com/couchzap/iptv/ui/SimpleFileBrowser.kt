@@ -1,5 +1,6 @@
 package com.couchzap.iptv.ui
 
+import com.couchzap.iptv.R
 import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
@@ -56,6 +57,7 @@ class SimpleFileBrowser(
 
     private fun navigateTo(dir: File) {
         currentDirectory = dir
+        tvPath.textDirection = View.TEXT_DIRECTION_LTR
         tvPath.text = dir.absolutePath
 
         val items = mutableListOf<File>()
@@ -96,7 +98,7 @@ class SimpleFileBrowser(
         }
 
         adapter.setFiles(items)
-        if (items.isEmpty()) tvPath.text = "${dir.absolutePath} — no playlist files. Press Back to go up."
+        if (items.isEmpty()) tvPath.text = container.context.getString(R.string.empty_files, dir.absolutePath)
     }
 
     inner class FileAdapter : RecyclerView.Adapter<FileAdapter.FileViewHolder>() {

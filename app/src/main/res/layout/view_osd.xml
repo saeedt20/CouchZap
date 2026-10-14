@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
             <TextView
-                android:id="@+id/tv_osd_channel_name"
+                android:id="@+id/tv_osd_channel_name" android:textAlignment="viewStart"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
@@ -38,13 +38,6 @@
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/text_white"
                 android:textSize="26sp" />
-            <TextView
-                android:id="@+id/tv_osd_channel_number"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/text_gray"
-                android:textSize="16sp" />
         </LinearLayout>
         <ImageButton
             android:id="@+id/btn_osd_favourite"
@@ -56,13 +49,26 @@
             android:src="@drawable/ic_star"
             android:contentDescription="@string/favourites"
             app:tint="@color/selector_channel_text" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+            <TextView
+                android:id="@+id/tv_osd_channel_number"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_gray"
+                android:textSize="15sp" />
         <TextView
             android:id="@+id/tv_osd_clock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:textSize="16sp"
-            android:textColor="@color/text_white" />
+            android:textSize="15sp"
+            android:textColor="@color/text_gray" />
     </LinearLayout>
     <TextView
         android:id="@+id/tv_osd_stream_details"
@@ -82,13 +88,13 @@
             android:layout_width="14dp"
             android:layout_height="14dp"
             android:indeterminate="true" />
-        <TextView
+        <TextView android:id="@+id/localized_label_14"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="@string/buffering"
             android:textColor="@color/accent_gold"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
     </LinearLayout>
     <TextView
         android:id="@+id/tv_osd_programme"
@@ -97,7 +103,7 @@
         android:layout_marginTop="10dp"
         android:maxLines="2"
         android:textColor="@color/text_white"
-        android:textSize="14sp"
+        android:textSize="15sp"
         android:visibility="gone" />
     <ProgressBar
         android:id="@+id/programme_progress"
@@ -113,7 +119,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:textColor="@color/text_gray"
-        android:textSize="14sp"
+        android:textSize="15sp"
         android:visibility="gone" />
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -131,7 +137,7 @@
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_focus"
-                android:contentDescription="Channels"
+                android:contentDescription="@string/channels"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/ic_menu_channels"
@@ -142,7 +148,7 @@
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_focus"
-                android:contentDescription="Previous channel"
+                android:contentDescription="@string/previous_channel"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/ic_skip_prev"
@@ -153,7 +159,7 @@
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_focus"
-                android:contentDescription="Pause"
+                android:contentDescription="@string/pause"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/ic_pause"
@@ -164,7 +170,7 @@
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_focus"
-                android:contentDescription="Next channel"
+                android:contentDescription="@string/next_channel"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/ic_skip_next"
@@ -175,7 +181,7 @@
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_focus"
-                android:contentDescription="Picture size"
+                android:contentDescription="@string/choose_aspect"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/ic_aspect_ratio"
@@ -186,7 +192,7 @@
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_focus"
-                android:contentDescription="Settings"
+                android:contentDescription="@string/settings"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/ic_settings"
@@ -205,13 +211,13 @@
             android:layout_height="wrap_content"
             android:text="@string/channels"
             android:textColor="@color/text_white"
-            android:textSize="13sp" />
-        <TextView
+            android:textSize="15sp" />
+        <TextView android:id="@+id/localized_label_15"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/details_hint"
             android:textColor="@color/text_gray"
-            android:textSize="13sp" />
+            android:textSize="15sp" />
     </LinearLayout>
     <Button
         android:id="@+id/btn_osd_last_channel"

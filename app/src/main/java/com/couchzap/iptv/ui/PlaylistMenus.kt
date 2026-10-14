@@ -1,17 +1,18 @@
 package com.couchzap.iptv.ui
 
 import android.text.InputType
+import android.view.View
 import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
-import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.ArrayAdapter
 import com.couchzap.iptv.R
 import com.couchzap.iptv.data.HttpStreams
 import com.couchzap.iptv.data.PlaylistRepository
 import com.couchzap.iptv.data.PlaylistSource
+import com.couchzap.iptv.data.PublicCatalog
+import java.text.DateFormat
+import java.util.Date
 import kotlinx.coroutines.*
 import org.json.JSONArray
 import com.couchzap.iptv.support.DiagnosticLog
@@ -22,70 +23,117 @@ class PlaylistMenus(
     private val scope: CoroutineScope,
     private val onFile: () -> Unit,
     private val onSource: (PlaylistSource, Boolean) -> Unit,
-    private val onNotice: (String) -> Unit
+    private val onNotice: (String) -> Unit,
+    private val panel: SettingsPanel,
+    private val onOpen: () -> Unit,
+    private val loadCatalog: suspend (String, String) -> List<PublicCatalog.Entry> = { provider, kind ->
+        withContext(Dispatchers.IO) { HttpStreams.open(PublicCatalog.url(provider, kind), 4L * 1024 * 1024).use {
+            PublicCatalog.parse(provider, kind, JSONArray(it.bufferedReader().readText()))
+        } }
+    }
 ) {
     fun show() {
-        val items = arrayOf(activity.getString(R.string.btn_import_playlist), activity.getString(R.string.import_link),
-            activity.getString(R.string.public_channels), activity.getString(R.string.refresh_playlist))
-        AlertDialog.Builder(activity).setTitle(R.string.playlist_sources).setItems(items) { _, index -> when (index) {
-            0 -> onFile()
-            1 -> link()
-            2 -> publicChoices()
-            3 -> repository.source()?.let { onSource(it, true) } ?: onNotice(activity.getString(R.string.no_refresh_source))
-        } }.setNegativeButton(R.string.cancel, null).show()
-    }
-    fun link(title: Int = R.string.import_link, onAccept: (String) -> Unit = { onSource(PlaylistSource("url", it, "Playlist link"), false) }) {
-        val input = EditText(activity).apply {
-            hint = activity.getString(R.string.enter_link); inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
-            isSingleLine = true; setPadding(dp(20), dp(12), dp(20), dp(12))
+        onOpen()
+        panel.page("sources", R.string.playlist_sources) { body ->
+            panel.text(body, repository.source()?.label ?: activity.getString(R.string.playlist_not_added))
+            if (repository.updatedAt() > 0) panel.text(body, activity.getString(R.string.source_updated, DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(repository.updatedAt()))))
+            if (repository.unsupportedCount() > 0) panel.text(body, activity.getString(R.string.unsupported_skipped, repository.unsupportedCount()))
+            panel.button(body, activity.getString(R.string.btn_import_playlist)) { confirmFile() }
+            panel.button(body, activity.getString(R.string.import_link)) { link() }
+            panel.button(body, activity.getString(R.string.public_channels)) { publicChoices() }
+            panel.button(body, activity.getString(R.string.refresh_playlist)) {
+                repository.source()?.let { onSource(it, true) } ?: onNotice(activity.getString(R.string.no_refresh_source))
+            }
         }
-        val dialog = AlertDialog.Builder(activity).setTitle(title).setView(input)
-            .setPositiveButton(R.string.import_action, null).setNegativeButton(R.string.cancel, null).create()
-        dialog.setOnShowListener { dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            val url = input.text.toString().trim()
-            if (!HttpStreams.validUrl(url)) input.error = activity.getString(R.string.invalid_link)
-            else { dialog.dismiss(); onAccept(url) }
-        } }
-        dialog.show()
+    }
+    fun ownChoices() {
+        onOpen()
+        panel.page("own-playlist", R.string.btn_import_playlist) { body ->
+            panel.text(body, activity.getString(R.string.own_playlist_help))
+            panel.button(body, activity.getString(R.string.import_file)) { confirmFile() }
+            panel.button(body, activity.getString(R.string.import_link)) { link() }
+        }
+    }
+    private fun confirmFile() {
+        if (!repository.isPlaylistReady()) { onFile(); return }
+        panel.page("replace-file", R.string.replace_playlist) { body ->
+            panel.text(body, activity.getString(R.string.confirm_replace))
+            panel.button(body, activity.getString(R.string.replace_playlist)) { onFile() }
+            panel.button(body, activity.getString(R.string.cancel)) { panel.back() }
+        }
+    }
+    private fun accept(source: PlaylistSource) {
+        if (!repository.isPlaylistReady()) { onSource(source, false); return }
+        panel.page("replace", R.string.replace_playlist) { body ->
+            panel.text(body, activity.getString(R.string.confirm_replace))
+            panel.button(body, activity.getString(R.string.replace_playlist)) { onSource(source, false) }
+            panel.button(body, activity.getString(R.string.cancel)) { panel.back() }
+        }
+    }
+    fun link(title: Int = R.string.import_link, onAccept: (String) -> Unit = { accept(PlaylistSource("url", it, activity.getString(R.string.playlist_link))) }) {
+        onOpen()
+        panel.page("link-$title", title) { body ->
+            val input = EditText(activity).apply {
+                hint = activity.getString(R.string.enter_link); inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+                isSingleLine = true; textDirection = View.TEXT_DIRECTION_LTR; layoutDirection = View.LAYOUT_DIRECTION_LTR
+                setTextColor(android.graphics.Color.WHITE); setHintTextColor(android.graphics.Color.LTGRAY)
+            }
+            body.addView(input, LinearLayout.LayoutParams(-1, -2))
+            panel.button(body, activity.getString(R.string.import_action)) {
+                val url = input.text.toString().trim()
+                if (!HttpStreams.validUrl(url)) input.error = activity.getString(R.string.invalid_link)
+                else onAccept(url)
+            }
+        }
     }
     fun publicChoices() {
-        val items = arrayOf(activity.getString(R.string.all_public), activity.getString(R.string.by_country),
-            activity.getString(R.string.by_language), activity.getString(R.string.by_category))
-        AlertDialog.Builder(activity).setTitle(R.string.choose_public).setItems(items) { _, index ->
-            if (index == 0) onSource(PlaylistSource.public(), false)
-            else catalog(listOf("countries", "languages", "categories")[index - 1])
-        }.setNegativeButton(R.string.cancel, null).show()
-    }
-    private fun catalog(kind: String) {
-        val loading = AlertDialog.Builder(activity).setTitle(R.string.choose_public).setMessage("Loading choices…")
-            .setNegativeButton(R.string.cancel, null).show()
-        val job = scope.launch {
-            try {
-                val entries = withContext(Dispatchers.IO) {
-                    val json = HttpStreams.open("https://iptv-org.github.io/api/$kind.json", 4L * 1024 * 1024).use { JSONArray(it.bufferedReader().readText()) }
-                    (0 until json.length()).mapNotNull { i ->
-                        val item = json.getJSONObject(i); val code = item.optString(if (kind == "categories") "id" else "code")
-                        if (!code.matches(Regex("[a-zA-Z0-9_-]+"))) null else item.getString("name") to code
-                    }.sortedBy { it.first.lowercase(java.util.Locale.ROOT) }
-                }
-                loading.dismiss()
-                val layout = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), dp(8)) }
-                val search = EditText(activity).apply { hint = "Search"; isSingleLine = true }
-                val list = ListView(activity)
-                layout.addView(search); layout.addView(list, LinearLayout.LayoutParams(-1, dp(300)))
-                var filtered = entries
-                fun update(query: String) { filtered = entries.filter { it.first.contains(query, true) }; list.adapter = ArrayAdapter(activity, android.R.layout.simple_list_item_1, filtered.map { it.first }) }
-                update(""); search.doAfterTextChanged { update(it.toString()) }
-                val dialog = AlertDialog.Builder(activity).setTitle(R.string.choose_public).setView(layout).setNegativeButton(R.string.cancel, null).show()
-                list.setOnItemClickListener { _, _, position, _ ->
-                    val (label, code) = filtered[position]; dialog.dismiss(); onSource(PlaylistSource.public(kind, code, label), false)
-                }
-                list.requestFocus()
-            } catch (cancelled: CancellationException) { loading.dismiss(); throw cancelled }
-            catch (error: Exception) { DiagnosticLog.record("public_catalog_failed", error); loading.dismiss(); onNotice("Could not load public choices. Try again, or choose all channels.") }
+        onOpen()
+        panel.page("public-providers", R.string.choose_provider) { body ->
+            panel.button(body, "iptv-org") { providerChoices("iptv-org") }
+            panel.text(body, activity.getString(R.string.iptv_org_description))
+            panel.button(body, "Free-TV") { providerChoices("free-tv") }
+            panel.text(body, activity.getString(R.string.free_tv_description))
         }
-        loading.setOnCancelListener { job.cancel() }
-        loading.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener { job.cancel(); loading.dismiss() }
     }
-    private fun dp(value: Int) = (value * activity.resources.displayMetrics.density).toInt()
+    private fun providerChoices(provider: String) {
+        val kinds = if (provider == "iptv-org") listOf("all", "countries", "languages", "categories") else listOf("all", "countries", "categories")
+        val strings = mapOf("all" to R.string.all_public, "countries" to R.string.by_country, "languages" to R.string.by_language, "categories" to R.string.by_category)
+        panel.page("provider-$provider", R.string.choose_public) { body ->
+            panel.text(body, if (provider == "free-tv") "Free-TV" else "iptv-org", technical = true)
+            kinds.forEach { kind -> panel.button(body, activity.getString(strings.getValue(kind))) {
+                if (kind == "all") accept(if (provider == "free-tv") PlaylistSource.freeTv(label = activity.getString(R.string.all_public)) else PlaylistSource.public(label = activity.getString(R.string.all_public)))
+                else catalog(provider, kind)
+            } }
+            if (provider == "free-tv") panel.text(body, activity.getString(R.string.public_support_note))
+        }
+    }
+    private fun catalog(provider: String, kind: String) {
+        var job: Job? = null
+        panel.page("catalog-$provider-$kind", R.string.choose_public, leave = { job?.cancel() }) { body ->
+            val status = panel.text(body, activity.getString(R.string.loading_choices))
+            job = scope.launch {
+                try {
+                    val entries = loadCatalog(provider, kind)
+                    currentCoroutineContext().ensureActive()
+                    status.visibility = View.GONE
+                    val search = EditText(activity).apply { hint = activity.getString(R.string.search); isSingleLine = true; setTextColor(android.graphics.Color.WHITE) }
+                    val rows = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
+                    body.addView(search); body.addView(rows)
+                    fun update(query: String) {
+                        rows.removeAllViews()
+                        val filtered = entries.filter { it.label.contains(query, true) }
+                        if (filtered.isEmpty()) panel.text(rows, activity.getString(R.string.catalog_empty))
+                        filtered.forEach { (label, code) -> panel.button(rows, label) { accept(if (provider == "free-tv") PlaylistSource.freeTv(code, label) else PlaylistSource.public(kind, code, label)) } }
+                    }
+                    update(""); search.doAfterTextChanged { update(it.toString()) }; panel.focusFirst()
+                } catch (cancelled: CancellationException) { throw cancelled }
+                catch (error: Exception) {
+                    DiagnosticLog.record("public_catalog_failed", error)
+                    status.setText(R.string.catalog_failed)
+                    panel.button(body, activity.getString(R.string.retry)) { panel.back(); catalog(provider, kind) }
+                    panel.focusFirst()
+                }
+            }
+        }
+    }
 }

@@ -18,6 +18,7 @@ import org.robolectric.annotation.Config
 class MainActivityTest {
     @Test fun `phone mode permits rotation and remote menu works before import`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        Prefs(context).setLanguage("en")
         Prefs(context).setInterfaceMode("Phone")
         val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
         val activity = controller.get()
@@ -31,6 +32,7 @@ class MainActivityTest {
 
     @Test fun `manual TV mode locks landscape even on a phone configuration`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        Prefs(context).setLanguage("en")
         Prefs(context).setInterfaceMode("TV")
         val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
         val activity = controller.get()

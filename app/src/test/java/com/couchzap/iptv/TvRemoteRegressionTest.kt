@@ -11,6 +11,11 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import com.couchzap.iptv.data.PlaylistRepository
 import com.couchzap.iptv.util.Prefs
+import com.couchzap.iptv.player.ChannelPlaybackStatus
+import com.couchzap.iptv.ui.ChannelListAdapter
+import android.widget.EditText
+import android.view.ViewGroup
+import android.view.ViewConfiguration
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -24,13 +29,16 @@ import java.time.Duration
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [24], qualifiers = "w960dp-h540dp-land-mdpi")
 class TvRemoteRegressionTest {
-    private fun withPlayback(test: (MainActivity) -> Unit) {
+    private fun withPlayback(count: Int = 2, test: (MainActivity) -> Unit) {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        Prefs(context).setLanguage("en")
         Prefs(context).setInterfaceMode("TV")
         val repository = PlaylistRepository(context)
         repository.clearPlaylist()
-        runBlocking {
-            repository.importPlaylistFromStream("One,file:///test-one.ts\nTwo,file:///test-two.ts".byteInputStream())
+        if (count > 0) runBlocking {
+            repository.importPlaylistFromStream((0 until count).joinToString("\n") {
+                "${when (it) { 0 -> "One"; 1 -> "Two"; else -> "Station $it" }},file:///test-$it.ts"
+            }.byteInputStream())
         }
         // Use the real screen without starting a hardware decoder or network stream.
         val controller = Robolectric.buildActivity(MainActivity::class.java).create().visible()
@@ -38,11 +46,11 @@ class TvRemoteRegressionTest {
             val activity = controller.get()
             val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
             val deadline = System.nanoTime() + 5_000_000_000L
-            while (list.adapter!!.itemCount != 2 && System.nanoTime() < deadline) {
+            while (list.adapter!!.itemCount != count && System.nanoTime() < deadline) {
                 shadowOf(Looper.getMainLooper()).idle()
                 Thread.sleep(5)
             }
-            assertEquals(2, list.adapter!!.itemCount)
+            assertEquals(count, list.adapter!!.itemCount)
             layout(activity)
             test(activity)
         } finally {
@@ -61,6 +69,18 @@ class TvRemoteRegressionTest {
         activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, key))
         layout(activity)
         activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, key))
+    }
+
+    private fun settle(activity: MainActivity) {
+        repeat(4) {
+            layout(activity)
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20))
+        }
+    }
+
+    private fun focusedIndex(activity: MainActivity): Int {
+        val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
+        return list.findFocus()?.let(list::findContainingItemView)?.let(list::getChildAdapterPosition) ?: -1
     }
 
     private fun assertMenuOpen(activity: MainActivity) {
@@ -186,5 +206,179 @@ class TvRemoteRegressionTest {
         layout(activity)
         assertEquals(0, list.adapter!!.itemCount)
         assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.tv_empty_channels).visibility)
+    }
+
+    @Test fun `long list survives repeated arrows and failures without selecting a channel`() = withPlayback(240) { activity ->
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        settle(activity)
+        val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
+        val adapter = list.adapter as ChannelListAdapter
+        val current = adapter.channelAt(0)!!
+        // Bursts deliberately outrun RecyclerView layout, including destinations outside the viewport.
+        var expected = 0
+        repeat(12) { burst ->
+            repeat(57) { repeatIndex ->
+                activity.dispatchKeyEvent(KeyEvent(0L, repeatIndex.toLong(), KeyEvent.ACTION_DOWN,
+                    KeyEvent.KEYCODE_DPAD_DOWN, repeatIndex))
+                expected = (expected + 1) % 240
+                if (repeatIndex == 20) activity.onChannelFailed(current)
+            }
+            activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN))
+            settle(activity)
+            assertEquals("burst $burst", expected, focusedIndex(activity))
+            assertMenuOpen(activity)
+            assertFalse(activity.findViewById<View>(R.id.btn_retry).isFocusable)
+            assertTrue(adapter.channelAt(0)!!.stableId == current.stableId)
+            val selected = MainActivity::class.java.getDeclaredField("currentIndex").apply { isAccessible = true }.getInt(activity)
+            assertEquals(0, selected)
+            // Five minutes of virtual main-loop time across the twelve bursts.
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(25))
+            assertEquals(expected, focusedIndex(activity))
+        }
+        press(activity, KeyEvent.KEYCODE_BACK)
+        // Back closes one layer: the retained playback error becomes the active owner.
+        assertTrue(activity.findViewById<View>(R.id.btn_retry).isFocused)
+        press(activity, KeyEvent.KEYCODE_BACK)
+        press(activity, KeyEvent.KEYCODE_DPAD_UP)
+        settle(activity)
+        assertEquals(expected, focusedIndex(activity))
+    }
+
+    @Test fun `offscreen wrap can be interrupted by close and reopened at its remembered destination`() = withPlayback(240) { activity ->
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))
+        press(activity, KeyEvent.KEYCODE_BACK)
+        settle(activity)
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.view_channel_list).visibility)
+        assertFalse(activity.findViewById<RecyclerView>(R.id.rv_channels).hasFocus())
+        press(activity, KeyEvent.KEYCODE_DPAD_UP)
+        settle(activity)
+        assertEquals(239, focusedIndex(activity))
+        press(activity, KeyEvent.KEYCODE_DPAD_DOWN)
+        settle(activity)
+        assertEquals(0, focusedIndex(activity))
+    }
+
+    @Test fun `lost row focus recovers inside list and an empty search stays usable`() = withPlayback(240) { activity ->
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        press(activity, KeyEvent.KEYCODE_DPAD_DOWN)
+        settle(activity)
+        activity.findViewById<View>(R.id.root_container).requestFocus()
+        press(activity, KeyEvent.KEYCODE_DPAD_DOWN)
+        settle(activity)
+        assertEquals(2, focusedIndex(activity))
+        val search = activity.findViewById<EditText>(R.id.et_channel_search)
+        search.requestFocusFromTouch()
+        search.setText("no matches for this search")
+        settle(activity)
+        assertEquals(0, activity.findViewById<RecyclerView>(R.id.rv_channels).adapter!!.itemCount)
+        repeat(8) { press(activity, KeyEvent.KEYCODE_DPAD_DOWN) }
+        assertTrue(activity.findViewById<View>(R.id.view_channel_list).hasFocus())
+        search.setText("Two")
+        activity.findViewById<View>(R.id.btn_filter_all).performClick()
+        settle(activity)
+        assertEquals(0, focusedIndex(activity))
+        repeat(3) { press(activity, KeyEvent.KEYCODE_DPAD_DOWN); press(activity, KeyEvent.KEYCODE_DPAD_UP) }
+        assertEquals(0, focusedIndex(activity))
+    }
+
+    @Test fun `failure cannot focus retry while settings owns the remote`() = withPlayback { activity ->
+        press(activity, KeyEvent.KEYCODE_MENU)
+        val adapter = activity.findViewById<RecyclerView>(R.id.rv_channels).adapter as ChannelListAdapter
+        activity.onChannelFailed(adapter.channelAt(0)!!)
+        assertTrue(activity.findViewById<View>(R.id.layout_settings).hasFocus())
+        val error = activity.findViewById<ViewGroup>(R.id.layout_playback_error)
+        assertEquals(ViewGroup.FOCUS_BLOCK_DESCENDANTS, error.descendantFocusability)
+        repeat(15) { press(activity, KeyEvent.KEYCODE_DPAD_DOWN) }
+        assertTrue(activity.findViewById<View>(R.id.layout_settings).hasFocus())
+        press(activity, KeyEvent.KEYCODE_BACK)
+        assertTrue(activity.findViewById<View>(R.id.btn_retry).isFocused)
+    }
+
+    @Test fun `status changes preserve row focus and ignore another channel failure`() = withPlayback { activity ->
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
+        val adapter = list.adapter as ChannelListAdapter
+        val channel = adapter.channelAt(0)!!
+        for ((state, label) in listOf(ChannelPlaybackStatus.CONNECTING to R.string.connecting,
+            ChannelPlaybackStatus.PLAYING to R.string.playing, ChannelPlaybackStatus.BUFFERING to R.string.buffering,
+            ChannelPlaybackStatus.PAUSED to R.string.paused, ChannelPlaybackStatus.UNAVAILABLE to R.string.channel_unavailable_short)) {
+            activity.onChannelPlaybackChanged(channel, state)
+            settle(activity)
+            assertEquals(0, focusedIndex(activity))
+            assertEquals(activity.getString(label), list.findViewHolderForAdapterPosition(0)!!.itemView.findViewById<TextView>(R.id.tv_item_channel_status).text.toString())
+        }
+        activity.onChannelFailed(adapter.channelAt(1)!!)
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.layout_playback_error).visibility)
+    }
+
+    @Test fun `remote long OK toggles favourite once and its release does not select`() = withPlayback { activity ->
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        press(activity, KeyEvent.KEYCODE_DPAD_DOWN)
+        val adapter = activity.findViewById<RecyclerView>(R.id.rv_channels).adapter as ChannelListAdapter
+        val channel = adapter.channelAt(1)!!
+        activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER))
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(ViewConfiguration.getLongPressTimeout().toLong() + 20))
+        settle(activity)
+        activity.dispatchKeyEvent(KeyEvent(0, 1000, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER, 2, 0, 0, 0, KeyEvent.FLAG_LONG_PRESS))
+        activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
+        assertMenuOpen(activity)
+        assertTrue(PlaylistRepository(activity).isFavourite(channel))
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.view_channel_list).visibility)
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        settle(activity)
+        assertEquals(1, focusedIndex(activity))
+    }
+
+    @Test fun `single channel wraps and welcome with no channels keeps normal focus`() {
+        withPlayback(1) { activity ->
+            press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+            repeat(5) { press(activity, KeyEvent.KEYCODE_DPAD_DOWN); press(activity, KeyEvent.KEYCODE_DPAD_UP) }
+            assertEquals(0, focusedIndex(activity))
+        }
+        withPlayback(0) { activity ->
+            press(activity, KeyEvent.KEYCODE_DPAD_DOWN)
+            assertEquals(View.GONE, activity.findViewById<View>(R.id.view_channel_list).visibility)
+        }
+    }
+
+    @Test fun `window focus return restores the browsed row without reopening playback controls`() = withPlayback(240) { activity ->
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        repeat(30) { activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN)) }
+        settle(activity)
+        assertEquals(30, focusedIndex(activity))
+        activity.onWindowFocusChanged(false)
+        activity.findViewById<View>(R.id.root_container).requestFocus()
+        activity.onWindowFocusChanged(true)
+        settle(activity)
+        assertEquals(30, focusedIndex(activity))
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.view_osd).visibility)
+    }
+
+    @Test fun `OK commits the offscreen destination even before layout catches up`() = withPlayback(240) { activity ->
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))
+        activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_UP))
+        activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER))
+        activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
+        assertEquals(239, MainActivity::class.java.getDeclaredField("currentIndex").apply { isAccessible = true }.getInt(activity))
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.view_channel_list).visibility)
+    }
+
+    @Test fun `losing window focus cancels a held OK without favouriting or selecting on return`() = withPlayback { activity ->
+        press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
+        press(activity, KeyEvent.KEYCODE_DPAD_DOWN)
+        val adapter = activity.findViewById<RecyclerView>(R.id.rv_channels).adapter as ChannelListAdapter
+        val channel = adapter.channelAt(1)!!
+        activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER))
+        activity.onWindowFocusChanged(false)
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(ViewConfiguration.getLongPressTimeout().toLong() + 20))
+        assertFalse(PlaylistRepository(activity).isFavourite(channel))
+        activity.onWindowFocusChanged(true)
+        settle(activity)
+        activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
+        assertMenuOpen(activity)
+        assertEquals(1, focusedIndex(activity))
     }
 }
