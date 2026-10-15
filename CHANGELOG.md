@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.2.0 — 2026-10-15
+
+Open the welcome screen directly without a separate required language step. Add complete Spanish, Hindi, Thai and Arabic interface and channel-category translations, with English, Spanish, Hindi, Thai, Persian and Arabic in that order. Arabic follows Persian RTL text and right-docked panels. Update README screenshots and release preparation. See [release notes](docs/releases/v2.2.0.md).
+
+## 2.1.4 — 2026-10-15
+
+Preserve continuous search typing, translate Persian channel groups, dock Persian panels on the right and clarify favourite state. See [release notes](docs/releases/v2.1.4.md).
+
 ## 2.1.2 — 2026-10-15
 
 Fix the white focus overlay after returning from settings on newer Android versions; confirmed on an Android 16 phone. Shift TV channel content slightly left, restore spacing between Language and Check for updates, and keep the channel-switch sound toggle compact with one remote focus target. See [release notes](docs/releases/v2.1.2.md).

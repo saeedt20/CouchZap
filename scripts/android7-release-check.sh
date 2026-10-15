@@ -21,11 +21,43 @@ assert x2>x1 and y2>y1
 subprocess.run(['adb','shell','input','tap',str((x1+x2)//2),str((y1+y2)//2)],check=True,timeout=10)
 PY
 }
+release_version=$("$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging startup-results/candidate.apk | python3 -c "import re,sys; print(re.search(r\"versionName='([^']+)'\", sys.stdin.read()).group(1))")
+export COUCHZAP_TEST_VERSION="$release_version"
 timeout 60s adb install startup-results/candidate.apk
 timeout 15s adb shell am start -n com.couchzap.iptv/.MainActivity
 sleep 3
-dump language
-click language text 'English'
+dump startup
+if python3 - <<'CHECK_WELCOME'
+import xml.etree.ElementTree as E
+assert any(n.attrib.get('resource-id') == 'com.couchzap.iptv:id/btn_import' for n in E.parse('startup-results/startup-ui.xml').iter('node'))
+CHECK_WELCOME
+then
+  dump welcome
+  click welcome resource-id com.couchzap.iptv:id/btn_import_language
+  sleep 1
+  dump language
+  python3 - <<'CHECK_LANGUAGES'
+import xml.etree.ElementTree as E
+labels = [n.attrib.get('text', '').removeprefix('✓  ') for n in E.parse('startup-results/language-ui.xml').iter('node') if n.attrib.get('class') == 'android.widget.Button']
+expected = ['English', 'Español', 'हिन्दी', 'ไทย', 'فارسی', 'العربية']
+assert [label for label in labels if label in expected] == expected, labels
+CHECK_LANGUAGES
+  click language text 'العربية'
+  sleep 1
+  dump arabic-welcome
+  click arabic-welcome resource-id com.couchzap.iptv:id/btn_import_language
+  sleep 1
+  dump language
+else
+  cp startup-results/startup-ui.xml startup-results/language-ui.xml
+fi
+# The selected option may include the selection checkmark.
+python3 - <<'CHOOSE_ENGLISH'
+import re, subprocess, xml.etree.ElementTree as E
+node = next(n for n in E.parse('startup-results/language-ui.xml').iter('node') if n.attrib.get('text', '').removeprefix('✓  ') == 'English')
+x1, y1, x2, y2 = map(int, re.findall(r'\d+', node.attrib['bounds']))
+subprocess.run(['adb', 'shell', 'input', 'tap', str((x1+x2)//2), str((y1+y2)//2)], check=True, timeout=10)
+CHOOSE_ENGLISH
 sleep 1
 dump welcome
 click welcome resource-id com.couchzap.iptv:id/btn_public
@@ -78,8 +110,8 @@ for attempt in {1..8}; do
 sleep 4
 dump update
 python3 - <<'PY'
-import xml.etree.ElementTree as E
-assert any('2.1.4 is up to date' in n.attrib.get('text','') for n in E.parse('startup-results/update-ui.xml').iter('node'))
+import os, xml.etree.ElementTree as E
+assert any(os.environ['COUCHZAP_TEST_VERSION'] + ' is up to date' in n.attrib.get('text','') for n in E.parse('startup-results/update-ui.xml').iter('node'))
 PY
 
 timeout 10s adb shell pidof com.couchzap.iptv

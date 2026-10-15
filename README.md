@@ -18,31 +18,55 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **CouchZap-2.1.4.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.1.4.apk.sha256) accompanies the signed APK.
+1. Download the latest signed **CouchZap APK** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its `.apk.sha256` checksum. Source archives are also available on each release page.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
-3. On the welcome screen, optionally choose a language, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
+3. The app opens the welcome screen directly. Optionally choose a language, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
 
 Use **Settings → Playlist sources** to import an HTTP(S) link, choose another source or refresh the current playlist. Choose a provider, then a country/language/category for iptv-org or a country/themed list for Free-TV. Choose source order or natural name order; source channel numbers remain unchanged. Public imports are opt-in.
 
 Public channel availability depends on the source and your location. CouchZap downloads playlists when requested; it does not bundle streams or provide a subscription service.
 
+## Languages
+
+Choose a language from the welcome screen or **Settings → Language**. Selection is optional on first launch; the default is English. Your choice is saved and applied immediately, including after restarting the app.
+
+| Menu order | Language | Text direction | Channels and settings |
+| --- | --- | --- | --- |
+| 1 | English | Left to right | Left side |
+| 2 | Español | Left to right | Left side |
+| 3 | हिन्दी | Left to right | Left side |
+| 4 | ไทย | Left to right | Left side |
+| 5 | فارسی | Right to left | Right side |
+| 6 | العربية | Right to left | Right side |
+
+Each language includes interface messages, settings, updates, diagnostics and known channel categories. Custom channel/group names and playlist identities are preserved.
+
 ## Screenshots
 
-These images render the app's actual Android views using Robolectric 4.16.1 native graphics on API 28 (TV/welcome) and API 36 (phone). Channel data and the illustrative background are fixtures. They are not live broadcasts or physical-device captures; motion is disabled for stable screenshots. Updated channel/settings images show the Persian panels on the right and English panels on the left.
+These images render the app's actual Android views using Robolectric 4.16.1 native graphics. The new six-language welcome and English/Arabic panel images use API 28; the older Android 16 examples below use API 36. Channel data and the illustrative backdrop are fixtures. Motion is disabled for stable screenshots.
 
-| Screen | English | فارسی |
+| Screen | English | العربية |
 | --- | --- | --- |
-| Welcome | ![English welcome](docs/screenshots/v2.1.2/stage4-welcome-en.png) | ![ورود فارسی](docs/screenshots/v2.1.2/stage4-welcome-fa.png) |
-| Channels | ![English channels](docs/work/phase07/screenshots/stage4-channels-en.png) | ![فهرست فارسی در سمت راست](docs/work/phase07/screenshots/stage4-channels-fa.png) |
-| Info | ![English TV Info](docs/work/phase07/screenshots/stage7-info-en-tv-api28-favourite-off.png) | ![اطلاعات فارسی در گوشی](docs/work/phase07/screenshots/stage7-info-fa-phone-api36-favourite-off.png) |
-| Settings | ![English settings](docs/work/phase07/screenshots/stage4-settings-en.png) | ![تنظیمات فارسی در سمت راست](docs/work/phase07/screenshots/stage4-settings-fa.png) |
+| Welcome | ![English welcome](docs/screenshots/v2.2.0/welcome-tv-en.png) | ![الترحيب بالعربية](docs/screenshots/v2.2.0/welcome-tv-ar.png) |
+| Channels | ![English channels on the left](docs/screenshots/v2.2.0/channels-tv-en.png) | ![القنوات على اليمين](docs/screenshots/v2.2.0/channels-tv-ar.png) |
+| Info | ![English playback controls](docs/screenshots/v2.2.0/info-tv-en.png) | ![عناصر التحكم بالعربية](docs/screenshots/v2.2.0/info-tv-ar.png) |
+| Settings | ![English settings on the left](docs/screenshots/v2.2.0/settings-tv-en.png) | ![الإعدادات على اليمين](docs/screenshots/v2.2.0/settings-tv-ar.png) |
 
 <details>
-<summary>Phone welcome, Android 16 settings and Persian search</summary>
+<summary>Phone welcome in all six languages, in menu order</summary>
 
-<img src="docs/screenshots/v2.1.2/stage3-welcome-phone-en.png" alt="English phone welcome" width="270">
-<img src="docs/screenshots/v2.1.2/stage3-welcome-phone-fa.png" alt="Persian phone welcome" width="270">
+<img src="docs/screenshots/v2.2.0/welcome-phone-en.png" alt="English" width="180">
+<img src="docs/screenshots/v2.2.0/welcome-phone-es.png" alt="Español" width="180">
+<img src="docs/screenshots/v2.2.0/welcome-phone-hi.png" alt="हिन्दी" width="180">
+<img src="docs/screenshots/v2.2.0/welcome-phone-th.png" alt="ไทย" width="180">
+<img src="docs/screenshots/v2.2.0/welcome-phone-fa.png" alt="فارسی" width="180">
+<img src="docs/screenshots/v2.2.0/welcome-phone-ar.png" alt="العربية" width="180">
+
+</details>
+
+<details>
+<summary>Android 16 settings and Persian search from 2.1.x</summary>
 
 <img src="docs/work/phase07/screenshots/ui-fix-settings-phone-en-api36.png" alt="English Android 16 settings after Back" width="270">
 <img src="docs/work/phase07/screenshots/ui-fix-settings-phone-fa-api36.png" alt="Persian Android 16 settings after Back" width="270">
@@ -155,9 +179,11 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-The 2.1.4 implementation passed **116 unit/Robolectric cases** with zero failures, errors or skips, debug/release lint with zero errors (125 debug and 124 release warnings remain), and optimized release assembly. Coverage includes API 24, 28 and 36, continuous multiword/composing-text search, delayed remote navigation, Persian group filtering and labels, saved mode/aspect values, bilingual panel docking, favourite state, settings scrollbars and the Android 16 focus-halo regression. Native screenshots use API 28 and API 36 with fixture data. See the [bilingual UI checks](docs/work/phase07-bilingual-panels.md), [localization/search checks](docs/work/phase08-localization-search.md) and [2.1.4 release notes](docs/releases/v2.1.4.md).
+The multilingual implementation passed **119 unit/Robolectric cases**, with zero failures, errors or skips, in [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38727661676). Debug/release lint completed with no errors, and Debug and optimized Release APK assembly passed. Existing lint warnings remain.
 
-The user tested the 2.1.3 UI fixes and the 2.1.4 candidate and approved publication. The published APK preserves the exact bytes of the tested 2.1.4 candidate and the existing release certificate. An [independent GitHub build](https://github.com/saeedt20/CouchZap/actions/runs/38660365176) passed and matched all 658 app payload entries; only signing records and VCS metadata are excluded from that comparison. Publication also checks the same signed APK on Android TV 7: clean installation, first language choice, public import, sound toggle, diagnostics and update UI. The previously user-confirmed Android 16 white-halo fix, Android 7 font-crash fix and TLS trust configuration are retained; the [2.1.0 network integration results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) document the earlier network checks. Physical TV remote behavior, hardware decoding, startup/frame timing and perceived sound loudness still require device checks.
+Coverage includes API 24, 28 and 36, optional first-launch language selection, the six-language menu order, saved language after restart, live RTL/LTR switching, channel/settings panel docking, native TV/phone layouts, multiword/composing-text search, favourites, settings focus and playlist persistence. See the [2.2.0 release notes](docs/releases/v2.2.0.md) and earlier [localization/search checks](docs/work/phase08-localization-search.md).
+
+The Android 16 focus-overlay fix and Android 7 startup/TLS fixes are retained. The [earlier network integration results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) document live Android 7 network checks. Release publication separately verifies the signed APK against the independent build and exercises the same signed bytes on Android TV 7; see the [publishing process](docs/releases/publishing.md).
 
 Automated checks do not validate physical TV remotes, hardware decoders or live stream availability. Playback depends on the device's codec support and source availability. There is no provider-account login, DRM configuration, recording, catch-up service or SmoothStreaming module. Opaque HLS/DASH links use manifest hints or a server's HEAD content type; servers that supply neither may require a conventional manifest URL.
 
