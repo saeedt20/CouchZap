@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.1 — 2026-10-15
+
+Fix remote Up/Down jumping across the public country/language/category picker on Android TV, reported on the XDSR 685 HDR with Android 7. Follow the focused control inside the active panel and link catalog rows in displayed order, including after filtering. See [release notes](docs/releases/v2.2.1.md).
+
 ## 2.2.0 — 2026-10-15
 
 Open the welcome screen directly without a separate required language step. Add complete Spanish, Hindi, Thai and Arabic interface and channel-category translations, with English, Spanish, Hindi, Thai, Persian and Arabic in that order. Arabic follows Persian RTL text and right-docked panels. Update README screenshots and release preparation. See [release notes](docs/releases/v2.2.0.md).

@@ -66,6 +66,58 @@ dump providers
 click providers text 'iptv-org'
 sleep 1
 dump public
+if python3 - <<'CHECK_VERSION'
+import os
+assert tuple(map(int, os.environ['COUCHZAP_TEST_VERSION'].split('.'))) >= (2, 2, 1)
+CHECK_VERSION
+then
+  click public text 'Choose a country'
+  catalog_ready=false
+  for attempt in {1..15}; do
+    sleep 1
+    dump catalog
+    if python3 - <<'CHECK_CATALOG'
+import xml.etree.ElementTree as E
+assert any(n.attrib.get('class') == 'android.widget.EditText' for n in E.parse('startup-results/catalog-ui.xml').iter('node'))
+CHECK_CATALOG
+    then catalog_ready=true; break; fi
+  done
+  test "$catalog_ready" = true
+  printf '[]' > startup-results/catalog-focus.json
+  for direction in down up; do
+    if [ "$direction" = down ]; then count=35; key=20; else count=20; key=19; fi
+    for ((step=0; step<count; step++)); do
+      timeout 10s adb shell input keyevent "$key"
+      dump catalog
+      python3 - "$direction" <<'CHECK_ADJACENT'
+import json, re, sys, xml.etree.ElementTree as E
+from pathlib import Path
+root = E.parse('startup-results/catalog-ui.xml')
+page = next(n for n in root.iter('node') if n.attrib.get('resource-id') == 'com.couchzap.iptv:id/settings_pages')
+rows = []
+for n in page.iter('node'):
+    bounds = list(map(int, re.findall(r'\d+', n.attrib.get('bounds', ''))))
+    if n.attrib.get('class') == 'android.widget.Button' and len(bounds) == 4 and bounds[2] > bounds[0] and bounds[3] > bounds[1]: rows.append(n)
+focused = [n for n in rows if n.attrib.get('focused') == 'true']
+assert len(focused) == 1, 'Country row must retain remote focus'
+labels = [n.attrib['text'] for n in rows]
+label = focused[0].attrib['text']
+trace_file = Path('startup-results/catalog-focus.json')
+trace = json.loads(trace_file.read_text())
+if trace:
+    previous = trace[-1]
+    assert previous in labels, f'Focus jumped away from {previous} to {label}'
+    assert labels.index(label) == labels.index(previous) + (1 if sys.argv[1] == 'down' else -1), (previous, label)
+else:
+    assert labels.index(label) == 0, 'First Down must reach the first country'
+trace.append(label); trace_file.write_text(json.dumps(trace))
+CHECK_ADJACENT
+    done
+  done
+  timeout 10s adb shell input keyevent 4
+  sleep 1
+  dump public
+fi
 click public text 'All public channels'
 loaded=false
 for attempt in {1..12}; do

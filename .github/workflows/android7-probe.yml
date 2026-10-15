@@ -83,4 +83,5 @@ jobs:
             startup-results/logcat.txt
             startup-results/crash.txt
             startup-results/*-ui.xml
+            startup-results/catalog-focus.json
           retention-days: 7
