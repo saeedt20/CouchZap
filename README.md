@@ -18,7 +18,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download the latest signed **CouchZap APK** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its `.apk.sha256` checksum. Source archives are also available on each release page.
+1. Download **CouchZap-2.2.0.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](distribution/CouchZap-2.2.0.apk.sha256). Source archives are also available on each release page.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. The app opens the welcome screen directly. Optionally choose a language, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
@@ -179,7 +179,7 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-The multilingual implementation passed **119 unit/Robolectric cases**, with zero failures, errors or skips, in [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38727661676). Debug/release lint completed with no errors, and Debug and optimized Release APK assembly passed. Existing lint warnings remain.
+The multilingual implementation passed **119 unit/Robolectric cases**, with zero failures, errors or skips, in [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38729586837). Debug/release lint completed with no errors, and Debug and optimized Release APK assembly passed. Existing lint warnings remain.
 
 Coverage includes API 24, 28 and 36, optional first-launch language selection, the six-language menu order, saved language after restart, live RTL/LTR switching, channel/settings panel docking, native TV/phone layouts, multiword/composing-text search, favourites, settings focus and playlist persistence. See the [2.2.0 release notes](docs/releases/v2.2.0.md) and earlier [localization/search checks](docs/work/phase08-localization-search.md).
 

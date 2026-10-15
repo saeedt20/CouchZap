@@ -124,7 +124,7 @@ jobs:
             gh release upload "v$RELEASE_VERSION" \
               "distribution/CouchZap-$RELEASE_VERSION.apk" \
               "distribution/CouchZap-$RELEASE_VERSION.apk.sha256" --clobber
-            gh release edit "v$RELEASE_VERSION" --draft=false \
+            gh release edit "v$RELEASE_VERSION" --tag "v$RELEASE_VERSION" --draft=false \
               --target "$GITHUB_SHA" --title "CouchZap $RELEASE_VERSION" \
               --notes-file "docs/releases/v$RELEASE_VERSION.md"
           else

@@ -25,6 +25,9 @@ captures/
 .env.*
 *.jks
 *.keystore
+*.p12
+*.pfx
+*signing-backup*.zip
 *.pem
 *.key
 keystore.properties
