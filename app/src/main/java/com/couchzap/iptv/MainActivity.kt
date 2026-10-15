@@ -3,6 +3,9 @@ package com.couchzap.iptv
 import android.content.Context
 import android.widget.LinearLayout
 import com.couchzap.iptv.ui.SettingsPanel
+import com.couchzap.iptv.ui.design.*
+import com.couchzap.iptv.ui.channels.GroupsPicker
+import com.couchzap.iptv.ui.settings.*
 import com.couchzap.iptv.ui.WelcomeIntro
 import com.couchzap.iptv.player.CrtSwitchSound
 import com.couchzap.iptv.util.AppLanguage
@@ -83,6 +86,11 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private lateinit var welcomeIntro: WelcomeIntro
     private lateinit var crtSound: CrtSwitchSound
     private lateinit var settingsPanel: SettingsPanel
+    private lateinit var settingsHost: SettingsWindowHost
+    private var stagingWelcomeFlow = false
+    private var pendingChannelsAfterSettings = false
+    private lateinit var channelMotion: OverlayMotion
+    private lateinit var groupsPicker: GroupsPicker
     override fun attachBaseContext(newBase: Context) { super.attachBaseContext(AppLanguage.wrap(newBase)) }
 
     private lateinit var updateMenu: UpdateMenu
@@ -144,6 +152,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private var importGeneration = 0
     private var importJob: kotlinx.coroutines.Job? = null
     private var welcomeFlowOrigin: View? = null
+    private var channelImeInset = 0
     private var pickerOpen = false
     private var consumeConfirmRelease = false
 
@@ -196,12 +205,19 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
         repository = PlaylistRepository(this)
         prefs = Prefs(this)
+        channelMotion = OverlayMotion(binding.viewChannelList.root, scrim = binding.root.findViewById(R.id.cz_channel_scrim))
+        binding.root.findViewById<View>(R.id.cz_channel_scrim).setOnClickListener { closeChannelListOverlay() }
+        groupsPicker = GroupsPicker(this,canRestore={channelMotion.desiredOpen&&!settingsHost.ownsInput&&!isFinishing&&!isDestroyed}) { toggleSettingsMenu() }
         crtSound = CrtSwitchSound.create(this, prefs)
         welcomeIntro = WelcomeIntro(binding.viewImport, prefs)
         settingsPanel = SettingsPanel(this, binding).also { panel ->
-            panel.onClose = { if (!importCommitting) closeSettingsMenu() }
+            panel.onClose = { closeSettingsMenu() }
             panel.onRootBack = { if (welcomeFlowOrigin != null) closeSettingsMenu() }
         }
+        SettingsCategoryController(binding, settingsPanel)
+        settingsHost = SettingsWindowHost(this, binding, settingsPanel,
+            canClose = { !importCommitting }, blockedClose = { notice(getString(R.string.finishing_import)) },
+            onBack = { handleBack() }, beforeOpen = { settingsPanel.reset(); prepareSettingsPresentation() }, afterClosed = { finishSettingsClose() }, menuAllowed = { !importInProgress })
         updateMenu = UpdateMenu(this, settingsPanel)
         diagnosticMenu = DiagnosticMenu(this, settingsPanel, ::notice)
         epg = EpgRepository(this)
@@ -209,7 +225,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         playlistMenus = PlaylistMenus(this, repository, lifecycleScope,
             onFile = { launchImportPicker() },
             onSource = { source, refresh -> importSource(source, refresh) },
-            onNotice = ::notice, panel = settingsPanel, onOpen = { if (binding.layoutSettings.visibility != View.VISIBLE) toggleSettingsMenu() })
+            onNotice = ::notice, panel = settingsPanel, onOpen = { if (!stagingWelcomeFlow && !settingsHost.desiredOpen) toggleSettingsMenu() })
         currentAspectIndex = aspectRatios.indexOf(prefs.getAspectRatioMode()).coerceAtLeast(0)
 
         setupFullscreen()
@@ -269,7 +285,11 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         setupGesturesAndTouch()
         binding.btnRetry.setOnClickListener { binding.layoutPlaybackError.visibility = View.GONE; playCurrentChannel() }
         binding.btnErrorNext.setOnClickListener { zapNext() }
+        listOf(binding.btnRetry,binding.btnErrorNext,binding.btnQuickSettings).forEach{FocusMotionBinder.bind(it,if(it===binding.btnQuickSettings)FocusMotionBinder.Role.ICON else FocusMotionBinder.Role.ROW)}
         applyInterfaceMode()
+        binding.root.addOnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->
+            if(r-l!=oldR-oldL||b-t!=oldB-oldT)updateResponsiveLayout()
+        }
         updateAspectLabel()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() { handleBack() }
@@ -291,6 +311,8 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val safe = insets.getInsets(WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.systemBars())
             view.setPadding(safe.left, safe.top, safe.right, safe.bottom)
+            channelImeInset=(insets.getInsets(WindowInsetsCompat.Type.ime()).bottom-safe.bottom).coerceAtLeast(0)
+            if(::settingsHost.isInitialized&&::osdController.isInitialized)updateResponsiveLayout()
             insets
         }
         WindowInsetsControllerCompat(window, binding.root).apply {
@@ -314,6 +336,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     override fun onStop() {
         super.onStop()
         welcomeIntro.finish(); crtSound.pause(); Anim.finishAll(binding.root)
+        groupsPicker.close(); channelMotion.settle(); settingsHost.closeImmediatelyForLifecycle()
         osdController.pause()
         consumeConfirmRelease = false
         cancelRowConfirm()
@@ -502,7 +525,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         }
         binding.viewChannelList.rvChannels.adapter = adapter
         channelNavigation = ChannelListNavigation(binding.viewChannelList.rvChannels, adapter,
-            isActive = { binding.viewChannelList.root.visibility == View.VISIBLE && !isFinishing && !isDestroyed },
+            isActive = { channelMotion.desiredOpen && !isFinishing && !isDestroyed },
             isTv = { isTvMode }, onEmpty = { binding.viewChannelList.etChannelSearch.requestFocus() })
         binding.viewChannelList.btnCloseChannelList.setOnClickListener {
             closeChannelListOverlay()
@@ -524,13 +547,28 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         }
         binding.viewChannelList.btnFilterAll.setOnClickListener { favouritesOnly = false; selectedGroup = null; updateChannelListAdapter(); focusCurrentChannel() }
         binding.viewChannelList.btnFilterFavourites.setOnClickListener { favouritesOnly = true; selectedGroup = null; updateChannelListAdapter(); focusCurrentChannel() }
+        binding.viewChannelList.btnChannelClear.setOnClickListener { binding.viewChannelList.etChannelSearch.text.clear() }
         binding.viewChannelList.btnFilterGroups.setOnClickListener {
+            channelNavigation.cancel();cancelRowConfirm()
+            val query = binding.viewChannelList.etChannelSearch.text.toString().trim()
             val values = channels.map { it.group.orEmpty() }.distinct().sorted()
-            val names = values.map { GroupLabels.display(this, it) }.toTypedArray()
-            AlertDialog.Builder(this).setTitle(R.string.groups).setItems(names) { _, index ->
-                selectedGroup = values[index]; favouritesOnly = false; updateChannelListAdapter(); focusCurrentChannel()
-            }.setNegativeButton(R.string.cancel, null).show()
+            val groups = values.map { group -> GroupsPicker.Group(group, GroupLabels.display(this, group),
+                channels.count { it.group.orEmpty() == group && (query.isEmpty() || it.name.contains(query, true) || it.number.toString().startsWith(query)) }) }
+            groupsPicker.show(groups, selectedGroup, binding.viewChannelList.btnFilterGroups, binding.viewChannelList.root) { group ->
+                selectedGroup = group; favouritesOnly = false; updateChannelListAdapter(); focusCurrentChannel()
+            }
         }
+        binding.viewChannelList.root.findViewById<View>(R.id.cz_channel_empty_action).setOnClickListener {
+            when {
+                channels.isEmpty() -> openWelcomeFlow(binding.viewImport.btnImport) { playlistMenus.ownChoices() }
+                binding.viewChannelList.etChannelSearch.text.isNotEmpty() -> binding.viewChannelList.etChannelSearch.text.clear()
+                else -> { favouritesOnly = false; selectedGroup = null; updateChannelListAdapter() }
+            }
+        }
+        listOf(binding.viewChannelList.btnFilterAll,binding.viewChannelList.btnFilterFavourites,binding.viewChannelList.btnFilterGroups,
+            binding.viewChannelList.btnCloseChannelList,binding.viewChannelList.btnChannelClear,
+            binding.viewChannelList.root.findViewById(R.id.cz_channel_empty_action)).forEach { it.isFocusableInTouchMode=true;FocusMotionBinder.bind(it) }
+
     }
 
     private fun updateChannelListAdapter() {
@@ -548,7 +586,23 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         adapter?.setChannels(filtered, filtered.indexOfFirst { it.stableId == playingId }, favourites)
         adapter?.updatePlayback(playingId, playbackStatus)
         binding.viewChannelList.tvEmptyChannels.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
-        binding.viewChannelList.tvChannelListHeader.text = getString(R.string.channels) + " · " + filtered.size
+        binding.viewChannelList.tvChannelListHeader.setText(R.string.channels)
+        binding.viewChannelList.root.findViewById<android.widget.TextView>(R.id.cz_channel_count).text = resources.getQuantityString(R.plurals.cz_channel_count, filtered.size, filtered.size)
+        binding.viewChannelList.btnChannelClear.visibility = if (query.isEmpty()) View.GONE else View.VISIBLE
+        binding.viewChannelList.tvEmptyChannels.setText(when {
+            channels.isEmpty() -> R.string.no_playlist
+            query.isNotEmpty() -> R.string.no_matches
+            favouritesOnly -> R.string.cz_empty_favourites
+            else -> R.string.cz_empty_filter
+        })
+        binding.viewChannelList.root.findViewById<android.widget.Button>(R.id.cz_channel_empty_action).apply {
+            visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+            setText(when { channels.isEmpty() -> R.string.btn_import_playlist; query.isNotEmpty() -> R.string.cz_clear_search; else -> R.string.all_channels })
+        }
+        binding.viewChannelList.root.findViewById<android.widget.TextView>(R.id.cz_channel_filter_context).apply {
+            text = selectedGroup?.let { GroupLabels.display(this@MainActivity, it) }
+            visibility = if (selectedGroup == null) View.GONE else View.VISIBLE
+        }
         binding.viewChannelList.btnFilterAll.isSelected = !favouritesOnly && selectedGroup == null
         binding.viewChannelList.btnFilterFavourites.isSelected = favouritesOnly
         binding.viewChannelList.btnFilterGroups.isSelected = selectedGroup != null
@@ -556,18 +610,16 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     }
 
     private fun toggleChannelListOverlay() {
-        if (binding.viewChannelList.channelListContainer.visibility == View.VISIBLE) {
-            closeChannelListOverlay()
-        } else {
-            openChannelListOverlay()
-        }
+        if (channelMotion.desiredOpen) closeChannelListOverlay() else openChannelListOverlay()
     }
 
     private fun openChannelListOverlay() {
+        if (settingsHost.ownsInput) { if (!importCommitting) { pendingChannelsAfterSettings = true; closeSettingsMenu() }; return }
         closeSettingsMenu()
         osdController.hideOsd()
         binding.btnQuickSettings.visibility = View.GONE
-        Anim.showOverlay(binding.viewChannelList.channelListContainer)
+        groupsPicker.close()
+        channelMotion.show()
         updatePlaybackErrorFocus()
         updateChannelListAdapter()
         focusCurrentChannel()
@@ -600,26 +652,31 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private fun closeChannelListOverlay() {
         cancelRowConfirm()
         channelNavigation.cancel()
-        Anim.hideOverlay(binding.viewChannelList.channelListContainer)
-        binding.root.requestFocus()
+        val owned = channelMotion.desiredOpen
+        groupsPicker.close()
+        channelMotion.hide()
+        if (owned) binding.root.requestFocus()
         updatePlaybackErrorFocus()
         binding.btnQuickSettings.visibility = if (isTvMode) View.GONE else View.VISIBLE
     }
 
     private fun setupSettingsMenu() {
-        binding.btnSettingsCrt.isChecked = prefs.isCrtSoundEnabled()
-        binding.btnSettingsCrtRow.setOnClickListener { binding.btnSettingsCrt.toggle() }
-        binding.btnSettingsCrtRow.accessibilityDelegate = object : View.AccessibilityDelegate() {
-            override fun onInitializeAccessibilityNodeInfo(host: View, info: android.view.accessibility.AccessibilityNodeInfo) {
-                super.onInitializeAccessibilityNodeInfo(host, info)
-                info.className = "android.widget.Switch"
-                info.isCheckable = true
-                info.isChecked = binding.btnSettingsCrt.isChecked
-            }
+        updateSoundLabel()
+        settingsPanel.onClick(binding.btnSettingsCrtRow) {
+            val enabled = !prefs.isCrtSoundEnabled()
+            crtSound.setEnabled(enabled)
+            updateSoundLabel()
+            binding.btnSettingsCrtRow.announceForAccessibility(getString(if(enabled) R.string.cz_on else R.string.off))
         }
-        binding.btnSettingsCrt.setOnCheckedChangeListener { _, checked ->
-            if (checked != prefs.isCrtSoundEnabled()) crtSound.setEnabled(checked)
-            binding.btnSettingsCrtRow.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)
+        settingsPanel.onClick(binding.btnSettingsEffects) {
+            val modes = listOf("auto", "full", "safe", "off")
+            settingsPanel.choices("effects", R.string.cz_effects,
+                listOf(getString(R.string.automatic),getString(R.string.cz_effects_full),getString(R.string.cz_effects_safe),getString(R.string.off)),
+                modes.indexOf(prefs.getEffectsMode()),
+                secondary = listOf(getString(R.string.cz_effects_auto_help),getString(R.string.cz_effects_full_help),getString(R.string.cz_effects_safe_help),getString(R.string.cz_effects_off_help)),
+                keys = modes, description = getString(settingsHost.explanation())) { which ->
+                prefs.setEffectsMode(modes[which]);if(which<=1)settingsHost.retryEffectsOnNextOpen();settingsHost.refreshPolicy();updateEffectsLabel();settingsPanel.back()
+            }
         }
         binding.btnQuickSettings.setOnClickListener { toggleSettingsMenu() }
         settingsPanel.onClick(binding.btnSettingsClose) { closeSettingsMenu() }
@@ -660,6 +717,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         settingsPanel.onClick(binding.btnSettingsLogs) { diagnosticMenu.show(repository.source()?.kind, channels.size) }
         settingsPanel.onClick(binding.btnSettingsAbout) {
             settingsPanel.page("about", R.string.about) { body ->
+                body.addView(android.widget.ImageView(this).apply{setImageResource(R.drawable.ic_brand);importantForAccessibility=View.IMPORTANT_FOR_ACCESSIBILITY_NO},android.widget.LinearLayout.LayoutParams(settingsPanel.dp(48),settingsPanel.dp(48)).apply{marginStart=settingsPanel.dp(8);bottomMargin=settingsPanel.dp(12)})
                 settingsPanel.text(body, getString(R.string.about_body))
                 val version = packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
                 settingsPanel.text(body, getString(R.string.version_label, androidx.core.text.BidiFormatter.getInstance(AppLanguage.isRtl(prefs.getLanguage())).unicodeWrap(version, false)))
@@ -679,13 +737,15 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private fun languageMenu() {
         welcomeIntro.finish(); Anim.finishAll(binding.root)
         settingsPanel.choices("language", R.string.language,
-            AppLanguage.supported.map { it.name }, AppLanguage.supported.indexOfFirst { it.code == (prefs.getLanguage() ?: AppLanguage.DEFAULT) }) { which ->
+            AppLanguage.supported.map { it.name }, AppLanguage.supported.indexOfFirst { it.code == (prefs.getLanguage() ?: AppLanguage.DEFAULT) },
+            secondary = listOf("", "Spanish", "Hindi", "Thai", "Persian", "Arabic"), keys = AppLanguage.supported.map { it.code }) { which ->
             val language = AppLanguage.supported[which].code
             prefs.setLanguage(language)
             AppLanguage.apply(this, binding.root, language)
+            AppLanguage.apply(this, settingsHost.root, language)
             AppLanguage.translate(this, binding.settingsRootScroll)
             settingsPanel.back(); settingsPanel.header()
-            applyInterfaceMode(); updateAspectLabel(); updateSleepLabel(); updateSourceLabel()
+            applyInterfaceMode(); updateAspectLabel(); updateSleepLabel(); updateSoundLabel(); updateEffectsLabel(); updateSourceLabel()
             updateChannelListAdapter()
             playerController?.refreshPlaybackInfo()
             osdController.refresh()
@@ -715,27 +775,36 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun openWelcomeFlow(origin: View, action: () -> Unit) {
         welcomeFlowOrigin = origin
-        if (binding.layoutSettings.visibility != View.VISIBLE) toggleSettingsMenu()
-        action()
+        welcomeIntro.finish()
+        if (settingsHost.desiredOpen) { action(); return }
+        if (!settingsHost.ownsInput) { settingsPanel.reset(); prepareSettingsPresentation() }
+        stagingWelcomeFlow = true
+        try { action() } finally { stagingWelcomeFlow = false }
+        settingsHost.open(staged = true)
+        updatePlaybackErrorFocus()
+    }
+
+    private fun prepareSettingsPresentation() {
+        welcomeIntro.finish(); groupsPicker.close()
+        closeChannelListOverlay(); osdController.hideOsd()
+        binding.btnQuickSettings.visibility = View.GONE
+        updateSourceLabel(); updateSoundLabel(); updateEffectsLabel();settingsPanel.header()
     }
 
     private fun toggleSettingsMenu() {
-        if (binding.layoutSettings.visibility == View.VISIBLE) {
-            closeSettingsMenu()
-        } else {
-            closeChannelListOverlay()
-            osdController.hideOsd()
-            Anim.showOverlay(binding.layoutSettings)
-            updatePlaybackErrorFocus()
-            binding.layoutSettings.bringToFront()
-            binding.viewImport.root.descendantFocusability = android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS
-            binding.layoutFileBrowser.descendantFocusability = android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS
-            binding.btnQuickSettings.visibility = View.GONE
-            updateSourceLabel()
-            settingsPanel.header(); settingsPanel.focusFirst()
-        }
+        if (settingsHost.desiredOpen) closeSettingsMenu()
+        else { settingsHost.open(); updatePlaybackErrorFocus() }
     }
 
+    private fun updateSoundLabel() {
+        binding.tvSettingsCrtValue.setText(if(prefs.isCrtSoundEnabled())R.string.cz_on else R.string.off)
+        binding.btnSettingsCrtRow.setBoolean(prefs.isCrtSoundEnabled())
+    }
+    private fun updateEffectsLabel() {
+        binding.tvSettingsEffectsValue.setText(when(prefs.getEffectsMode()){"full"->R.string.cz_effects_full;"safe"->R.string.cz_effects_safe;"off"->R.string.off;else->R.string.automatic})
+        binding.btnSettingsEffects.refreshDescription()
+        FocusMotionBinder.configure(binding.root, EffectsPolicy.resolve(EffectsMode.from(prefs.getEffectsMode()),EffectsPolicy.read(binding.root)).name.lowercase())
+    }
     private fun updateSourceLabel() {
         val source = repository.source()
         val label = source?.label?.let { androidx.core.text.BidiFormatter.getInstance(AppLanguage.isRtl(prefs.getLanguage())).unicodeWrap(it) }
@@ -743,17 +812,19 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             getString(R.string.source_updated, DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(repository.updatedAt())))
     }
 
-    private fun closeSettingsMenu() {
-        if (importCommitting) { notice(getString(R.string.finishing_import)); return }
+    private fun closeSettingsMenu() { settingsHost.close() }
+
+    private fun finishSettingsClose() {
+        val openChannels = pendingChannelsAfterSettings
+        pendingChannelsAfterSettings = false
         val origin = welcomeFlowOrigin
         welcomeFlowOrigin = null
-        settingsPanel.reset()
-        Anim.hideOverlay(binding.layoutSettings)
         binding.viewImport.root.descendantFocusability = android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS
         binding.layoutFileBrowser.descendantFocusability = android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS
         if (importScreen.isVisible()) (origin ?: binding.viewImport.btnImport).requestFocusFromTouch()
-        binding.btnQuickSettings.visibility = if (isTvMode) View.GONE else View.VISIBLE
+        binding.btnQuickSettings.visibility = if (isTvMode || channelMotion.desiredOpen) View.GONE else View.VISIBLE
         updatePlaybackErrorFocus()
+        if (openChannels && channels.isNotEmpty()) openChannelListOverlay()
     }
 
     private fun setupGesturesAndTouch() {
@@ -796,7 +867,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
                 velocityY: Float
             ): Boolean {
                 if (e1 == null) return false
-                if (importScreen.isVisible() || fileBrowser.isVisible()) return false
+                if (importScreen.isVisible() || fileBrowser.isVisible() || channelMotion.desiredOpen || groupsPicker.ownsInput || binding.layoutSettings.visibility == View.VISIBLE) return false
 
                 val deltaX = e2.x - e1.x
                 val deltaY = e2.y - e1.y
@@ -836,19 +907,20 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (event.actionMasked == MotionEvent.ACTION_DOWN && ::welcomeIntro.isInitialized) welcomeIntro.finish()
+        if (event.actionMasked == MotionEvent.ACTION_DOWN && ::welcomeIntro.isInitialized) { welcomeIntro.finish(); FocusMotionBinder.input(binding.root, false) }
         return super.dispatchTouchEvent(event)
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (event != null && ::gestureDetector.isInitialized && gestureDetector.onTouchEvent(event)) {
+        if (event != null && ::gestureDetector.isInitialized && !channelMotion.desiredOpen && binding.layoutSettings.visibility != View.VISIBLE && !groupsPicker.ownsInput && gestureDetector.onTouchEvent(event)) {
             return true
         }
         return super.onTouchEvent(event)
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.action == KeyEvent.ACTION_DOWN && ::welcomeIntro.isInitialized) welcomeIntro.finish()
+        if (event.action == KeyEvent.ACTION_DOWN && ::welcomeIntro.isInitialized) { welcomeIntro.finish(); FocusMotionBinder.input(binding.root, true) }
+        if (::settingsHost.isInitialized && settingsHost.ownsInput) return settingsHost.dispatch(event)
         val key = event.keyCode
         // A press that opens the menu must not release onto a newly focused row.
         if (Keys.isConfirmKey(key) && consumeConfirmRelease) {
@@ -869,7 +941,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) toggleSettingsMenu()
             return true
         }
-        if (binding.viewChannelList.root.visibility == View.VISIBLE) {
+        if (channelMotion.desiredOpen) {
             val list = binding.viewChannelList.rvChannels
             if (Keys.isConfirmKey(key) && (list.hasFocus() || channelNavigation.hasPending || confirmChannelId != null)) {
                 handleRowConfirm(event)
@@ -895,12 +967,10 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
                 return true
             }
             if (dispatchPanelDirection(binding.viewChannelList.root, event)) return true
-        } else if (binding.layoutSettings.visibility == View.VISIBLE && dispatchPanelDirection(binding.layoutSettings, event)) {
-            return true
         }
         val overlay = importScreen.isVisible() || fileBrowser.isVisible() ||
             binding.layoutSettings.visibility == View.VISIBLE ||
-            binding.viewChannelList.channelListContainer.visibility == View.VISIBLE ||
+            channelMotion.desiredOpen ||
             binding.layoutPlaybackError.visibility == View.VISIBLE
         if (overlay) return super.dispatchKeyEvent(event)
         val osdFocused = osdController.controlsActive && binding.viewOsd.root.hasFocus() && osdController.isVisible()
@@ -987,7 +1057,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     }
 
     private fun updatePlaybackErrorFocus() {
-        val covered = binding.viewChannelList.root.visibility == View.VISIBLE || binding.layoutSettings.visibility == View.VISIBLE ||
+        val covered = channelMotion.desiredOpen || settingsHost.ownsInput || groupsPicker.ownsInput ||
             importScreen.isVisible() || fileBrowser.isVisible()
         binding.layoutPlaybackError.descendantFocusability = if (covered) ViewGroup.FOCUS_BLOCK_DESCENDANTS else ViewGroup.FOCUS_AFTER_DESCENDANTS
         binding.btnRetry.isFocusable = !covered
@@ -1004,7 +1074,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun handleBack() {
         when {
-            binding.layoutSettings.visibility == View.VISIBLE -> { if (importCommitting) notice(getString(R.string.finishing_import)) else if (fileBrowser.isVisible()) fileBrowser.handleBack() else if (!settingsPanel.back()) closeSettingsMenu() }
+            settingsHost.ownsInput -> { if (importCommitting) notice(getString(R.string.finishing_import)) else if (fileBrowser.isVisible()) fileBrowser.handleBack() else if (!settingsPanel.back()) closeSettingsMenu() }
             importInProgress -> Toast.makeText(this, getString(R.string.finishing_import), Toast.LENGTH_SHORT).show()
             fileBrowser.isVisible() -> fileBrowser.handleBack()
             numberEntryController.isTyping() -> numberEntryController.cancel()
@@ -1029,50 +1099,79 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             !packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)
         isTvMode = mode == "TV" || (mode == "Auto" && detectedTv)
         requestedOrientation = if (isTvMode) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        val nativeLanguage = AppLanguage.supported.firstOrNull { it.code == (prefs.getLanguage() ?: AppLanguage.DEFAULT) }?.name ?: "English"
+        binding.tvSettingsLanguageValue.text = nativeLanguage
+        binding.viewImport.btnImportLanguage.text = nativeLanguage
         binding.tvSettingsModeValue.text = when (mode) { "Auto" -> getString(R.string.automatic); "Phone" -> getString(R.string.touch_mode); else -> getString(R.string.tv_mode) }
         binding.btnQuickSettings.visibility = if (isTvMode) View.GONE else View.VISIBLE
         updateResponsiveLayout()
     }
 
     private fun updateResponsiveLayout() {
-        val density = resources.displayMetrics.density
-        fun dp(value: Int) = (value * density).toInt()
-        val width = dp(resources.configuration.screenWidthDp)
-        val height = dp(resources.configuration.screenHeightDp)
-        val tvHorizontalInset = if (isTvMode) (width * 0.05f).toInt() else 0
-        val tvVerticalInset = if (isTvMode) (height * 0.05f).toInt() else 0
+        val ui = AdaptiveUi.from(binding.root, isTvMode)
+        (binding.viewChannelList.rvChannels.adapter as? ChannelListAdapter)?.updatePresentation(isTvMode,prefs.getLanguage()?:AppLanguage.DEFAULT)
+        val density = ui.density
+        fun dp(value: Int) = ui.dp(value)
+        CouchZapTokens.text(binding.tvPlaybackError,CouchZapTokens.Text.HEADING,isTvMode)
+        listOf(binding.btnRetry,binding.btnErrorNext).forEach{CouchZapTokens.text(it,CouchZapTokens.Text.CONTROL,isTvMode);it.minimumHeight=dp(if(isTvMode)56 else 48)}
+        CouchZapTokens.text(binding.tvToastMsg,CouchZapTokens.Text.CONTROL,isTvMode)
+        CouchZapTokens.text(binding.viewChannelList.root.findViewById(R.id.cz_channel_empty_action),CouchZapTokens.Text.CONTROL,isTvMode)
+        val width = ui.width
+        val height = ui.height
+        val tvHorizontalInset = ui.safeX
+        val tvVerticalInset = ui.safeY
         val portrait = !isTvMode && resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-        val panelGravity = if (binding.root.layoutDirection == View.LAYOUT_DIRECTION_RTL) Gravity.RIGHT else Gravity.LEFT
+        val panelGravity = Gravity.START
         binding.viewChannelList.root.layoutParams = (binding.viewChannelList.root.layoutParams as FrameLayout.LayoutParams).apply {
-            this.width = if (portrait) FrameLayout.LayoutParams.MATCH_PARENT else minOf(resources.getDimensionPixelSize(R.dimen.sidebar_width), width)
-            gravity = panelGravity
-            setMargins(0, 0, 0, 0)
+            this.width = ui.channelWidth
+            this.height = ((if(isTvMode)ui.safeHeight else ui.height)-channelImeInset).coerceAtLeast(0)
+            gravity = Gravity.START or Gravity.TOP
+            setMargins(ui.safeX, ui.safeY, ui.safeX, ui.safeY)
         }
-        // Keep a modest TV edge inset without consuming 5% of the entire screen.
-        val channelEdgeInset = if (isTvMode) maxOf(dp(24), (width * 0.03f).toInt()) else dp(24)
-        binding.viewChannelList.root.setPaddingRelative(channelEdgeInset, maxOf(dp(24), tvVerticalInset), dp(24), maxOf(dp(24), tvVerticalInset))
+        binding.viewChannelList.root.setPaddingRelative(dp(20), dp(20), dp(20), dp(20))
+        val searchOnly=!isTvMode&&channelImeInset>0&&height-channelImeInset<dp(260)
+        val close=binding.viewChannelList.btnCloseChannelList
+        close.setImageResource(if(searchOnly)R.drawable.ic_back else R.drawable.ic_close)
+        val closeParent=if(searchOnly)binding.viewChannelList.czChannelsSearchRow else binding.viewChannelList.czChannelsHeader
+        if(close.parent!==closeParent){(close.parent as? ViewGroup)?.removeView(close);closeParent.addView(close)}
+        binding.viewChannelList.czChannelsHeader.visibility=if(searchOnly)View.GONE else View.VISIBLE
+        binding.viewChannelList.czChannelsFilters.visibility=if(searchOnly)View.GONE else View.VISIBLE
+        if(searchOnly)binding.viewChannelList.root.setPaddingRelative(dp(20),dp(8),dp(20),dp(8))
+        binding.viewChannelList.localizedLabel13.visibility = if(isTvMode) View.VISIBLE else View.GONE
+        CouchZapTokens.text(binding.root.findViewById(R.id.cz_channel_count),CouchZapTokens.Text.VALUE,isTvMode)
+        ViewCompat.setAccessibilityHeading(binding.viewChannelList.tvChannelListHeader,true)
+        CouchZapTokens.text(binding.tvDigitGhost,CouchZapTokens.Text.NUMBER,isTvMode)
+        binding.tvDigitGhost.textDirection=View.TEXT_DIRECTION_LTR;binding.tvDigitGhost.fontFeatureSettings="tnum"
+        (binding.tvDigitGhost.layoutParams as FrameLayout.LayoutParams).apply{marginStart=if(isTvMode)ui.safeX else dp(20);topMargin=if(isTvMode)ui.safeY else dp(20)}
+        CouchZapTokens.text(binding.tvGhostNext,CouchZapTokens.Text.CONTROL,isTvMode)
+        binding.tvGhostNext.maxWidth=ui.safeWidth
+        (binding.tvGhostNext.layoutParams as FrameLayout.LayoutParams).apply{marginEnd=if(isTvMode)ui.safeX else dp(20);topMargin=if(isTvMode)ui.safeY else dp(20)}
+        listOf(binding.viewChannelList.tvChannelListHeader to CouchZapTokens.Text.HEADING,
+            binding.viewChannelList.etChannelSearch to CouchZapTokens.Text.CONTROL,
+            binding.viewChannelList.btnFilterAll to CouchZapTokens.Text.CONTROL,
+            binding.viewChannelList.btnFilterFavourites to CouchZapTokens.Text.CONTROL,
+            binding.viewChannelList.btnFilterGroups to CouchZapTokens.Text.CONTROL,
+            binding.viewChannelList.localizedLabel13 to CouchZapTokens.Text.FOOTER,
+            binding.viewChannelList.tvEmptyChannels to CouchZapTokens.Text.BODY).forEach { (view,role) -> CouchZapTokens.text(view,role,isTvMode) }
         binding.viewOsd.root.layoutParams = (binding.viewOsd.root.layoutParams as FrameLayout.LayoutParams).apply {
-            this.width = minOf(resources.getDimensionPixelSize(R.dimen.sidebar_width), width - 2 * maxOf(dp(8), tvHorizontalInset))
-            gravity = if (portrait) Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL else Gravity.TOP or Gravity.START
-            setMargins(maxOf(dp(8), tvHorizontalInset), maxOf(dp(8), tvVerticalInset), maxOf(dp(8), tvHorizontalInset), maxOf(dp(16), tvVerticalInset))
+            this.width = if(isTvMode) minOf(dp(864),ui.safeWidth) else if(ui.short)minOf(dp(420),width-dp(24))else (width-dp(24)).coerceAtLeast(0)
+            this.height=if(!isTvMode&&ui.short)(height-dp(32)).coerceAtLeast(0) else FrameLayout.LayoutParams.WRAP_CONTENT
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            setMargins(if(isTvMode) ui.safeX else dp(12), ui.safeY, if(isTvMode) ui.safeX else dp(12), if(isTvMode) ui.safeY else dp(16))
         }
-        binding.layoutSettings.layoutParams = (binding.layoutSettings.layoutParams as FrameLayout.LayoutParams).apply {
-            this.width = if (portrait) FrameLayout.LayoutParams.MATCH_PARENT else minOf(resources.getDimensionPixelSize(R.dimen.sidebar_width), width)
-            this.height = FrameLayout.LayoutParams.MATCH_PARENT
-            gravity = panelGravity
-            setMargins(0, 0, 0, 0)
-        }
-        binding.layoutSettings.setPaddingRelative(maxOf(dp(24), tvHorizontalInset), maxOf(dp(24), tvVerticalInset), dp(24), maxOf(dp(24), tvVerticalInset))
+        osdController.updateLayout(isTvMode,ui)
+        settingsHost.configure(ui)
         if (::importScreen.isInitialized) importScreen.updateLayout(isTvMode)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (::binding.isInitialized && ::prefs.isInitialized) {
-            welcomeIntro.finish(); Anim.finishAll(binding.root)
+            welcomeIntro.finish(); Anim.finishAll(binding.root); channelMotion.settle(); osdController.settlePresentation(); settingsHost.settleForConfigurationChange()
             AppLanguage.apply(this, binding.root, prefs.getLanguage() ?: AppLanguage.DEFAULT)
+            AppLanguage.apply(this, settingsHost.root, prefs.getLanguage() ?: AppLanguage.DEFAULT)
             AppLanguage.translate(this, binding.settingsRootScroll)
-            updateAspectLabel(); updateSleepLabel(); updateSourceLabel()
+            updateAspectLabel(); updateSleepLabel(); updateSoundLabel(); updateEffectsLabel(); updateSourceLabel()
             settingsPanel.header()
             playerController?.refreshPlaybackInfo(); osdController.refresh()
         }
@@ -1221,11 +1320,14 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private fun guideMenu() {
         settingsPanel.page("guide", R.string.programme_guide, leave = { renderGuide = null }) { body ->
             val status = settingsPanel.text(body, "")
-            renderGuide = {
+            val renderer:()->Unit = {
                 val message = guideMessage?.let { (id, count) -> getString(id, count) }
                     ?: getString(R.string.guide_status, getString(if (epg.sourceUrl() == null) R.string.guide_not_added else R.string.guide_added))
                 status.text = message
             }
+            renderGuide=renderer
+            settingsPanel.onSuspendPresentation{renderGuide=null}
+            settingsPanel.onReactivate{renderGuide=renderer;renderer()}
             renderGuide?.invoke()
             if (repository.playlistEpgUrls().isNotEmpty()) settingsPanel.button(body, getString(R.string.guide_playlist_sources)) { choosePlaylistGuide() }
             settingsPanel.button(body, getString(R.string.guide_link)) { playlistMenus.link(R.string.guide_link) { url -> importGuide(url) { HttpStreams.open(url) } } }
@@ -1282,6 +1384,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     override fun onResume() {
         super.onResume()
         if (::updateMenu.isInitialized) updateMenu.onResume()
+        if (::settingsHost.isInitialized) { settingsHost.resumeAfterStop(); settingsHost.refreshPolicy(); FocusMotionBinder.configure(binding.root, EffectsPolicy.resolve(EffectsMode.from(prefs.getEffectsMode()),EffectsPolicy.read(binding.root)).name.lowercase()) }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -1294,8 +1397,11 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         }
         if (binding.viewChannelList.root.visibility == View.VISIBLE &&
             (binding.viewChannelList.rvChannels.hasFocus() || !binding.viewChannelList.root.hasFocus())) focusCurrentChannel()
-        else if (binding.layoutSettings.visibility == View.VISIBLE && !binding.layoutSettings.hasFocus()) settingsPanel.focusFirst()
+        // The Dialog owns Settings focus; Activity window callbacks never focus its hidden/closing tree.
     }
+
+    fun <T : View> uiView(id: Int): T = settingsPanel.find<T>(id) ?: findViewById<T>(id)
+    fun settingsWindowRoot(): View = settingsHost.windowRoot
 
     private fun notice(message: String) { Toast.makeText(this, message, Toast.LENGTH_LONG).show() }
 
@@ -1324,6 +1430,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     override fun onDestroy() {
         super.onDestroy()
         welcomeIntro.finish(); crtSound.close(); Anim.finishAll(binding.root)
+        groupsPicker.close(); channelMotion.settle(); settingsHost.destroy()
         playerController?.release()
         playerController = null
         osdController.destroy()

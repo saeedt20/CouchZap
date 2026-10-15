@@ -1,0 +1,26 @@
+<resources>
+    <string name="cz_clear_search">Borrar búsqueda</string>
+    <string name="cz_channel_hint">OK Ver · Mantener OK Favorito · Atrás Cerrar</string>
+    <string name="cz_groups_help">Filtrar canales por categoría</string>
+    <string name="cz_empty_favourites">Aún no hay favoritos. Mantén OK sobre un canal para añadirlo.</string>
+    <string name="cz_empty_filter">Ningún canal coincide con estos filtros.</string>
+    <plurals name="cz_channel_count">
+        <item quantity="one">%1$d canal</item>
+        <item quantity="many">%1$d canales</item>
+        <item quantity="other">%1$d canales</item>
+    </plurals>
+    <string name="cz_selected">Seleccionado</string>
+    <string name="cz_on">Activado</string>
+    <string name="cz_effects">Efectos visuales</string>
+    <string name="cz_effects_full">Profundidad completa</string>
+    <string name="cz_effects_safe">Seguro</string>
+    <string name="cz_effects_auto_help">Adaptar a este dispositivo.</string>
+    <string name="cz_effects_full_help">Profundidad y desenfoque en dispositivos compatibles.</string>
+    <string name="cz_effects_safe_help">Mantener el vídeo sin cambios.</string>
+    <string name="cz_effects_off_help">Desactivar movimiento y profundidad decorativos.</string>
+    <string name="cz_effects_safe_reason">Los efectos seguros están activos en este dispositivo.</string>
+    <string name="cz_effects_unavailable">La profundidad completa no está disponible si el desenfoque del sistema está desactivado.</string>
+    <string name="cz_effects_system_off">Las animaciones del sistema están desactivadas.</string>
+    <string name="cz_settings_hint">← → Secciones · OK Elegir · Atrás Volver</string>
+    <string name="cz_current_language">Idioma actual</string>
+</resources>

@@ -38,21 +38,24 @@ class PolishRegressionTest {
     private fun intro(activity: MainActivity) = MainActivity::class.java.getDeclaredField("welcomeIntro").apply { isAccessible = true }.get(activity) as WelcomeIntro
     private fun assertSettled(activity: MainActivity) {
         for (id in listOf(R.id.localized_label_1, R.id.tv_import_title, R.id.tv_import_hint, R.id.btn_import, R.id.btn_public)) {
-            val view = activity.findViewById<View>(id)
+            val view = activity.uiView<View>(id)
             assertEquals(1f, view.alpha); assertEquals(0f, view.translationY)
             assertEquals(View.LAYER_TYPE_NONE, view.layerType)
         }
-        assertEquals(0f, activity.findViewById<View>(R.id.intro_bolt).alpha)
+        assertEquals(0f, activity.uiView<View>(R.id.intro_bolt).alpha)
     }
     @Test fun `first menu key completes intro and still opens settings immediately`() {
         val prefs = prefs(); PlaylistRepository(ApplicationProvider.getApplicationContext()).clearPlaylist()
         val controller = Robolectric.buildActivity(MainActivity::class.java).create().visible()
         try {
-            val activity = controller.get(); assertTrue(intro(activity).running)
+            val activity = controller.get()
+            // visible() can advance past the bounded 320ms intro. Start immediately before input.
+            activity.getSharedPreferences("couchzap_prefs",0).edit().remove("welcome_intro_seen").commit()
+            intro(activity).start();assertTrue(intro(activity).running)
             activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU))
             assertFalse(intro(activity).running); assertSettled(activity)
-            assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.layout_settings).visibility)
-            assertTrue(activity.findViewById<View>(R.id.layout_settings).hasFocus())
+            assertEquals(View.VISIBLE, activity.uiView<View>(R.id.layout_settings).visibility)
+            assertTrue(activity.uiView<View>(R.id.layout_settings).hasFocus())
             assertTrue(prefs.hasSeenIntro())
             intro(activity).start(); assertFalse(intro(activity).running)
             shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(1)); assertSettled(activity)
@@ -77,7 +80,7 @@ class PolishRegressionTest {
         val controller = Robolectric.buildActivity(MainActivity::class.java).create().visible()
         try {
             assertTrue(prefs.hasSeenIntro()); assertFalse(intro(controller.get()).running); assertSettled(controller.get())
-            val view = controller.get().findViewById<View>(R.id.layout_settings)
+            val view = controller.get().uiView<View>(R.id.layout_settings)
             Anim.showOverlay(view); assertEquals(1f, view.alpha); assertEquals(0f, view.translationX)
         } finally { controller.destroy() }
     }
@@ -136,7 +139,7 @@ class PolishRegressionTest {
         repo.clearPlaylist(); runBlocking { repo.importPlaylistFromStream((1..4).joinToString("\n") { "Station $it,file:///test-$it.ts" }.byteInputStream()) }
         val controller = Robolectric.buildActivity(MainActivity::class.java).create().visible()
         try {
-            val activity = controller.get(); val list = activity.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_channels)
+            val activity = controller.get(); val list = activity.uiView<androidx.recyclerview.widget.RecyclerView>(R.id.rv_channels)
             val deadline = System.nanoTime() + 5_000_000_000L
             while (list.adapter!!.itemCount != 4 && System.nanoTime() < deadline) { shadowOf(Looper.getMainLooper()).idle(); Thread.sleep(5) }
             assertEquals(4, list.adapter!!.itemCount)

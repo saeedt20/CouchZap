@@ -1,0 +1,26 @@
+<resources>
+    <item name="cz_settings_window_root" type="id" />
+    <item type="id" name="cz_focus_binder"/>
+    <item type="id" name="cz_action_key"/>
+    <item type="id" name="cz_input_keyboard"/>
+    <item type="id" name="cz_motion_owner"/>
+    <item type="id" name="cz_scene_root"/>
+    <item type="id" name="cz_video_scene"/>
+    <item type="id" name="cz_hud_scene"/>
+    <item type="id" name="cz_channel_scrim"/>
+    <item type="id" name="cz_playing_marker"/>
+    <item type="id" name="cz_channel_favourite"/>
+    <item type="id" name="cz_channel_count"/>
+    <item type="id" name="cz_channel_empty_action"/>
+    <item type="id" name="cz_channel_filter_context"/>
+    <item type="id" name="cz_settings_rail"/>
+    <item type="id" name="cz_category_playback"/>
+    <item type="id" name="cz_category_playlist"/>
+    <item type="id" name="cz_category_app"/>
+    <item type="id" name="cz_settings_detail"/>
+    <item type="id" name="cz_settings_footer"/>
+    <item type="id" name="cz_settings_category_title"/>
+    <item type="id" name="cz_btn_settings_effects"/>
+    <item type="id" name="cz_tv_settings_effects_value"/>
+    <item type="id" name="cz_animations_enabled"/>
+</resources>

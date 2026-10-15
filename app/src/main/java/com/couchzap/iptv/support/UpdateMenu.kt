@@ -35,11 +35,18 @@ class UpdateMenu(private val activity: AppCompatActivity, private val panel: Set
     private var render: (() -> Unit)? = null
     fun show() {
         panel.page("update", R.string.check_updates, leave = { render = null }) { body ->
-            render = {
+            var renderedState: State? = null
+            var progressLabel: android.widget.TextView? = null
+            val renderer: () -> Unit = renderer@ {
+                if (renderedState == state && state == State.DOWNLOADING) {
+                    progressLabel?.text = activity.getString(R.string.update_progress, percent)
+                    return@renderer
+                }
+                renderedState = state
                 val focusedIndex = (0 until body.childCount).indexOfFirst { body.getChildAt(it).hasFocus() }
                 body.removeAllViews()
                 when (state) {
-                    State.IDLE -> panel.button(body, activity.getString(R.string.check_updates)) { check() }
+                    State.IDLE -> panel.button(body, activity.getString(R.string.check_updates), key = "update/check") { check() }
                     State.CHECKING -> { panel.text(body, activity.getString(R.string.checking_updates)); cancelButton(body) }
                     State.CURRENT -> { panel.text(body, activity.getString(R.string.up_to_date, installed)); retryButton(body) }
                     State.AVAILABLE -> {
@@ -50,7 +57,7 @@ class UpdateMenu(private val activity: AppCompatActivity, private val panel: Set
                             panel.text(body, r.notes)
                         }
                     }
-                    State.DOWNLOADING -> { panel.text(body, activity.getString(R.string.update_progress, percent)); cancelButton(body) }
+                    State.DOWNLOADING -> { progressLabel = panel.text(body, activity.getString(R.string.update_progress, percent)); cancelButton(body) }
                     State.READY -> {
                         panel.text(body, activity.getString(R.string.update_ready_body))
                         panel.button(body, activity.getString(R.string.install_update)) { install() }
@@ -68,16 +75,19 @@ class UpdateMenu(private val activity: AppCompatActivity, private val panel: Set
                         panel.text(body, activity.getString(if (state == State.FAILED) R.string.update_failed else R.string.update_cancelled)); retryButton(body)
                     }
                 }
-                if (focusedIndex >= 0) body.getChildAt(focusedIndex.coerceAtMost(body.childCount - 1))?.takeIf { it.isFocusable }?.requestFocusFromTouch()
+                if (panel.isCurrent(body) && focusedIndex >= 0) body.getChildAt(focusedIndex.coerceAtMost(body.childCount - 1))?.takeIf { it.isFocusable }?.requestFocusFromTouch()
                 // Only recover focus if this page is currently visible, never steal from another overlay.
-                if (body.isShown && !body.hasFocus() && !activity.currentFocus.let { it === activity.findViewById<android.view.View>(R.id.settings_back) || it === activity.findViewById<android.view.View>(R.id.btn_settings_close) }) panel.focusFirst()
+                if (panel.isCurrent(body) && !body.hasFocus() && !panel.focused.let { it === panel.find<android.view.View>(R.id.settings_back) || it === panel.find<android.view.View>(R.id.btn_settings_close) }) panel.focusFirst()
             }
+            render = renderer
+            panel.onSuspendPresentation { render = null }
+            panel.onReactivate { render = renderer; renderer() }
             render?.invoke()
         }
         if (state == State.IDLE) check()
     }
-    private fun retryButton(body: android.widget.LinearLayout) = panel.button(body, activity.getString(R.string.check_updates)) { check() }
-    private fun cancelButton(body: android.widget.LinearLayout) = panel.button(body, activity.getString(R.string.cancel)) { cancel() }
+    private fun retryButton(body: android.widget.LinearLayout) = panel.button(body, activity.getString(R.string.check_updates), key = "update/check") { check() }
+    private fun cancelButton(body: android.widget.LinearLayout) = panel.button(body, activity.getString(R.string.cancel), key = "update/cancel") { cancel() }
     fun cancel() { job?.cancel(); job = null; state = State.CANCELLED; render?.invoke() }
     private fun check() {
         if (job?.isActive == true) return

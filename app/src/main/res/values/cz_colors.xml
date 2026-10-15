@@ -1,0 +1,25 @@
+<resources>
+    <color name="cz_canvas">#FF0D100F</color>
+    <color name="cz_surface_base">#FF171C19</color>
+    <color name="cz_surface_shell">#FF1C221E</color>
+    <color name="cz_surface_shell_translucent">#F21C221E</color>
+    <color name="cz_surface_rail">#FF181D1A</color>
+    <color name="cz_surface_content">#FF222923</color>
+    <color name="cz_surface_content_translucent">#EB222923</color>
+    <color name="cz_surface_hover">#FF2A342C</color>
+    <color name="cz_surface_focus">#FF303D32</color>
+    <color name="cz_surface_selected">#FF253028</color>
+    <color name="cz_text_primary">#FFF2F0E8</color>
+    <color name="cz_text_secondary">#FFBEC7BF</color>
+    <color name="cz_text_tertiary">#FF9EAAA0</color>
+    <color name="cz_sage">#FFB7C9AC</color>
+    <color name="cz_sage_bright">#FFDDE9D5</color>
+    <color name="cz_sage_ink">#FF182117</color>
+    <color name="cz_border">#FF465348</color>
+    <color name="cz_divider">#FF334037</color>
+    <color name="cz_focus_halo">#26B7C9AC</color>
+    <color name="cz_scrim_rgb">#FF000000</color>
+    <color name="cz_warning">#FFE7C783</color>
+    <color name="cz_error">#FFE6A49C</color>
+    <color name="cz_disabled_text">#FF7C887F</color>
+</resources>

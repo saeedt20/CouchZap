@@ -1,6 +1,8 @@
 package com.couchzap.iptv.ui
 
 import com.couchzap.iptv.R
+import com.couchzap.iptv.ui.design.CouchZapTokens
+import com.couchzap.iptv.ui.design.FocusMotionBinder
 import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
@@ -26,6 +28,8 @@ class SimpleFileBrowser(
     init {
         rvFiles.layoutManager = LinearLayoutManager(container.context)
         rvFiles.adapter = adapter
+        rvFiles.itemAnimator = null
+        CouchZapTokens.text(tvPath,CouchZapTokens.Text.VALUE)
     }
 
     fun openAtRoot() {
@@ -126,15 +130,18 @@ class SimpleFileBrowser(
 
         override fun getItemCount(): Int = files.size
 
+        override fun onViewRecycled(holder:FileViewHolder){FocusMotionBinder.reset(holder.itemView)}
+
         inner class FileViewHolder(private val binding: ItemFileBinding) :
             RecyclerView.ViewHolder(binding.root) {
+            init { CouchZapTokens.text(binding.tvItemFileName,CouchZapTokens.Text.CONTROL);FocusMotionBinder.bind(binding.root) }
 
             fun bind(file: File) {
                 if (file.isDirectory) {
-                    binding.tvItemFileIcon.text = "📁"
+                    binding.tvItemFileIcon.setImageResource(R.drawable.ic_folder)
                     binding.tvItemFileName.text = file.name
                 } else {
-                    binding.tvItemFileIcon.text = "📄"
+                    binding.tvItemFileIcon.setImageResource(R.drawable.ic_import)
                     binding.tvItemFileName.text = file.name
                 }
 

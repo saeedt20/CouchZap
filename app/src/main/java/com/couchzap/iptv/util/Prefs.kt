@@ -22,6 +22,9 @@ class Prefs(context: Context) {
         prefs.edit().putString("interface_mode", mode).apply()
     }
 
+    fun getEffectsMode(): String = prefs.getString("effects_mode", "auto")?.takeIf { it in listOf("auto","full","safe","off") } ?: "auto"
+    fun setEffectsMode(mode: String) { require(mode in listOf("auto","full","safe","off")); prefs.edit().putString("effects_mode",mode).apply() }
+
     fun getLanguage(): String? = prefs.getString("language", null)?.takeIf(AppLanguage::isSupported)
 
     fun setLanguage(language: String) {

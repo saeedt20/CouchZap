@@ -44,19 +44,22 @@ class SettingsFocusHaloRegressionTest {
                 val activity = controller.get()
                 activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU))
                 activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MENU))
-                val root = activity.findViewById<FrameLayout>(R.id.root_container)
+                val root = activity.settingsWindowRoot().findViewById<FrameLayout>(R.id.cz_settings_window_root)
+                root.isFocusable = true; root.isFocusableInTouchMode = true
+                root.descendantFocusability=android.view.ViewGroup.FOCUS_BEFORE_DESCENDANTS
+                assertFalse(activity.uiView<View>(R.id.root_container).defaultFocusHighlightEnabled)
                 layout(root)
-                val expected = activity.getColor(R.color.panel_background)
+                val expected = activity.getColor(R.color.cz_surface_shell)
                 for (id in listOf(R.id.btn_settings_tracks, R.id.btn_settings_mode, R.id.btn_settings_about)) {
-                    activity.findViewById<View>(id).performClick(); layout(root)
-                    activity.findViewById<View>(R.id.settings_back).performClick(); layout(root)
+                    activity.uiView<View>(id).performClick(); layout(root)
+                    activity.uiView<View>(R.id.settings_back).performClick(); layout(root)
                     // Touch-mode changes and disappearing children may legitimately focus this
                     // keyboard fallback; its focus must not tint the entire playback/settings UI.
                     // Set the non-touch attachment state explicitly so both SDKs exercise
                     // keyboard focus independently of window-session emulation.
                     val attachment = ReflectionHelpers.getField<Any>(root, "mAttachInfo")
                     ReflectionHelpers.setField(attachment, "mInTouchMode", false)
-                    assertTrue(activity.findViewById<View>(id).requestFocus())
+                    assertTrue(activity.uiView<View>(id).requestFocus())
                     assertTrue(root.requestFocus())
                     assertTrue(root.isFocused)
                     root.jumpDrawablesToCurrentState()
@@ -70,12 +73,12 @@ class SettingsFocusHaloRegressionTest {
                                 assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
                             }
                         }
-                        assertEquals("panel must retain its exact colour after Back", expected, bitmap.getPixel(4, 4))
+                        assertEquals("panel must retain its exact colour after Back", expected, bitmap.getPixel(20, 20))
                         // The software bitmap does not model every device ripple shader.
                         // Also verify that the framework never attaches an overlay drawable.
                         assertNull("full-screen native focus overlay must be absent", highlightDrawable)
                     } finally { bitmap.recycle() }
-                    assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.layout_settings).visibility)
+                    assertEquals(View.VISIBLE, activity.uiView<View>(R.id.layout_settings).visibility)
                 }
             } finally {
                 controller.destroy()

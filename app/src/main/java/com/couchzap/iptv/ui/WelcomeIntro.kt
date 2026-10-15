@@ -11,7 +11,7 @@ import com.couchzap.iptv.util.Prefs
 
 /** Runs once, never owns input or postpones focus. First user input completes it synchronously. */
 class WelcomeIntro(private val binding: ViewImportBinding, private val prefs: Prefs) {
-    private val views = listOf(binding.localizedLabel1, binding.tvImportTitle, binding.tvImportHint, binding.btnImport, binding.btnPublic)
+    private val views = listOf(binding.importIntro, binding.btnImport, binding.btnPublic)
     private val handler = Handler(Looper.getMainLooper())
     private var pulse: ValueAnimator? = null
     var running = false; private set
@@ -22,15 +22,15 @@ class WelcomeIntro(private val binding: ViewImportBinding, private val prefs: Pr
         if (!Anim.enabled(binding.root)) { finish(); return }
         running = true
         views.forEachIndexed { index, view ->
-            view.animate().cancel(); view.alpha = 0f; view.translationY = 10 * view.resources.displayMetrics.density
-            view.animate().alpha(1f).translationY(0f).setStartDelay(index * 60L).setDuration(220).setInterpolator(DecelerateInterpolator()).start()
+            view.animate().cancel(); view.alpha = 0f; view.translationY = 8 * view.resources.displayMetrics.density
+            view.animate().alpha(1f).translationY(0f).setStartDelay(index * 40L).setDuration(240).setInterpolator(DecelerateInterpolator()).start()
         }
-        pulse = ValueAnimator.ofFloat(0f, .5f, 0f).apply {
-            startDelay = 120; duration = 440
+        pulse = ValueAnimator.ofFloat(0f, .35f, 0f).apply {
+            startDelay = 40; duration = 120
             addUpdateListener { binding.introBolt.alpha = it.animatedValue as Float }
             start()
         }
-        handler.postDelayed(end, 620)
+        handler.postDelayed(end, 320)
     }
     fun finish() {
         running = false; handler.removeCallbacks(end); pulse?.cancel(); pulse = null

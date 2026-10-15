@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit
 class OnboardingFlowRegressionTest {
     private fun screen(playlist: Boolean = false, test: (MainActivity, PlaylistRepository) -> Unit) {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        android.provider.Settings.Global.putFloat(context.contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 0f)
         context.getSharedPreferences("couchzap_prefs", 0).edit().clear().commit()
         Prefs(context).setLanguage("en"); Prefs(context).setInterfaceMode("TV")
         val repo = PlaylistRepository(context); repo.clearPlaylist()
@@ -41,20 +42,20 @@ class OnboardingFlowRegressionTest {
         val controller = Robolectric.buildActivity(MainActivity::class.java).create().visible()
         try {
             val activity = controller.get()
-            if (playlist) await(activity) { activity.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_channels).adapter!!.itemCount == 2 }
+            if (playlist) await(activity) { activity.uiView<androidx.recyclerview.widget.RecyclerView>(R.id.rv_channels).adapter!!.itemCount == 2 }
             layout(activity); test(activity, repo)
         } finally { controller.destroy() }
     }
     private fun layout(activity: MainActivity) {
-        val root = activity.findViewById<View>(R.id.root_container)
-        root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY)); root.layout(0, 0, 960, 540)
+        val root = activity.uiView<View>(R.id.root_container)
+        root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY)); root.layout(0, 0, 960, 540); activity.layoutSettingsForTest(960, 540)
     }
     private fun press(activity: MainActivity, key: Int) {
         activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, key)); activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, key)); layout(activity)
     }
     private fun views(v: View): List<View> = listOf(v) + if (v is ViewGroup) (0 until v.childCount).flatMap { views(v.getChildAt(it)) } else emptyList()
     private fun choose(activity: MainActivity, label: String) {
-        views(activity.findViewById(R.id.settings_pages)).filterIsInstance<Button>().first { it.text.toString().removePrefix("✓  ") == label }.performClick(); layout(activity)
+        views(activity.uiView(R.id.settings_pages)).filter { it.isUiAction }.first { it.uiLabel().text.toString().removePrefix("✓  ") == label }.performClick(); layout(activity)
     }
     private fun field(activity: MainActivity, name: String): Any? = MainActivity::class.java.getDeclaredField(name).apply { isAccessible = true }.get(activity)
     private fun await(activity: MainActivity, condition: () -> Boolean) {
@@ -69,16 +70,16 @@ class OnboardingFlowRegressionTest {
     private fun injectMenus(activity: MainActivity, repo: PlaylistRepository, accepted: MutableList<PlaylistSource>, loader: suspend (String, String) -> List<PublicCatalog.Entry>) {
         val panel = field(activity, "settingsPanel") as SettingsPanel
         val menus = PlaylistMenus(activity, repo, activity.lifecycleScope, {}, { source, _ -> accepted.add(source) }, {}, panel,
-            { if (activity.findViewById<View>(R.id.layout_settings).visibility != View.VISIBLE) press(activity, KeyEvent.KEYCODE_MENU) }, loader)
+            { if (activity.uiView<View>(R.id.layout_settings).visibility != View.VISIBLE) press(activity, KeyEvent.KEYCODE_MENU) }, loader)
         MainActivity::class.java.getDeclaredField("playlistMenus").apply { isAccessible = true }.set(activity, menus)
     }
     @Test fun `welcome public source requires provider and scope before importing and Back returns to welcome`() = screen { activity, repo ->
         val accepted = mutableListOf<PlaylistSource>(); val calls = mutableListOf<Pair<String,String>>()
         injectMenus(activity, repo, accepted) { provider, kind -> calls.add(provider to kind); listOf(PublicCatalog.Entry("Iran", "playlist_iran.m3u8")) }
-        activity.findViewById<View>(R.id.btn_public).performClick(); layout(activity)
+        activity.uiView<View>(R.id.btn_public).performClick(); layout(activity)
         assertTrue(accepted.isEmpty()); assertTrue(calls.isEmpty())
         choose(activity, "Free-TV"); assertTrue(accepted.isEmpty())
-        val labels = views(activity.findViewById(R.id.settings_pages)).filterIsInstance<Button>().map { it.text.toString() }
+        val labels = views(activity.uiView(R.id.settings_pages)).filter { it.isUiAction }.map { it.uiLabel().text.toString() }
         assertFalse(labels.contains(activity.getString(R.string.by_language)))
         choose(activity, activity.getString(R.string.by_country)); shadowOf(Looper.getMainLooper()).idle(); layout(activity)
         assertEquals(listOf("free-tv" to "countries"), calls)
@@ -86,29 +87,44 @@ class OnboardingFlowRegressionTest {
         assertEquals("free-tv", accepted.single().provider); assertEquals("playlist_iran.m3u8", accepted.single().code)
         assertFalse(repo.isPlaylistReady())
         repeat(3) { press(activity, KeyEvent.KEYCODE_BACK) }
-        assertEquals(View.GONE, activity.findViewById<View>(R.id.layout_settings).visibility)
-        assertTrue(activity.findViewById<View>(R.id.btn_public).isFocused)
+        assertEquals(View.GONE, activity.uiView<View>(R.id.layout_settings).visibility)
+        assertTrue(activity.uiView<View>(R.id.btn_public).isFocused)
     }
     @Test fun `changing an existing source requires confirmation and cancellation keeps it`() = screen(true) { activity, repo ->
         val accepted = mutableListOf<PlaylistSource>(); val prior = repo.source()
         injectMenus(activity, repo, accepted) { _, _ -> emptyList() }
-        press(activity, KeyEvent.KEYCODE_MENU); activity.findViewById<View>(R.id.btn_settings_reimport).performClick()
+        press(activity, KeyEvent.KEYCODE_MENU); activity.uiView<View>(R.id.btn_settings_reimport).performClick()
         choose(activity, activity.getString(R.string.public_channels)); choose(activity, "Free-TV"); choose(activity, activity.getString(R.string.all_public))
         assertTrue(accepted.isEmpty()); assertEquals(prior, repo.source())
+        assertEquals(activity.getString(R.string.cancel),activity.uiView<View>(R.id.layout_settings).findFocus()!!.uiLabel().text.toString())
         choose(activity, activity.getString(R.string.cancel)); assertTrue(accepted.isEmpty())
         choose(activity, activity.getString(R.string.all_public)); choose(activity, activity.getString(R.string.replace_playlist))
         assertEquals("free-tv", accepted.single().provider); assertEquals(prior, repo.source())
     }
+    @Test fun `each public provider preserves its supported routes and source identity`() {
+        for(provider in listOf("iptv-org","free-tv"))for(kind in if(provider=="iptv-org")listOf("all","countries","languages","categories")else listOf("all","countries","categories"))screen { activity,repo ->
+            val calls=mutableListOf<Pair<String,String>>();val accepted=mutableListOf<PlaylistSource>()
+            val code=if(provider=="free-tv")"playlist_iran.m3u8" else "ir"
+            injectMenus(activity,repo,accepted){p,k->calls.add(p to k);listOf(PublicCatalog.Entry("Iran",code))}
+            activity.uiView<View>(R.id.btn_public).performClick();layout(activity);choose(activity,if(provider=="free-tv")"Free-TV" else provider)
+            val title=when(kind){"all"->R.string.all_public;"countries"->R.string.by_country;"languages"->R.string.by_language;else->R.string.by_category}
+            choose(activity,activity.getString(title))
+            if(kind!="all"){shadowOf(Looper.getMainLooper()).idle();layout(activity);choose(activity,"Iran");assertEquals(listOf(provider to kind),calls)}else assertTrue(calls.isEmpty())
+            assertEquals(provider,accepted.single().publicProvider)
+            if(kind!="all")assertEquals(code,accepted.single().code)
+            assertFalse(repo.isPlaylistReady())
+        }
+    }
     @Test fun `a late catalog reply after Back cannot render or steal focus`() = screen { activity, repo ->
         val pending = CompletableDeferred<List<PublicCatalog.Entry>>()
         injectMenus(activity, repo, mutableListOf()) { _, _ -> withContext(NonCancellable) { pending.await() } }
-        activity.findViewById<View>(R.id.btn_public).performClick(); choose(activity, "Free-TV"); choose(activity, activity.getString(R.string.by_country))
+        activity.uiView<View>(R.id.btn_public).performClick(); choose(activity, "Free-TV"); choose(activity, activity.getString(R.string.by_country))
         press(activity, KeyEvent.KEYCODE_BACK)
-        val focus = activity.currentFocus
+        val focus = activity.uiView<View>(R.id.layout_settings).findFocus()
         pending.complete(listOf(PublicCatalog.Entry("Late entry", "playlist_iran.m3u8")))
         shadowOf(Looper.getMainLooper()).idle()
-        assertSame(focus, activity.currentFocus)
-        assertFalse(views(activity.findViewById(R.id.settings_pages)).filterIsInstance<TextView>().any { it.text == "Late entry" })
+        assertSame(focus, activity.uiView<View>(R.id.layout_settings).findFocus())
+        assertFalse(views(activity.uiView(R.id.settings_pages)).filterIsInstance<TextView>().any { it.uiLabel().text == "Late entry" })
     }
     @Test fun `cancel before commit and a newer import prevent an old response replacing the list`() = screen(true) { activity, repo ->
         val gate = CountDownLatch(1); val entered = CountDownLatch(1)
@@ -137,7 +153,7 @@ class OnboardingFlowRegressionTest {
         import(activity, PlaylistSource.freeTv()) { throw java.net.SocketTimeoutException("private token should not show") }
         await(activity) { !(field(activity, "importInProgress") as Boolean) }
         assertEquals(old, runBlocking { repo.loadCachedChannels() }); assertEquals(time, repo.updatedAt())
-        val texts = views(activity.findViewById(R.id.settings_pages)).filterIsInstance<TextView>().map { it.text.toString() }
+        val texts = views(activity.uiView(R.id.settings_pages)).filterIsInstance<TextView>().map { it.uiLabel().text.toString() }
         assertFalse(texts.any { it.contains("private token") })
         assertTrue(texts.any { it.contains(activity.getString(R.string.import_error_timeout)) })
     }
@@ -156,12 +172,30 @@ class OnboardingFlowRegressionTest {
         assertEquals(com.couchzap.iptv.player.ChannelPlaybackStatus.BUFFERING, field(activity,"playbackStatus"))
     }
     @Test fun `welcome language is selectable before import and manual path offers file and URL`() = screen { activity, repo ->
-        activity.findViewById<View>(R.id.btn_import_language).performClick(); choose(activity, "فارسی")
+        activity.uiView<View>(R.id.btn_import_language).performClick(); choose(activity, "فارسی")
         assertEquals("fa", Prefs(activity).getLanguage()); assertFalse(repo.isPlaylistReady())
-        assertEquals(View.GONE, activity.findViewById<View>(R.id.layout_settings).visibility)
-        activity.findViewById<View>(R.id.btn_import).performClick()
-        val text = views(activity.findViewById(R.id.settings_pages)).filterIsInstance<Button>().map { it.text.toString() }
+        assertEquals(View.GONE, activity.uiView<View>(R.id.layout_settings).visibility)
+        activity.uiView<View>(R.id.btn_import).performClick()
+        val text = views(activity.uiView(R.id.settings_pages)).filter { it.isUiAction }.map { it.uiLabel().text.toString() }
         assertTrue(text.contains(activity.getString(R.string.import_file))); assertTrue(text.contains(activity.getString(R.string.import_link)))
+    }
+    @Test fun `link validation retains URI input and IME Done shares a single submit guard`() = screen { activity, repo ->
+        val accepted=mutableListOf<PlaylistSource>()
+        injectMenus(activity,repo,accepted){_,_->emptyList()}
+        activity.uiView<View>(R.id.btn_import).performClick();layout(activity)
+        choose(activity,activity.getString(R.string.import_link))
+        val input=views(activity.uiView(R.id.settings_pages)).filterIsInstance<android.widget.EditText>().single()
+        assertEquals(View.LAYOUT_DIRECTION_LTR,input.layoutDirection)
+        assertTrue(input.height>=56)
+        input.setText("not a link")
+        choose(activity,activity.getString(R.string.import_action))
+        assertEquals("not a link",input.text.toString());assertTrue(accepted.isEmpty())
+        assertTrue(views(activity.uiView(R.id.settings_pages)).filterIsInstance<TextView>().any{it.isShown&&it.text==activity.getString(R.string.invalid_link)})
+        input.setText("https://example.org/channels.m3u8")
+        input.onEditorAction(android.view.inputmethod.EditorInfo.IME_ACTION_DONE)
+        choose(activity,activity.getString(R.string.import_action))
+        assertEquals(1,accepted.size)
+        assertEquals("https://example.org/channels.m3u8",accepted.single().location)
     }
     @Test fun `numeric selection uses preserved source numbers when skipped streams leave gaps`() = screen { activity, repo ->
         val text = "#EXTM3U\n#EXTINF:-1,Web\nhttps://www.youtube.com/live\n#EXTINF:-1,Beta\nhttps://example.org/b\n#EXTINF:-1,Alpha\nhttps://example.org/a"

@@ -1,0 +1,188 @@
+{
+  "historical_run": true,
+  "not_final_whole_tree_verdict": true,
+  "totals": {
+    "tests": 153,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "name": "com.couchzap.iptv.CatalogRemoteRegressionTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "38.723"
+    },
+    {
+      "name": "com.couchzap.iptv.ChannelUnitTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.003"
+    },
+    {
+      "name": "com.couchzap.iptv.EffectsMotionRegressionTest",
+      "tests": "12",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.484"
+    },
+    {
+      "name": "com.couchzap.iptv.LibraryFeaturesTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.167"
+    },
+    {
+      "name": "com.couchzap.iptv.MainActivityTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "1.146"
+    },
+    {
+      "name": "com.couchzap.iptv.NextVersionUiRegressionTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "16.404"
+    },
+    {
+      "name": "com.couchzap.iptv.OnboardingFlowRegressionTest",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "4.316"
+    },
+    {
+      "name": "com.couchzap.iptv.PersianLocalizationRegressionTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "6.12"
+    },
+    {
+      "name": "com.couchzap.iptv.PlayerSessionRegressionTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.321"
+    },
+    {
+      "name": "com.couchzap.iptv.PlaylistParserTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.014"
+    },
+    {
+      "name": "com.couchzap.iptv.PlaylistRepositoryTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.163"
+    },
+    {
+      "name": "com.couchzap.iptv.PolishRegressionTest",
+      "tests": "16",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "6.983"
+    },
+    {
+      "name": "com.couchzap.iptv.PublicSourcesRegressionTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.902"
+    },
+    {
+      "name": "com.couchzap.iptv.ScreenRenderTest",
+      "tests": "18",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "70.057"
+    },
+    {
+      "name": "com.couchzap.iptv.SearchTypingRegressionTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "12.621"
+    },
+    {
+      "name": "com.couchzap.iptv.SettingsFocusHaloRegressionTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "3.466"
+    },
+    {
+      "name": "com.couchzap.iptv.SettingsLanguageRegressionTest",
+      "tests": "14",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "11.821"
+    },
+    {
+      "name": "com.couchzap.iptv.SettingsVisualRegressionTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "5.392"
+    },
+    {
+      "name": "com.couchzap.iptv.SettingsWindowRegressionTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "4.907"
+    },
+    {
+      "name": "com.couchzap.iptv.SupportFeaturesTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.098"
+    },
+    {
+      "name": "com.couchzap.iptv.TvRemoteRegressionTest",
+      "tests": "17",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "4.301"
+    },
+    {
+      "name": "com.example.ExampleUnitTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.0"
+    }
+  ]
+}

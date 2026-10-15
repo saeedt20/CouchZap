@@ -42,9 +42,26 @@ Choose a language from the welcome screen or **Settings → Language**. Selectio
 
 Each language includes interface messages, settings, updates, diagnostics and known channel categories. Custom channel/group names and playlist identities are preserved.
 
+## Native design in this source branch
+
+The native redesign on this branch keeps Kotlin/XML, Media3 and the existing import/playback core. It is **not included in the published 2.2.1 APK**. See the [implementation and verification notes](docs/design/IMPLEMENTATION.md) for scope, evidence and hardware checks.
+
+TV Settings now has **Playback / Playlist / App** sections, remembers the last row and supports mirrored navigation in Persian/Arabic. Back returns from a child page, then from detail to the section rail, then closes Settings. Compact phones use a grouped full-width page. **App → Visual effects** offers Auto, Full depth, Safe and Off; Safe keeps video/subtitles untransformed, and unsupported devices fall back conservatively.
+
+Welcome keeps optional language selection and offers file/link import or public sources. Long public catalogs use a virtualized list with one-step remote traversal and retained search. Phone Info keeps playback controls visible while expanded technical information scrolls.
+
+| Native review capture | Preview |
+| --- | --- |
+| TV welcome | [English](docs/design/captures/welcome-tv-en.png) · [العربية](docs/design/captures/welcome-tv-ar.png) |
+| TV settings and language | [Playback](docs/design/captures/settings-tv-en.png) · [العربية](docs/design/captures/language-tv-ar.png) |
+| Groups: selection and focus | [العربية](docs/design/captures/groups-tv-ar.png) |
+| Phone and expanded Info | [हिन्दी welcome](docs/design/captures/welcome-phone-hi.png) · [TV Info](docs/design/captures/info-expanded-tv.png) |
+
+These captures use native Android Views with fixture channels/backdrops. They do not establish live decoder, SurfaceView, blur or remote behavior on physical hardware.
+
 ## Screenshots
 
-These images render the app's actual Android views using Robolectric 4.16.1 native graphics. The new six-language welcome and English/Arabic panel images use API 28; the older Android 16 examples below use API 36. Channel data and the illustrative backdrop are fixtures. Motion is disabled for stable screenshots.
+These published-release images render the app's actual Android views using Robolectric 4.16.1 native graphics. The six-language welcome and English/Arabic panel images use API 28; the older Android 16 examples below use API 36. Channel data and the illustrative backdrop are fixtures. Motion is disabled for stable screenshots.
 
 | Screen | English | العربية |
 | --- | --- | --- |
@@ -95,7 +112,7 @@ These images render the app's actual Android views using Robolectric 4.16.1 nati
 - **Updates from Settings:** check the latest stable GitHub release, download it with progress, verify its checksum and CouchZap signing certificate, then open Android’s installer. Installation always requires your confirmation.
 - **Diagnostic reports:** preview, share or save an app-only log from Settings. It contains device/version details and error classes/stacks; playlist URLs, channel names, tokens and account data are excluded. Boxes without a sharing/file app can copy the report to the clipboard.
 - **Six interface languages:** choose English, Español, हिन्दी, ไทย, فارسی or العربية, in that order, from the welcome screen or Settings. First launch opens the welcome screen directly, with English as the default. Persian and Arabic use RTL text and right-docked channels/settings; English, Spanish, Hindi and Thai use LTR text and left-docked panels. Known IPTV groups are translated without changing playlist identities. Settings subpages retain parent focus and scroll when you press Back.
-- **Light welcome motion:** a one-time intro that completes on the first key or touch while still handling that input. System animation settings are respected; Android 7 panels open immediately.
+- **Light welcome motion:** a one-time intro that completes on the first key or touch while still handling that input. System animation and visual-effects settings are respected.
 - **Optional CRT click:** enable **Settings → Playback → Channel switch sound** for an original, quiet 160ms sample. It is off by default, previews when enabled and plays only on committed channel changes; browsing, retries and reconnects stay silent. Media volume and mute are respected.
 - **Everyday conveniences:** last watched channel, numeric selection for large playlists, a 15/30/60/90-minute sleep timer and saved interface preferences.
 - **TV and phone support:** automatic device detection, manual TV/Phone modes, TV overscan padding, responsive phone layout and touch gestures.
@@ -112,7 +129,7 @@ Favourites and the current channel survive playlist refreshes when `tvg-id`, or 
 | Up / Down in channels | Move focus; wrap at the first/last visible row |
 | OK on a channel | Play it |
 | Hold OK on a channel | Add/remove favourite |
-| Left from a channel row | Reach the filter buttons, then search |
+| Left (Right in RTL) from a channel row | Reach the filter buttons, then search |
 | Right / CH+ / Page Up during playback | Next channel |
 | Left / CH− / Page Down during playback | Previous channel |
 | Down / Info | Show controls; press Info again for stream details |

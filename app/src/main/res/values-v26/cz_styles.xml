@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.CouchZap.Settings" parent="BaseTheme.CouchZap.Settings">
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
+</resources>

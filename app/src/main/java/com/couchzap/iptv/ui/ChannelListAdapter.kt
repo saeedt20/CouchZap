@@ -9,6 +9,7 @@ import com.couchzap.iptv.data.Channel
 import com.couchzap.iptv.databinding.ItemChannelBinding
 import com.couchzap.iptv.player.ChannelPlaybackStatus
 import com.couchzap.iptv.util.GroupLabels
+import com.couchzap.iptv.ui.design.*
 
 class ChannelListAdapter(
     private val artwork: ChannelArtwork? = null,
@@ -20,6 +21,9 @@ class ChannelListAdapter(
     private var selectedIndex = -1
     private var favourites = emptySet<String>()
     private var playbackStatus = ChannelPlaybackStatus.CONNECTING
+    private var tvMode:Boolean?=null
+    private var language:String?=null
+    fun updatePresentation(tv:Boolean,language:String){if(tvMode==tv&&this.language==language)return;tvMode=tv;this.language=language;notifyItemRangeChanged(0,itemCount,"presentation")}
     init { setHasStableIds(true) }
     fun setChannels(newList: List<Channel>, currentPlayingIndex: Int, favouriteIds: Set<String> = emptySet()) {
         channels.clear(); channels.addAll(newList); selectedIndex = currentPlayingIndex; favourites = favouriteIds
@@ -46,20 +50,37 @@ class ChannelListAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ChannelViewHolder(ItemChannelBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     override fun onBindViewHolder(holder: ChannelViewHolder, position: Int) = holder.bind(channels[position], position == selectedIndex)
     override fun onBindViewHolder(holder: ChannelViewHolder, position: Int, payloads: MutableList<Any>) {
-        if (payloads.isNotEmpty()) holder.bindStatus(channels[position], position == selectedIndex)
+        if (payloads.isNotEmpty()&&"presentation" !in payloads) holder.bindStatus(channels[position], position == selectedIndex)
         else onBindViewHolder(holder, position)
     }
     override fun getItemCount() = channels.size
+    override fun onViewRecycled(holder: ChannelViewHolder) { holder.recycle(); super.onViewRecycled(holder) }
+    override fun onViewAttachedToWindow(holder: ChannelViewHolder) { super.onViewAttachedToWindow(holder); FocusMotionBinder.bind(holder.itemView, FocusMotionBinder.Role.CHANNEL).refresh() }
     inner class ChannelViewHolder(private val binding: ItemChannelBinding) : RecyclerView.ViewHolder(binding.root) {
+        private val initialTv=AdaptiveUi.isTv(binding.root.context)
+        private val initialLanguage=com.couchzap.iptv.util.Prefs(binding.root.context).getLanguage()?:"en"
+        init {
+            binding.root.setOnFocusChangeListener { _, focused ->
+                if (focused) channelAt(bindingAdapterPosition)?.let(onFocused)
+            }
+            FocusMotionBinder.bind(binding.root, FocusMotionBinder.Role.CHANNEL)
+        }
+        fun recycle() { FocusMotionBinder.reset(binding.root); artwork?.bind(binding.ivChannelLogo, null) }
         fun bind(channel: Channel, selected: Boolean) {
+            val tv=tvMode?:initialTv;val lang=language?:initialLanguage
+            CouchZapTokens.text(binding.tvItemChannelName, CouchZapTokens.Text.CHANNEL,tv,lang)
+            CouchZapTokens.text(binding.tvItemChannelGroup, CouchZapTokens.Text.VALUE,tv,lang)
+            CouchZapTokens.text(binding.tvItemChannelStatus, CouchZapTokens.Text.VALUE,tv,lang)
+            CouchZapTokens.text(binding.tvItemChannelNum, CouchZapTokens.Text.FOOTER,tv,lang)
+            binding.root.setTag(R.id.cz_action_key, channel.stableId)
             binding.tvItemChannelNum.text = String.format(java.util.Locale.US, "%03d", channel.number)
+            binding.tvItemChannelNum.layoutParams=binding.tvItemChannelNum.layoutParams.apply{width=maxOf((36*binding.root.resources.displayMetrics.density).toInt(),kotlin.math.ceil(binding.tvItemChannelNum.paint.measureText(binding.tvItemChannelNum.text.toString())).toInt())}
+            binding.tvItemChannelNum.fontFeatureSettings="tnum"
+            binding.ivChannelLogo.layoutParams=binding.ivChannelLogo.layoutParams.apply{val size=if(tv)40 else 36;width=(size*binding.root.resources.displayMetrics.density).toInt();height=width}
             binding.tvItemChannelName.text = channel.name
             binding.tvItemChannelGroup.text = GroupLabels.display(binding.root.context, channel.group)
             bindStatus(channel, selected)
             artwork?.bind(binding.ivChannelLogo, channel.logo)
-            binding.root.setOnFocusChangeListener { _, focused ->
-                if (focused) channelAt(bindingAdapterPosition)?.let(onFocused)
-            }
             binding.root.setOnClickListener {
                 val index = bindingAdapterPosition
                 if (index != RecyclerView.NO_POSITION) onChannelSelected(channels[index])
@@ -75,11 +96,17 @@ class ChannelListAdapter(
                 ChannelPlaybackStatus.UNAVAILABLE -> R.string.channel_unavailable_short
                 ChannelPlaybackStatus.ENDED -> R.string.playback_ended
             }
-            binding.tvItemChannelStatus.text = listOfNotNull(if (channel.stableId in favourites) "★" else null,
-                if (selected) binding.root.context.getString(label) else null).joinToString(" ")
+            binding.tvItemChannelStatus.text = if (selected) binding.root.context.getString(label) else ""
+            binding.root.findViewById<View>(R.id.cz_channel_favourite).apply {
+                isSelected = channel.stableId in favourites
+                visibility = if (isSelected) View.VISIBLE else View.GONE
+            }
+            binding.tvItemChannelGroup.visibility = if (selected) View.GONE else View.VISIBLE
             binding.tvItemChannelStatus.visibility = if (binding.tvItemChannelStatus.text.isEmpty()) View.GONE else View.VISIBLE
             binding.root.isSelected = selected
-            binding.root.contentDescription = "${channel.number} ${channel.name} ${binding.tvItemChannelStatus.text}"
+            binding.root.contentDescription = listOfNotNull(channel.number.toString(), channel.name,
+                binding.tvItemChannelStatus.text.toString().takeIf { it.isNotEmpty() },
+                binding.root.context.getString(R.string.favourites).takeIf { channel.stableId in favourites }).joinToString(", ")
         }
     }
 }

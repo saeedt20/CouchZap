@@ -1,0 +1,44 @@
+{
+  "historical_run": true,
+  "not_final_whole_tree_verdict": true,
+  "totals": {
+    "tests": 29,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "name": "com.couchzap.iptv.NextVersionUiRegressionTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "50.14"
+    },
+    {
+      "name": "com.couchzap.iptv.ScreenRenderTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "11.675"
+    },
+    {
+      "name": "com.couchzap.iptv.SearchTypingRegressionTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "12.297"
+    },
+    {
+      "name": "com.couchzap.iptv.TvRemoteRegressionTest",
+      "tests": "17",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "7.662"
+    }
+  ]
+}

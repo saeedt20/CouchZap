@@ -37,7 +37,7 @@ class SearchTypingRegressionTest {
         }.byteInputStream()) }
         val controller = Robolectric.buildActivity(MainActivity::class.java).create().visible()
         try {
-            val activity = controller.get(); val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
+            val activity = controller.get(); val list = activity.uiView<RecyclerView>(R.id.rv_channels)
             val deadline = System.nanoTime() + 5_000_000_000L
             while (list.adapter!!.itemCount != 160 && System.nanoTime() < deadline) { shadowOf(Looper.getMainLooper()).idle(); Thread.sleep(5) }
             assertEquals(160, list.adapter!!.itemCount)
@@ -46,10 +46,10 @@ class SearchTypingRegressionTest {
         } finally { controller.destroy() }
     }
     private fun layout(activity: MainActivity) {
-        val root = activity.findViewById<View>(R.id.root_container)
+        val root = activity.uiView<View>(R.id.root_container)
         root.measure(View.MeasureSpec.makeMeasureSpec(activity.resources.configuration.screenWidthDp, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(activity.resources.configuration.screenHeightDp, View.MeasureSpec.EXACTLY))
-        root.layout(0, 0, root.measuredWidth, root.measuredHeight)
+        root.layout(0, 0, root.measuredWidth, root.measuredHeight); activity.layoutSettingsForTest(root.measuredWidth, root.measuredHeight)
     }
     private fun press(activity: MainActivity, key: Int) {
         activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, key)); activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, key))
@@ -58,8 +58,8 @@ class SearchTypingRegressionTest {
 
     @Test fun `typing words spaces and IME composition stays in search until explicit submission`() {
         for (phone in listOf(false, true)) for (language in listOf("en", "fa")) screen(phone, language) { activity ->
-            val search = activity.findViewById<EditText>(R.id.et_channel_search)
-            val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
+            val search = activity.uiView<EditText>(R.id.et_channel_search)
+            val list = activity.uiView<RecyclerView>(R.id.rv_channels)
             assertTrue(search.requestFocusFromTouch())
             val input = search.onCreateInputConnection(EditorInfo())!!
             val words = if (language == "fa") listOf("ش", "شبکه", "شبکه ", "شبکه خبر") else listOf("W", "World", "World ", "World News")
@@ -92,7 +92,7 @@ class SearchTypingRegressionTest {
         for (phone in listOf(false, true)) for (language in listOf("en", "fa")) screen(phone, language) { activity ->
             // These remote presses outrun layout and leave an offscreen request pending.
             repeat(80) { press(activity, KeyEvent.KEYCODE_DPAD_DOWN) }
-            val search = activity.findViewById<EditText>(R.id.et_channel_search)
+            val search = activity.uiView<EditText>(R.id.et_channel_search)
             assertTrue(search.requestFocusFromTouch())
             val input = search.onCreateInputConnection(EditorInfo())!!
             input.commitText("World", 1); settle(activity)

@@ -30,7 +30,7 @@ class DiagnosticMenu(private val activity: AppCompatActivity, private val panel:
                 runCatching { save.launch("CouchZap-diagnostics.txt") }.onFailure { copy() }
             }
             panel.button(body, activity.getString(R.string.share_log)) { share() }
-            panel.text(body, pendingReport, technical = true).apply { textSize = 13f; setTextIsSelectable(true) }
+            panel.text(body, pendingReport, technical = true).apply { textSize = if(com.couchzap.iptv.ui.design.AdaptiveUi.isTv(activity))16f else 13f; typeface = android.graphics.Typeface.MONOSPACE; tag = "technical-report"; setTextIsSelectable(true) }
         }
     }
     private fun share() {

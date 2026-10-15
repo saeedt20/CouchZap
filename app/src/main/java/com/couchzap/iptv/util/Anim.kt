@@ -10,7 +10,8 @@ import com.couchzap.iptv.R
 /** Focus/visibility are synchronous; interruption always settles to the latest requested state. */
 object Anim {
     private data class Target(val visible: Boolean, val alpha: Float)
-    fun enabled(view: View): Boolean = runCatching {
+    fun enabled(view: View): Boolean = Prefs(view.context).getEffectsMode() != "off" && systemEnabled(view)
+    fun systemEnabled(view: View): Boolean = runCatching {
         Settings.Global.getFloat(view.context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f &&
             (Build.VERSION.SDK_INT < 26 || android.animation.ValueAnimator.areAnimatorsEnabled())
     }.getOrDefault(false)

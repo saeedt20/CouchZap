@@ -1,0 +1,25 @@
+<resources>
+    <string name="cz_clear_search">खोज मिटाएँ</string>
+    <string name="cz_channel_hint">OK देखें · OK दबाए रखें पसंदीदा · वापस बंद करें</string>
+    <string name="cz_groups_help">श्रेणी के अनुसार चैनल छाँटें</string>
+    <string name="cz_empty_favourites">अभी कोई पसंदीदा नहीं। जोड़ने के लिए चैनल पर OK दबाए रखें।</string>
+    <string name="cz_empty_filter">इन फ़िल्टर से कोई चैनल नहीं मिला।</string>
+    <plurals name="cz_channel_count">
+        <item quantity="one">%1$d चैनल</item>
+        <item quantity="other">%1$d चैनल</item>
+    </plurals>
+    <string name="cz_selected">चुना गया</string>
+    <string name="cz_on">चालू</string>
+    <string name="cz_effects">दृश्य प्रभाव</string>
+    <string name="cz_effects_full">पूर्ण गहराई</string>
+    <string name="cz_effects_safe">सुरक्षित</string>
+    <string name="cz_effects_auto_help">इस डिवाइस के अनुसार समायोजित करें।</string>
+    <string name="cz_effects_full_help">समर्थित होने पर दृश्य गहराई और लाइव ब्लर।</string>
+    <string name="cz_effects_safe_help">लाइव वीडियो को अपरिवर्तित रखें।</string>
+    <string name="cz_effects_off_help">सजावटी गति और गहराई बंद करें।</string>
+    <string name="cz_effects_safe_reason">इस डिवाइस पर सुरक्षित प्रभाव सक्रिय हैं।</string>
+    <string name="cz_effects_unavailable">सिस्टम ब्लर बंद होने पर पूर्ण गहराई उपलब्ध नहीं है।</string>
+    <string name="cz_effects_system_off">सिस्टम ऐनिमेशन बंद हैं।</string>
+    <string name="cz_settings_hint">← → अनुभाग · OK चुनें · वापस लौटें</string>
+    <string name="cz_current_language">वर्तमान भाषा</string>
+</resources>

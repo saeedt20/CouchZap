@@ -1,6 +1,15 @@
 <resources>
-<color name="bg_black">#161A18</color><color name="osd_background">#F5242B26</color><color name="panel_background">#242B26</color>
-<color name="item_focus">#B7C9AC</color><color name="item_focus_text">#182116</color><color name="item_focus_stroke">#E2EBDD</color>
-<color name="item_normal">#161A18</color><color name="text_white">#F2EFE7</color><color name="text_gray">#BEC7BE</color><color name="text_dim">#AAB7AC</color>
-<color name="accent_gold">#B7C9AC</color><color name="accent_blue">#B7C9AC</color><color name="outline">#536451</color>
+    <color name="bg_black">@color/cz_canvas</color>
+    <color name="osd_background">@color/cz_surface_shell</color>
+    <color name="panel_background">@color/cz_surface_base</color>
+    <color name="item_focus">@color/cz_surface_focus</color>
+    <color name="item_focus_text">@color/cz_text_primary</color>
+    <color name="item_focus_stroke">@color/cz_sage_bright</color>
+    <color name="item_normal">@color/cz_surface_content</color>
+    <color name="text_white">@color/cz_text_primary</color>
+    <color name="text_gray">@color/cz_text_secondary</color>
+    <color name="text_dim">@color/cz_text_tertiary</color>
+    <color name="accent_gold">@color/cz_sage</color>
+    <color name="accent_blue">@color/cz_sage</color>
+    <color name="outline">@color/cz_border</color>
 </resources>

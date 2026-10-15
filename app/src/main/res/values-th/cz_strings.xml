@@ -1,0 +1,24 @@
+<resources>
+    <string name="cz_clear_search">ล้างการค้นหา</string>
+    <string name="cz_channel_hint">OK รับชม · กด OK ค้างไว้รายการโปรด · ย้อนกลับปิด</string>
+    <string name="cz_groups_help">กรองช่องตามหมวดหมู่</string>
+    <string name="cz_empty_favourites">ยังไม่มีรายการโปรด กด OK ค้างไว้ที่ช่องเพื่อเพิ่ม</string>
+    <string name="cz_empty_filter">ไม่มีช่องที่ตรงกับตัวกรองเหล่านี้</string>
+    <plurals name="cz_channel_count">
+        <item quantity="other">%1$d ช่อง</item>
+    </plurals>
+    <string name="cz_selected">เลือกอยู่</string>
+    <string name="cz_on">เปิด</string>
+    <string name="cz_effects">เอฟเฟกต์ภาพ</string>
+    <string name="cz_effects_full">ความลึกเต็มรูปแบบ</string>
+    <string name="cz_effects_safe">ปลอดภัย</string>
+    <string name="cz_effects_auto_help">ปรับให้เหมาะกับอุปกรณ์นี้</string>
+    <string name="cz_effects_full_help">ความลึกและเบลอภาพสดเมื่อรองรับ</string>
+    <string name="cz_effects_safe_help">คงวิดีโอสดไว้โดยไม่เปลี่ยนแปลง</string>
+    <string name="cz_effects_off_help">ปิดการเคลื่อนไหวและความลึกเพื่อการตกแต่ง</string>
+    <string name="cz_effects_safe_reason">อุปกรณ์นี้ใช้เอฟเฟกต์แบบปลอดภัย</string>
+    <string name="cz_effects_unavailable">ไม่สามารถใช้ความลึกเต็มรูปแบบได้เมื่อระบบปิดการเบลอ</string>
+    <string name="cz_effects_system_off">ระบบปิดภาพเคลื่อนไหวอยู่</string>
+    <string name="cz_settings_hint">← → ส่วนต่าง ๆ · OK เลือก · ย้อนกลับ</string>
+    <string name="cz_current_language">ภาษาปัจจุบัน</string>
+</resources>

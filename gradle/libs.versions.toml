@@ -1,4 +1,5 @@
 [versions]
+dynamicanimation = "1.1.0"
 agp = "9.1.1"
 coreKtx = "1.13.1"
 appcompat = "1.7.0"
@@ -13,6 +14,7 @@ kotlinxCoroutinesAndroid = "1.10.2"
 robolectric = "4.16.1"
 
 [libraries]
+androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }

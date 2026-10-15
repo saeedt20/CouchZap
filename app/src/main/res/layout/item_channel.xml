@@ -1,50 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="56dp"
-    android:layout_marginBottom="4dp"
-    android:background="@drawable/bg_row"
-    android:clickable="true"
-    android:focusable="true"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingStart="12dp"
-    android:paddingEnd="12dp">
-    <ImageView
-        android:id="@+id/iv_channel_logo"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginEnd="10dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_station"
-        android:importantForAccessibility="no"
-        android:duplicateParentState="true" />
-    <TextView
-        android:id="@+id/tv_item_channel_num"
-        android:duplicateParentState="true"
-        android:layout_width="48dp"
-        android:layout_height="wrap_content"
-        android:textColor="@color/selector_channel_num"
-        android:textSize="15sp" />
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:duplicateParentState="true">
-        <TextView
-            android:id="@+id/tv_item_channel_name" android:textAlignment="viewStart"
-            android:duplicateParentState="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/selector_channel_text"
-            android:textSize="18sp"
-            android:maxLines="1"
-            android:ellipsize="end" />
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:duplicateParentState="true" android:layout_marginTop="2dp">
-            <TextView android:id="@+id/tv_item_channel_group" android:textAlignment="viewStart" android:duplicateParentState="true" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:textColor="@color/selector_channel_text" android:textSize="13sp" android:maxLines="1" android:ellipsize="end" />
-            <TextView android:id="@+id/tv_item_channel_status" android:duplicateParentState="true" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:textColor="@color/selector_channel_text" android:textSize="13sp" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="68dp"
+    android:layout_marginBottom="4dp" android:orientation="horizontal" android:gravity="center_vertical"
+    android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingTop="8dp" android:paddingBottom="8dp"
+    android:focusable="true" android:clickable="true" android:background="@drawable/bg_row">
+    <ImageView android:id="@+id/iv_channel_logo" android:layout_width="40dp" android:layout_height="40dp"
+        android:layout_marginEnd="8dp" android:padding="4dp" android:scaleType="fitCenter" android:src="@drawable/ic_station" android:importantForAccessibility="no"/>
+    <TextView android:id="@+id/tv_item_channel_num" android:layout_width="36dp" android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp" android:textDirection="ltr" android:textSize="16sp" android:textColor="@color/cz_text_secondary"/>
+    <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+        <TextView android:id="@+id/tv_item_channel_name" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textAlignment="viewStart" android:textSize="20sp" android:textColor="@color/cz_text_primary" android:maxLines="1" android:ellipsize="end"/>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+            <TextView android:id="@+id/tv_item_channel_group" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                android:textAlignment="viewStart" android:textSize="17sp" android:textColor="@color/cz_text_secondary" android:maxLines="1" android:ellipsize="end"/>
+            <TextView android:id="@+id/tv_item_channel_status" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginStart="8dp" android:textSize="17sp" android:textColor="@color/cz_sage" android:maxLines="2"/>
         </LinearLayout>
     </LinearLayout>
+    <ImageView android:id="@id/cz_channel_favourite" android:layout_width="24dp" android:layout_height="24dp"
+        android:layout_marginStart="8dp" android:src="@drawable/ic_favourite" android:importantForAccessibility="no" android:focusable="false"/>
 </LinearLayout>

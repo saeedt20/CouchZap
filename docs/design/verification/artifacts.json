@@ -1,0 +1,43 @@
+{
+  "debug": {
+    "errors": 0,
+    "warnings": 207
+  },
+  "release": {
+    "errors": 0,
+    "warnings": 208
+  },
+  "protected_files": 37,
+  "protected_changes": [],
+  "apk_sha256": {
+    "debug": {
+      "sha256": "52109502f86481d565d7ec055122cfdb6932db2472fa49c89d2af21c20320360",
+      "bytes": 10611396
+    },
+    "release": {
+      "sha256": "2a800b2a354cd60033bc7b8afc309c89294caddd5591be579246b8bcd460eb3e",
+      "bytes": 4055594
+    }
+  },
+  "retained_added_fonts": [
+    "inter_400.ttf",
+    "inter_500.ttf",
+    "inter_600.ttf",
+    "noto_devanagari_400.ttf",
+    "noto_devanagari_500.ttf",
+    "noto_devanagari_600.ttf",
+    "noto_thai_400.ttf",
+    "noto_thai_500.ttf",
+    "noto_thai_600.ttf",
+    "vazirmatn_400.ttf",
+    "vazirmatn_500.ttf",
+    "vazirmatn_600.ttf"
+  ],
+  "font_notices": [
+    "assets/font-notices/inter-OFL.txt",
+    "assets/font-notices/noto_devanagari-OFL.txt",
+    "assets/font-notices/noto_thai-OFL.txt",
+    "assets/font-notices/vazirmatn-OFL.txt"
+  ],
+  "signing_material_entries": []
+}

@@ -1,435 +1,116 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/root_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/bg_black"
-    android:focusable="true"
-    android:focusableInTouchMode="true"
-    android:descendantFocusability="beforeDescendants">
-    <androidx.media3.ui.AspectRatioFrameLayout
-        android:id="@+id/video_frame"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center">
-        <SurfaceView
-            android:id="@+id/surface_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/root_container" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/bg_black" android:focusable="true" android:focusableInTouchMode="true" android:descendantFocusability="beforeDescendants">
+  <FrameLayout android:id="@id/cz_video_scene" android:layout_width="match_parent" android:layout_height="match_parent">
+    <androidx.media3.ui.AspectRatioFrameLayout android:id="@+id/video_frame" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_gravity="center">
+      <SurfaceView android:id="@+id/surface_view" android:layout_width="match_parent" android:layout_height="match_parent" />
     </androidx.media3.ui.AspectRatioFrameLayout>
-    <androidx.media3.ui.SubtitleView
-        android:id="@+id/subtitle_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:importantForAccessibility="no" />
-    <View
-        android:id="@+id/v_shutter"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0"
-        android:background="@color/bg_black"
-        android:visibility="gone" />
-    <TextView
-        android:id="@+id/tv_ghost_next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:layout_margin="24dp"
-        android:background="@drawable/bg_osd"
-        android:paddingStart="16dp"
-        android:paddingTop="10dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="10dp"
-        android:textColor="@color/accent_gold"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:visibility="gone" />
-    <TextView
-        android:id="@+id/tv_digit_ghost"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|start"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:background="@drawable/bg_osd"
-        android:paddingStart="24dp"
-        android:paddingTop="12dp"
-        android:paddingEnd="24dp"
-        android:paddingBottom="12dp"
-        android:textColor="@color/text_white"
-        android:textSize="52sp"
-        android:textStyle="bold"
-        android:visibility="gone" />
-    <TextView
-        android:id="@+id/tv_toast_msg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="48dp"
-        android:background="@drawable/bg_osd"
-        android:paddingStart="24dp"
-        android:paddingTop="12dp"
-        android:paddingEnd="24dp"
-        android:paddingBottom="12dp"
-        android:textColor="@color/text_white"
-        android:textSize="20sp"
-        android:visibility="gone" />
-    <include
-        android:id="@+id/view_osd"
-        layout="@layout/view_osd" />
-    <include
-        android:id="@+id/view_channel_list"
-        layout="@layout/view_channel_list" />
-    <LinearLayout android:id="@+id/layout_settings" android:layout_width="320dp" android:layout_height="match_parent" android:layout_gravity="start" android:background="@color/panel_background" android:orientation="vertical" android:padding="24dp" android:visibility="gone">
-            <LinearLayout android:orientation="horizontal" android:gravity="center_vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:minHeight="56dp"
-                android:layout_marginBottom="12dp">
-                <Button android:id="@+id/settings_back" android:layout_width="48dp" android:layout_height="48dp" android:text="‹" android:contentDescription="@string/back" android:background="@drawable/bg_row" android:textColor="@color/text_white" android:visibility="gone" />
-                <TextView
-                    android:id="@+id/settings_title"
-                    android:layout_width="0dp" android:layout_weight="1"
-                    android:layout_height="wrap_content"
-
-                    android:text="@string/settings"
-                    android:textColor="@color/text_white"
-                    android:textSize="28sp"
-                    android:fontFamily="sans-serif-medium" />
-                <ImageButton
-                    android:id="@+id/btn_settings_close"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-
-                    android:background="@drawable/bg_row"
-                    android:contentDescription="@string/close"
-                    android:focusable="true"
-                    android:padding="12dp"
-                    android:src="@drawable/ic_close"
-                    app:tint="@color/selector_channel_text" />
-            </LinearLayout>
+    <androidx.media3.ui.SubtitleView android:id="@+id/subtitle_view" android:layout_width="match_parent" android:layout_height="match_parent" android:importantForAccessibility="no" />
+    <View android:id="@+id/v_shutter" android:layout_width="match_parent" android:layout_height="match_parent" android:alpha="0" android:background="@color/bg_black" android:visibility="gone" />
+    <com.couchzap.iptv.ui.settings.VideoCornerMaskView android:id="@+id/cz_video_mask" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" android:importantForAccessibility="no" />
+  </FrameLayout>
+  <FrameLayout android:id="@id/cz_hud_scene" android:layout_width="match_parent" android:layout_height="match_parent">
+    <TextView android:id="@+id/tv_ghost_next" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="top|end" android:layout_margin="24dp" android:background="@drawable/bg_osd" android:paddingStart="16dp" android:paddingTop="10dp" android:paddingEnd="16dp" android:paddingBottom="10dp" android:textColor="@color/accent_gold" android:textSize="20sp" android:textStyle="bold" android:visibility="gone" />
+    <TextView android:id="@+id/tv_digit_ghost" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="top|start" android:layout_marginStart="24dp" android:layout_marginTop="24dp" android:background="@drawable/bg_osd" android:paddingStart="24dp" android:paddingTop="12dp" android:paddingEnd="24dp" android:paddingBottom="12dp" android:textColor="@color/text_white" android:textSize="52sp" android:textStyle="bold" android:visibility="gone" />
+    <TextView android:id="@+id/tv_toast_msg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="48dp" android:background="@drawable/bg_osd" android:paddingStart="24dp" android:paddingTop="12dp" android:paddingEnd="24dp" android:paddingBottom="12dp" android:textColor="@color/text_white" android:textSize="20sp" android:visibility="gone" />
+    <include android:id="@+id/view_osd" layout="@layout/view_osd" />
+    <ImageButton android:id="@+id/btn_quick_settings" android:layout_width="48dp" android:layout_height="48dp" android:layout_gravity="top|end" android:layout_margin="8dp" android:background="@drawable/bg_focus" android:contentDescription="@string/settings" android:src="@drawable/ic_settings" android:padding="12dp" />
+    <LinearLayout android:id="@+id/layout_playback_error" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:layout_margin="24dp" android:background="@drawable/bg_osd" android:padding="24dp" android:orientation="vertical" android:visibility="gone">
+      <TextView android:id="@+id/tv_playback_error" android:layout_width="match_parent" android:layout_height="wrap_content" android:maxWidth="400dp" android:text="@string/channel_unavailable" android:textSize="20sp" android:textColor="@color/text_white" android:layout_marginBottom="16dp" />
+      <Button android:id="@+id/btn_retry" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:padding="8dp" android:layout_marginBottom="8dp" android:background="@drawable/bg_focus" android:focusable="true" android:text="@string/retry" android:textAllCaps="false" android:textColor="@color/selector_channel_text" android:textSize="16sp" />
+      <Button android:id="@+id/btn_error_next" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:padding="8dp" android:layout_marginBottom="8dp" android:background="@drawable/bg_focus" android:focusable="true" android:text="@string/next_channel" android:textAllCaps="false" android:textColor="@color/selector_channel_text" android:textSize="16sp" />
+    </LinearLayout>
+    <include android:id="@+id/view_import" layout="@layout/view_import" />
+  </FrameLayout>
+  <View android:id="@id/cz_channel_scrim" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/cz_scrim_rgb" android:alpha="0" android:visibility="gone" android:importantForAccessibility="no" />
+  <include android:id="@+id/view_channel_list" layout="@layout/view_channel_list" />
+  <LinearLayout android:id="@+id/layout_settings" android:layout_width="720dp" android:layout_height="match_parent" android:layout_gravity="start" android:background="@drawable/bg_osd" android:orientation="vertical" android:padding="20dp" android:visibility="gone">
+    <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:layout_marginBottom="12dp">
+      <ImageView android:layout_width="32dp" android:layout_height="32dp" android:layout_marginEnd="12dp" android:src="@drawable/ic_brand" android:importantForAccessibility="no" />
+      <ImageButton android:id="@+id/settings_back" android:layout_width="56dp" android:layout_height="56dp" android:src="@drawable/ic_back" android:padding="16dp" android:contentDescription="@string/back" android:background="@drawable/bg_row" android:textColor="@color/text_white" android:visibility="gone" />
+      <TextView android:id="@+id/settings_title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/settings" android:textColor="@color/text_white" android:textSize="28sp" android:fontFamily="sans-serif-medium" />
+      <ImageButton android:id="@+id/btn_settings_close" android:layout_width="56dp" android:layout_height="56dp" android:background="@drawable/bg_row" android:contentDescription="@string/close" android:focusable="true" android:padding="16dp" android:src="@drawable/ic_close" app:tint="@color/selector_channel_text" />
+    </LinearLayout>
+    <LinearLayout android:id="@+id/settings_body" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
+      <ScrollView android:id="@+id/settings_rail_scroll" android:layout_width="180dp" android:layout_height="match_parent" android:fillViewport="true" android:scrollbars="none">
+        <LinearLayout android:id="@id/cz_settings_rail" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingEnd="16dp">
+          <Button android:id="@id/cz_category_playback" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp" android:text="@string/playback_section" android:textAllCaps="false" android:gravity="start|center_vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:background="@drawable/bg_focus" android:tag="category-playback" />
+          <Button android:id="@id/cz_category_playlist" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp" android:text="@string/playlist_section" android:textAllCaps="false" android:gravity="start|center_vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:background="@drawable/bg_focus" android:tag="category-playlist" />
+          <Button android:id="@id/cz_category_app" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp" android:text="@string/app_section" android:textAllCaps="false" android:gravity="start|center_vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:background="@drawable/bg_focus" android:tag="category-app" />
+          <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
+          <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/cz_divider" android:layout_marginBottom="8dp" />
+        </LinearLayout>
+      </ScrollView>
+      <View android:id="@+id/settings_pane_divider" android:layout_width="1dp" android:layout_height="match_parent" android:layout_marginEnd="16dp" android:background="@color/cz_divider" />
+      <LinearLayout android:id="@id/cz_settings_detail" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:orientation="vertical">
+        <TextView android:id="@id/cz_settings_category_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/playback_section" android:textColor="@color/cz_text_primary" android:textSize="22sp" android:layout_marginBottom="12dp" />
         <FrameLayout android:id="@+id/settings_pages" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
-            <ScrollView android:id="@+id/settings_root_scroll" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:scrollbars="none">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-
-            <TextView android:id="@+id/localized_label_6"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="10dp"
-                android:text="@string/playback_section"
-                android:textColor="@color/text_gray"
-                android:textSize="13sp" />
-            <com.couchzap.iptv.ui.SettingRow
-                android:id="@+id/btn_settings_aspect"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp">
-                <TextView android:id="@+id/localized_label_7"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:duplicateParentState="true"
-                    android:text="@string/choose_aspect"
-                    android:textSize="16sp"
-                    android:textColor="@color/selector_channel_text" />
-                <TextView
-                    android:id="@+id/tv_settings_aspect_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxWidth="110dp"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    android:duplicateParentState="true"
-                    android:text="@string/aspect_fit"
-                    android:textSize="15sp"
-                    android:textColor="@color/selector_channel_text" />
-            </com.couchzap.iptv.ui.SettingRow>
-            <Button
-                android:id="@+id/btn_settings_tracks"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:focusable="true"
-                android:text="@string/audio_subtitles"
-                android:textAllCaps="false"
-                android:textColor="@color/selector_channel_text"
-                android:textSize="16sp"
-                android:gravity="start|center_vertical"
-                android:paddingStart="14dp" />
-            <com.couchzap.iptv.ui.SettingRow
-                android:id="@+id/btn_settings_sleep"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp">
-                <TextView android:id="@+id/localized_label_8"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:duplicateParentState="true"
-                    android:text="@string/sleep_timer"
-                    android:textSize="16sp"
-                    android:textColor="@color/selector_channel_text" />
-                <TextView
-                    android:id="@+id/tv_settings_sleep_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxWidth="110dp"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    android:duplicateParentState="true"
-                    android:text="@string/off"
-                    android:textSize="15sp"
-                    android:textColor="@color/selector_channel_text" />
-            </com.couchzap.iptv.ui.SettingRow>
-            <com.couchzap.iptv.ui.SettingRow
-                android:id="@+id/btn_settings_crt_row"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:contentDescription="@string/crt_sound"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp">
-                <TextView
-                    android:id="@+id/tv_settings_crt_label"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="12dp"
-                    android:duplicateParentState="true"
-                    android:importantForAccessibility="no"
-                    android:text="@string/crt_sound"
-                    android:textColor="@color/selector_channel_text"
-                    android:textSize="16sp" />
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/btn_settings_crt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@null"
-                    android:focusable="false"
-                    android:importantForAccessibility="no" />
-            </com.couchzap.iptv.ui.SettingRow>
-            <TextView android:id="@+id/localized_label_9"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="10dp"
-                android:text="@string/playlist_section"
-                android:textColor="@color/text_gray"
-                android:textSize="13sp" />
-            <Button
-                android:id="@+id/btn_settings_reimport"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:focusable="true"
-                android:text="@string/playlist_sources"
-                android:textAllCaps="false"
-                android:textColor="@color/selector_channel_text"
-                android:textSize="16sp"
-                android:gravity="start|center_vertical"
-                android:paddingStart="14dp" />
-            <TextView
-                android:id="@+id/tv_settings_source"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:text="@string/playlist_not_added"
-                android:textColor="@color/text_gray"
-                android:textSize="13sp" />
-            <Button
-                android:id="@+id/btn_settings_guide"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:focusable="true"
-                android:text="@string/programme_guide"
-                android:textAllCaps="false"
-                android:textColor="@color/selector_channel_text"
-                android:textSize="16sp"
-                android:gravity="start|center_vertical"
-                android:paddingStart="14dp" />
-            <TextView android:id="@+id/localized_label_10"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="10dp"
-                android:text="@string/app_section"
-                android:textColor="@color/text_gray"
-                android:textSize="13sp" />
-            <com.couchzap.iptv.ui.SettingRow
-                android:id="@+id/btn_settings_mode"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp">
-                <TextView android:id="@+id/localized_label_11"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:duplicateParentState="true"
-                    android:text="@string/interface_mode"
-                    android:textSize="16sp"
-                    android:textColor="@color/selector_channel_text" />
-                <TextView
-                    android:id="@+id/tv_settings_mode_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxWidth="110dp"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    android:duplicateParentState="true"
-                    android:text="@string/automatic"
-                    android:textSize="15sp"
-                    android:textColor="@color/selector_channel_text" />
-            </com.couchzap.iptv.ui.SettingRow>
-            <Button android:id="@+id/btn_settings_language" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginBottom="8dp" android:text="@string/language" android:textAllCaps="false" android:textSize="16sp" android:focusable="true" android:textColor="@color/selector_channel_text" android:background="@drawable/bg_row" android:gravity="start|center_vertical" android:paddingStart="14dp" />
-            <Button
-                android:id="@+id/btn_settings_update"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:focusable="true"
-                android:text="@string/check_updates"
-                android:textAllCaps="false"
-                android:textColor="@color/selector_channel_text"
-                android:textSize="16sp"
-                android:gravity="start|center_vertical"
-                android:paddingStart="14dp" />
-            <Button
-                android:id="@+id/btn_settings_logs"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:focusable="true"
-                android:text="@string/diagnostic_log"
-                android:textAllCaps="false"
-                android:textColor="@color/selector_channel_text"
-                android:textSize="16sp"
-                android:gravity="start|center_vertical"
-                android:paddingStart="14dp" />
-            <Button
-                android:id="@+id/btn_settings_about"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:focusable="true"
-                android:text="@string/about"
-                android:textAllCaps="false"
-                android:textColor="@color/selector_channel_text"
-                android:textSize="16sp"
-                android:gravity="start|center_vertical"
-                android:paddingStart="14dp" />
-            <Button
-                android:id="@+id/btn_settings_exit"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/bg_row"
-                android:focusable="true"
-                android:text="@string/settings_exit"
-                android:textAllCaps="false"
-                android:textColor="@color/selector_channel_text"
-                android:textSize="16sp"
-                android:gravity="start|center_vertical"
-                android:paddingStart="14dp" />
-
-                </LinearLayout>
-            </ScrollView>
+          <ScrollView android:id="@+id/settings_root_scroll" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:scrollbars="none">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:id="@+id/settings_root_groups">
+              <LinearLayout android:id="@+id/settings_playback_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView android:id="@+id/localized_label_6" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:layout_marginBottom="10dp" android:text="@string/playback_section" android:textColor="@color/text_gray" android:textSize="13sp" />
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_aspect" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:paddingStart="14dp" android:paddingEnd="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/localized_label_7" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:duplicateParentState="true" android:text="@string/choose_aspect" android:textSize="16sp" android:textColor="@color/selector_channel_text" android:importantForAccessibility="no" android:tag="cz_label" />
+                  <TextView android:id="@+id/tv_settings_aspect_value" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="110dp" android:maxLines="1" android:ellipsize="end" android:duplicateParentState="true" android:text="@string/aspect_fit" android:textSize="15sp" android:textColor="@color/selector_channel_text" android:importantForAccessibility="no" android:tag="cz_value" />
+                </com.couchzap.iptv.ui.SettingRow>
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_tracks" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:focusable="true" android:paddingStart="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/tv_settings_tracks_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/audio_subtitles" android:tag="cz_label" android:importantForAccessibility="no" />
+                </com.couchzap.iptv.ui.SettingRow>
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_sleep" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:paddingStart="14dp" android:paddingEnd="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/localized_label_8" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:duplicateParentState="true" android:text="@string/sleep_timer" android:textSize="16sp" android:textColor="@color/selector_channel_text" android:importantForAccessibility="no" android:tag="cz_label" />
+                  <TextView android:id="@+id/tv_settings_sleep_value" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="110dp" android:maxLines="1" android:ellipsize="end" android:duplicateParentState="true" android:text="@string/off" android:textSize="15sp" android:textColor="@color/selector_channel_text" android:importantForAccessibility="no" android:tag="cz_value" />
+                </com.couchzap.iptv.ui.SettingRow>
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_crt_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:contentDescription="@string/crt_sound" android:paddingStart="14dp" android:paddingEnd="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/tv_settings_crt_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginEnd="12dp" android:duplicateParentState="true" android:importantForAccessibility="no" android:text="@string/crt_sound" android:textColor="@color/selector_channel_text" android:textSize="16sp" android:tag="cz_label" />
+                  <TextView android:id="@+id/tv_settings_crt_value" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/off" android:tag="cz_value" android:importantForAccessibility="no" />
+                </com.couchzap.iptv.ui.SettingRow>
+              </LinearLayout>
+              <LinearLayout android:id="@+id/settings_playlist_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView android:id="@+id/localized_label_9" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:layout_marginBottom="10dp" android:text="@string/playlist_section" android:textColor="@color/text_gray" android:textSize="13sp" />
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_reimport" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:focusable="true" android:paddingStart="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+                    <TextView android:id="@+id/tv_settings_reimport_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/playlist_sources" android:tag="cz_label" android:importantForAccessibility="no" />
+                    <TextView android:id="@+id/tv_settings_source" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:text="@string/playlist_not_added" android:textColor="@color/text_gray" android:textSize="13sp" android:tag="cz_supporting" />
+                  </LinearLayout>
+                </com.couchzap.iptv.ui.SettingRow>
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_guide" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:focusable="true" android:paddingStart="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/tv_settings_guide_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/programme_guide" android:tag="cz_label" android:importantForAccessibility="no" />
+                </com.couchzap.iptv.ui.SettingRow>
+              </LinearLayout>
+              <LinearLayout android:id="@+id/settings_app_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView android:id="@+id/localized_label_10" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:layout_marginBottom="10dp" android:text="@string/app_section" android:textColor="@color/text_gray" android:textSize="13sp" />
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_mode" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:paddingStart="14dp" android:paddingEnd="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/localized_label_11" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:duplicateParentState="true" android:text="@string/interface_mode" android:textSize="16sp" android:textColor="@color/selector_channel_text" android:importantForAccessibility="no" android:tag="cz_label" />
+                  <TextView android:id="@+id/tv_settings_mode_value" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="110dp" android:maxLines="1" android:ellipsize="end" android:duplicateParentState="true" android:text="@string/automatic" android:textSize="15sp" android:textColor="@color/selector_channel_text" android:importantForAccessibility="no" android:tag="cz_value" />
+                </com.couchzap.iptv.ui.SettingRow>
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_language" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:focusable="true" android:background="@drawable/bg_row" android:paddingStart="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/tv_settings_language_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/language" android:tag="cz_label" android:importantForAccessibility="no" />
+                  <TextView android:id="@+id/tv_settings_language_value" android:layout_width="wrap_content" android:layout_height="wrap_content" android:tag="cz_value" android:text="English" android:importantForAccessibility="no" />
+                </com.couchzap.iptv.ui.SettingRow>
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_effects" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp">
+                  <TextView android:id="@+id/tv_settings_effects_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/cz_effects" android:tag="cz_label" android:importantForAccessibility="no" />
+                  <TextView android:id="@+id/tv_settings_effects_value" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/automatic" android:tag="cz_value" android:importantForAccessibility="no" />
+                </com.couchzap.iptv.ui.SettingRow>
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_update" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:focusable="true" android:paddingStart="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/tv_settings_update_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/check_updates" android:tag="cz_label" android:importantForAccessibility="no" />
+                </com.couchzap.iptv.ui.SettingRow>
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_logs" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:focusable="true" android:paddingStart="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/tv_settings_logs_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/diagnostic_log" android:tag="cz_label" android:importantForAccessibility="no" />
+                </com.couchzap.iptv.ui.SettingRow>
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_about" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:focusable="true" android:paddingStart="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/tv_settings_about_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/about" android:tag="cz_label" android:importantForAccessibility="no" />
+                </com.couchzap.iptv.ui.SettingRow>
+                <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_exit" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:focusable="true" android:paddingStart="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+                  <TextView android:id="@+id/tv_settings_exit_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/settings_exit" android:tag="cz_label" android:importantForAccessibility="no" />
+                </com.couchzap.iptv.ui.SettingRow>
+              </LinearLayout>
+            </LinearLayout>
+          </ScrollView>
         </FrameLayout>
+      </LinearLayout>
     </LinearLayout>
-    <LinearLayout
-        android:id="@+id/layout_file_browser"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/bg_black"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:visibility="gone">
-        <TextView
-            android:id="@+id/tv_file_browser_path"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="/storage"
-            android:textColor="@color/accent_gold"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_file_browser"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:focusable="true" />
-    </LinearLayout>
-    <ImageButton
-        android:id="@+id/btn_quick_settings"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="top|end"
-        android:layout_margin="8dp"
-        android:background="@drawable/bg_focus"
-        android:contentDescription="@string/settings"
-        android:src="@drawable/ic_settings"
-        android:padding="12dp" />
-    <LinearLayout
-        android:id="@+id/layout_playback_error"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="24dp"
-        android:background="@drawable/bg_osd"
-        android:padding="24dp"
-        android:orientation="vertical"
-        android:visibility="gone">
-        <TextView
-            android:id="@+id/tv_playback_error"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxWidth="400dp"
-            android:text="@string/channel_unavailable"
-            android:textSize="20sp"
-            android:textColor="@color/text_white"
-            android:layout_marginBottom="16dp" />
-        <Button
-            android:id="@+id/btn_retry"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_focus"
-            android:focusable="true"
-            android:text="@string/retry"
-            android:textAllCaps="false"
-            android:textColor="@color/selector_channel_text"
-            android:textSize="16sp" />
-        <Button
-            android:id="@+id/btn_error_next"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_focus"
-            android:focusable="true"
-            android:text="@string/next_channel"
-            android:textAllCaps="false"
-            android:textColor="@color/selector_channel_text"
-            android:textSize="16sp" />
-    </LinearLayout>
-    <include
-        android:id="@+id/view_import"
-        layout="@layout/view_import" />
+    <TextView android:id="@id/cz_settings_footer" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="32dp" android:gravity="bottom" android:text="@string/cz_settings_hint" android:textColor="@color/cz_text_secondary" android:textSize="16sp" />
+  </LinearLayout>
+  <LinearLayout android:id="@+id/layout_file_browser" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/bg_black" android:orientation="vertical" android:padding="24dp" android:visibility="gone">
+    <TextView android:id="@+id/tv_file_browser_path" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" android:text="/storage" android:textColor="@color/accent_gold" android:textSize="20sp" android:textStyle="bold" />
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_file_browser" android:layout_width="match_parent" android:layout_height="match_parent" android:focusable="true" />
+  </LinearLayout>
 </FrameLayout>

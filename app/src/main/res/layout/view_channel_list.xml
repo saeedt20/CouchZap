@@ -1,129 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/channel_list_container"
-    android:layout_width="400dp"
-    android:layout_height="match_parent"
-    android:layout_gravity="start"
-    android:background="@color/panel_background"
-    android:orientation="vertical"
-    android:padding="20dp"
-    android:visibility="gone">
-    <LinearLayout android:orientation="horizontal" android:gravity="center_vertical"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginBottom="8dp">
-        <LinearLayout
-            android:layout_width="0dp" android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <TextView android:id="@+id/localized_label_12" android:visibility="gone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:textColor="@color/text_gray"
-                android:textSize="13sp" />
-            <TextView
-                android:id="@+id/tv_channel_list_header"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="@string/channels"
-                android:textColor="@color/text_white"
-                android:textSize="24sp"
-                android:fontFamily="sans-serif-medium" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/channel_list_container" android:clickable="true" android:layout_width="400dp" android:layout_height="match_parent"
+    android:layout_gravity="start" android:orientation="vertical" android:padding="20dp"
+    android:background="@drawable/bg_osd" android:visibility="gone">
+    <LinearLayout android:id="@+id/cz_channels_header" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:gravity="center_vertical" android:layout_marginBottom="8dp">
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:id="@+id/localized_label_12" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone" android:text="@string/app_name"/>
+            <TextView android:id="@+id/tv_channel_list_header" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/channels" android:textColor="@color/cz_text_primary" android:textSize="28sp"/>
+            <TextView android:id="@id/cz_channel_count" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/cz_text_secondary" android:textSize="17sp"/>
         </LinearLayout>
-        <ImageButton
-            android:id="@+id/btn_close_channel_list"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-
-
-            android:background="@drawable/bg_focus"
-            android:contentDescription="@string/close"
-            android:focusable="true"
-            android:padding="12dp"
-            android:src="@drawable/ic_close"
-            app:tint="@color/selector_channel_text" />
+        <ImageButton android:id="@+id/btn_close_channel_list" android:layout_width="56dp" android:layout_height="56dp" android:background="@drawable/bg_focus" android:padding="16dp" android:src="@drawable/ic_close" android:contentDescription="@string/close" app:tint="@color/cz_text_primary"/>
     </LinearLayout>
-    <EditText
-        android:id="@+id/et_channel_search"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_focus"
-        android:paddingStart="14dp"
-        android:paddingEnd="14dp"
-        android:textColor="@color/selector_channel_text"
-        android:textColorHint="@color/selector_channel_text"
-        android:hint="@string/search_channels"
-        android:textSize="16sp"
-        android:singleLine="true"
-        android:inputType="text"
-        android:imeOptions="actionSearch" />
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="8dp"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/btn_filter_all"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="48dp"
-            android:layout_marginEnd="4dp"
-            android:background="@drawable/bg_focus"
-            android:text="@string/all_channels"
-            android:textColor="@color/selector_channel_text"
-            android:textAllCaps="false"
-            android:textSize="13sp" />
-        <Button
-            android:id="@+id/btn_filter_favourites"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="48dp"
-            android:layout_marginEnd="4dp"
-            android:background="@drawable/bg_focus"
-            android:text="@string/favourites"
-            android:textColor="@color/selector_channel_text"
-            android:textAllCaps="false"
-            android:textSize="13sp" />
-        <Button
-            android:id="@+id/btn_filter_groups"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="48dp"
-            android:layout_marginEnd="4dp"
-            android:background="@drawable/bg_focus"
-            android:text="@string/groups"
-            android:textColor="@color/selector_channel_text"
-            android:textAllCaps="false"
-            android:textSize="13sp" />
+    <LinearLayout android:id="@+id/cz_channels_search_row" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:gravity="center_vertical" android:layout_marginBottom="8dp">
+        <EditText android:id="@+id/et_channel_search" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="56dp"
+            android:background="@drawable/bg_focus" android:paddingStart="16dp" android:paddingEnd="16dp" android:hint="@string/search_channels" android:drawableStart="@drawable/ic_search" android:drawablePadding="8dp"
+            android:textSize="20sp" android:textColor="@color/cz_text_primary" android:textColorHint="@color/cz_text_secondary"
+            android:singleLine="true" android:inputType="text" android:imeOptions="actionSearch"/>
+        <ImageButton android:id="@+id/btn_channel_clear" android:layout_width="56dp" android:layout_height="56dp" android:visibility="gone"
+            android:background="@drawable/bg_focus" android:src="@drawable/ic_close" android:padding="16dp" android:contentDescription="@string/cz_clear_search" app:tint="@color/cz_text_primary"/>
     </LinearLayout>
-    <TextView
-        android:id="@+id/tv_empty_channels"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="@string/no_matches"
-        android:textColor="@color/text_gray"
-        android:textSize="16sp"
-        android:visibility="gone" />
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_channels"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="2dp"
-        android:clipToPadding="false"
-        android:focusable="true"
-        android:scrollbars="vertical" />
-    <TextView android:id="@+id/localized_label_13"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/favourite_hint"
-        android:textColor="@color/text_gray"
-        android:textSize="13sp" />
+    <LinearLayout android:id="@+id/cz_channels_filters" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:layout_marginBottom="8dp" android:orientation="horizontal" android:clipChildren="false">
+        <Button android:id="@+id/btn_filter_all" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="56dp" android:background="@drawable/bg_focus" android:text="@string/all_channels" android:textAllCaps="false" android:textSize="20sp" android:textColor="@color/cz_text_primary" android:paddingStart="4dp" android:paddingEnd="4dp"/>
+        <Button android:id="@+id/btn_filter_favourites" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="56dp" android:background="@drawable/bg_focus" android:text="@string/favourites" android:textAllCaps="false" android:textSize="20sp" android:textColor="@color/cz_text_primary" android:paddingStart="4dp" android:paddingEnd="4dp"/>
+        <Button android:id="@+id/btn_filter_groups" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="56dp" android:background="@drawable/bg_focus" android:text="@string/groups" android:textAllCaps="false" android:textSize="20sp" android:textColor="@color/cz_text_primary" android:paddingStart="4dp" android:paddingEnd="4dp"/>
+    </LinearLayout>
+    <TextView android:id="@id/cz_channel_filter_context" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/cz_text_secondary" android:textSize="17sp" android:visibility="gone"/>
+    <TextView android:id="@+id/tv_empty_channels" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/no_matches" android:textColor="@color/cz_text_secondary" android:textSize="18sp" android:visibility="gone"/>
+    <Button android:id="@id/cz_channel_empty_action" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:textAllCaps="false" android:text="@string/cz_clear_search" android:textColor="@color/cz_text_primary" android:background="@drawable/bg_focus" android:visibility="gone"/>
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_channels" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:padding="8dp" android:clipToPadding="false" android:clipChildren="false" android:focusable="true" android:scrollbars="vertical"/>
+    <TextView android:id="@+id/localized_label_13" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/cz_channel_hint" android:textColor="@color/cz_text_secondary" android:textSize="16sp"/>
 </LinearLayout>

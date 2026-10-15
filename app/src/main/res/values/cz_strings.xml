@@ -1,0 +1,25 @@
+<resources>
+    <string name="cz_clear_search">Clear search</string>
+    <string name="cz_channel_hint">OK Watch · Hold OK Favourite · Back Close</string>
+    <string name="cz_groups_help">Filter channels by category</string>
+    <string name="cz_empty_favourites">No favourites yet. Hold OK on a channel to add it.</string>
+    <string name="cz_empty_filter">No channels match these filters.</string>
+    <plurals name="cz_channel_count">
+        <item quantity="one">%1$d channel</item>
+        <item quantity="other">%1$d channels</item>
+    </plurals>
+    <string name="cz_selected">Selected</string>
+    <string name="cz_on">On</string>
+    <string name="cz_effects">Visual effects</string>
+    <string name="cz_effects_full">Full depth</string>
+    <string name="cz_effects_safe">Safe</string>
+    <string name="cz_effects_auto_help">Adapt to this device.</string>
+    <string name="cz_effects_full_help">Scene depth and live blur where supported.</string>
+    <string name="cz_effects_safe_help">Keep live video unchanged.</string>
+    <string name="cz_effects_off_help">Disable decorative motion and depth.</string>
+    <string name="cz_effects_safe_reason">Safe effects are active on this device.</string>
+    <string name="cz_effects_unavailable">Full depth is unavailable while system blur is disabled.</string>
+    <string name="cz_effects_system_off">System animations are turned off.</string>
+    <string name="cz_settings_hint">← → Sections · OK Select · Back Return</string>
+    <string name="cz_current_language">Current language</string>
+</resources>

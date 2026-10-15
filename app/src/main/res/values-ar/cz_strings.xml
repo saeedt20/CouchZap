@@ -1,0 +1,29 @@
+<resources>
+    <string name="cz_clear_search">مسح البحث</string>
+    <string name="cz_channel_hint">OK مشاهدة · اضغط مطولًا للمفضلة · رجوع إغلاق</string>
+    <string name="cz_groups_help">تصفية القنوات حسب الفئة</string>
+    <string name="cz_empty_favourites">لا توجد مفضلة بعد. اضغط OK مطولًا على قناة لإضافتها.</string>
+    <string name="cz_empty_filter">لا توجد قنوات تطابق عوامل التصفية.</string>
+    <plurals name="cz_channel_count">
+        <item quantity="zero">%1$d قناة</item>
+        <item quantity="one">%1$d قناة</item>
+        <item quantity="two">%1$d قناتان</item>
+        <item quantity="few">%1$d قنوات</item>
+        <item quantity="many">%1$d قناة</item>
+        <item quantity="other">%1$d قناة</item>
+    </plurals>
+    <string name="cz_selected">محدد</string>
+    <string name="cz_on">تشغيل</string>
+    <string name="cz_effects">المؤثرات المرئية</string>
+    <string name="cz_effects_full">عمق كامل</string>
+    <string name="cz_effects_safe">آمن</string>
+    <string name="cz_effects_auto_help">التكيّف مع هذا الجهاز.</string>
+    <string name="cz_effects_full_help">عمق المشهد والتمويه المباشر عند دعمهما.</string>
+    <string name="cz_effects_safe_help">إبقاء الفيديو المباشر دون تغيير.</string>
+    <string name="cz_effects_off_help">تعطيل الحركة والعمق الزخرفيين.</string>
+    <string name="cz_effects_safe_reason">المؤثرات الآمنة مفعلة على هذا الجهاز.</string>
+    <string name="cz_effects_unavailable">العمق الكامل غير متاح عند تعطيل تمويه النظام.</string>
+    <string name="cz_effects_system_off">الرسوم المتحركة للنظام متوقفة.</string>
+    <string name="cz_settings_hint">← → الأقسام · OK اختيار · رجوع للعودة</string>
+    <string name="cz_current_language">اللغة الحالية</string>
+</resources>
