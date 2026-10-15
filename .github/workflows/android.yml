@@ -17,10 +17,26 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    outputs:
+      version: ${{ steps.release_metadata.outputs.version }}
+      artifact_name: ${{ steps.release_metadata.outputs.artifact_name }}
+      reviewed_recipe_matches: ${{ steps.release_metadata.outputs.reviewed_recipe_matches }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
+      - name: Read release metadata
+        id: release_metadata
+        run: |
+          python3 - <<'PYTHON'
+          import json, os, re
+          from pathlib import Path
+          version = re.search(r'versionName = "([0-9]+\.[0-9]+\.[0-9]+)"', Path('app/build.gradle.kts').read_text()).group(1)
+          recipe = json.loads(Path('distribution/release-recipe.json').read_text())
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={version}\nartifact_name=couchzap-{version}-unsigned\n')
+              output.write(f'reviewed_recipe_matches={str(recipe["version"] == version).lower()}\n')
+          PYTHON
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
@@ -54,13 +70,14 @@ jobs:
       - name: Upload unsigned release for signing
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: couchzap-2.1.4-unsigned
+          name: ${{ steps.release_metadata.outputs.artifact_name }}
           path: app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error
           retention-days: 7
 
   reviewed_release_android7:
-    if: github.ref == 'refs/heads/main'
+    needs: checks
+    if: github.ref == 'refs/heads/main' && needs.checks.outputs.reviewed_recipe_matches == 'true'
     uses: ./.github/workflows/android7-probe.yml
     permissions:
       contents: read
@@ -68,7 +85,7 @@ jobs:
 
   release:
     needs: [checks, reviewed_release_android7]
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && needs.checks.outputs.reviewed_recipe_matches == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     permissions:
@@ -82,9 +99,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ needs.checks.outputs.version }}
+          CURRENT_ARTIFACT: ${{ needs.checks.outputs.artifact_name }}
         run: |
-          if gh release view v2.1.4 >/dev/null 2>&1; then
-            echo 'Release v2.1.4 already exists; leaving its assets unchanged.'
+          release_state=$(gh release view "v$RELEASE_VERSION" --json isDraft --jq '.isDraft' 2>/dev/null || true)
+          if [ "$release_state" = false ]; then
+            echo "Release v$RELEASE_VERSION already exists; leaving its assets unchanged."
             exit 0
           fi
           build_run=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['build_run_id'])")
@@ -96,13 +116,22 @@ jobs:
           python3 scripts/assemble-reviewed-release.py \
             distribution/release-recipe.json \
             "$RUNNER_TEMP/reviewed-build/app-release-unsigned.apk" \
-            distribution/CouchZap-2.1.4.apk
-          gh run download "$GITHUB_RUN_ID" --name "$artifact_name" --dir "$RUNNER_TEMP/current-build"
-          python3 scripts/verify-reviewed-release.py "$RUNNER_TEMP/current-build/app-release-unsigned.apk" distribution/CouchZap-2.1.4.apk
-          (cd distribution && sha256sum --check CouchZap-2.1.4.apk.sha256)
-          gh release create v2.1.4 \
-            distribution/CouchZap-2.1.4.apk \
-            distribution/CouchZap-2.1.4.apk.sha256 \
-            --target "$GITHUB_SHA" \
-            --title 'CouchZap 2.1.4 — Persian UI and uninterrupted channel search' \
-            --notes-file docs/releases/v2.1.4.md
+            "distribution/CouchZap-$RELEASE_VERSION.apk"
+          gh run download "$GITHUB_RUN_ID" --name "$CURRENT_ARTIFACT" --dir "$RUNNER_TEMP/current-build"
+          python3 scripts/verify-reviewed-release.py "$RUNNER_TEMP/current-build/app-release-unsigned.apk" "distribution/CouchZap-$RELEASE_VERSION.apk"
+          (cd distribution && sha256sum --check "CouchZap-$RELEASE_VERSION.apk.sha256")
+          if [ "$release_state" = true ]; then
+            gh release upload "v$RELEASE_VERSION" \
+              "distribution/CouchZap-$RELEASE_VERSION.apk" \
+              "distribution/CouchZap-$RELEASE_VERSION.apk.sha256" --clobber
+            gh release edit "v$RELEASE_VERSION" --draft=false \
+              --target "$GITHUB_SHA" --title "CouchZap $RELEASE_VERSION" \
+              --notes-file "docs/releases/v$RELEASE_VERSION.md"
+          else
+            gh release create "v$RELEASE_VERSION" \
+              "distribution/CouchZap-$RELEASE_VERSION.apk" \
+              "distribution/CouchZap-$RELEASE_VERSION.apk.sha256" \
+              --target "$GITHUB_SHA" \
+              --title "CouchZap $RELEASE_VERSION" \
+              --notes-file "docs/releases/v$RELEASE_VERSION.md"
+          fi

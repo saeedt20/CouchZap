@@ -22,10 +22,10 @@ class Prefs(context: Context) {
         prefs.edit().putString("interface_mode", mode).apply()
     }
 
-    fun getLanguage(): String? = prefs.getString("language", null)?.takeIf { it == "fa" || it == "en" }
+    fun getLanguage(): String? = prefs.getString("language", null)?.takeIf(AppLanguage::isSupported)
 
     fun setLanguage(language: String) {
-        require(language == "fa" || language == "en")
+        require(AppLanguage.isSupported(language))
         prefs.edit().putString("language", language).apply()
     }
 

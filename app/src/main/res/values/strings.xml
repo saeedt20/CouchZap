@@ -136,7 +136,6 @@ Playlists, favourites and preferences stay on your device. Public playlists are 
     <string name="list_preserved">Your previous playlist is preserved.</string>
     <string name="back">Back</string>
     <string name="language">Language</string>
-    <string name="choose_language">Choose your language / زبان خود را انتخاب کنید</string>
     <string name="copy_log">Copy log</string>
     <string name="log_copy_done">Diagnostic log copied</string>
     <string name="minutes">%d minutes</string>
@@ -163,7 +162,6 @@ Playlists, favourites and preferences stay on your device. Public playlists are 
     <string name="update_cancelled">Update cancelled</string>
     <string name="catalog_empty">No matching choices</string>
     <string name="system_picker">Choose a file using Android</string>
-    <string name="language_required">Choose فارسی or English to continue</string>
     <string name="saved_playlist_failed">Could not read the saved playlist. Please import it again.</string>
     <string name="playlist_file">Playlist file</string>
     <string name="empty_files">%s — no playlist files. Press Back to go up.</string>

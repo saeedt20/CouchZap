@@ -8,8 +8,18 @@ import com.couchzap.iptv.R
 import java.util.Locale
 
 object AppLanguage {
+    const val DEFAULT = "en"
+    data class Language(val code: String, val name: String)
+    val supported = listOf(
+        Language("en", "English"), Language("es", "Español"),
+        Language("hi", "हिन्दी"), Language("th", "ไทย"),
+        Language("fa", "فارسی"), Language("ar", "العربية")
+    )
+    fun isSupported(language: String): Boolean = supported.any { it.code == language }
+    fun isRtl(language: String?): Boolean = language == "fa" || language == "ar"
+
     fun wrap(context: Context): Context {
-        val locale = Locale(Prefs(context).getLanguage() ?: "en")
+        val locale = Locale(Prefs(context).getLanguage() ?: DEFAULT)
         val config = Configuration(context.resources.configuration).apply { setLocale(locale); setLayoutDirection(locale) }
         return context.createConfigurationContext(config)
     }
@@ -18,7 +28,7 @@ object AppLanguage {
         val locale = Locale(language)
         val config = Configuration(context.resources.configuration).apply { setLocale(locale); setLayoutDirection(locale) }
         context.resources.updateConfiguration(config, context.resources.displayMetrics)
-        root.layoutDirection = if (language == "fa") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
+        root.layoutDirection = if (isRtl(language)) View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
         translate(context, root)
     }
     fun translate(context: Context, root: View) {
@@ -27,6 +37,7 @@ object AppLanguage {
         root.findViewById<TextView>(R.id.import_eyebrow)?.text = context.getString(R.string.welcome_eyebrow)
         root.findViewById<TextView>(R.id.own_playlist_label)?.text = context.getString(R.string.own_playlist_label)
         root.findViewById<View>(R.id.btn_import_language)?.contentDescription = context.getString(R.string.language)
+        root.findViewById<TextView>(R.id.btn_import_language)?.text = context.getString(R.string.language)
 
         listOf(R.id.btn_osd_channels to R.string.channels, R.id.btn_osd_prev to R.string.previous_channel,
             R.id.btn_osd_play_pause to R.string.pause, R.id.btn_osd_next to R.string.next_channel,

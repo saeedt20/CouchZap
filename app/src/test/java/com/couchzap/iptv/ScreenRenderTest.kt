@@ -91,8 +91,8 @@ class ScreenRenderTest {
         }
         render(false, false, null) { activity -> save(activity, "stage2-first-language", 960, 540) }
     }
-    @Test fun `stage three welcome adapts to English Persian TV and phone`() {
-        for (language in listOf("en", "fa")) {
+    @Test fun `welcome adapts to all six languages on TV and phone`() {
+        for (language in listOf("en", "es", "hi", "th", "fa", "ar")) {
             RuntimeEnvironment.setQualifiers("w960dp-h540dp-land-mdpi")
             render(false, false, language) { activity ->
                 val first = activity.findViewById<Button>(R.id.btn_import)
@@ -114,8 +114,8 @@ class ScreenRenderTest {
             }
         }
     }
-    @Test fun `stage four English and Persian screens share safe panel geometry`() {
-        for (language in listOf("en", "fa")) {
+    @Test fun `all six languages share safe panel geometry`() {
+        for (language in listOf("en", "es", "hi", "th", "fa", "ar")) {
             RuntimeEnvironment.setQualifiers("w960dp-h540dp-land-mdpi")
             render(false, false, language) { activity -> save(activity, "stage4-welcome-$language", 960, 540) }
             render(true, false, language) { activity ->
@@ -123,7 +123,7 @@ class ScreenRenderTest {
                 val channels = activity.findViewById<View>(R.id.view_channel_list)
                 val settings = activity.findViewById<View>(R.id.layout_settings)
                 assertEquals(channels.layoutParams.width, settings.layoutParams.width)
-                assertEquals(if (language == "fa") 960 else channels.width, channels.right)
+                assertEquals(if (language in listOf("fa", "ar")) 960 else channels.width, channels.right)
                 assertTrue(channels.paddingStart in 24..32)
                 val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
                 assertTrue(list.findViewHolderForAdapterPosition(0)!!.itemView.height >= 48)
@@ -143,7 +143,7 @@ class ScreenRenderTest {
                 press(activity, KeyEvent.KEYCODE_BACK)
                 press(activity, KeyEvent.KEYCODE_MENU)
                 assertEquals(channels.width, settings.width)
-                assertEquals(if (language == "fa") 960 else 0, if (language == "fa") settings.right else settings.left)
+                assertEquals(if (language in listOf("fa", "ar")) 960 else 0, if (language in listOf("fa", "ar")) settings.right else settings.left)
                 val toggle = activity.findViewById<View>(R.id.btn_settings_crt)
                 assertTrue(toggle.height >= 48)
                 save(activity, "stage4-settings-$language", 960, 540)

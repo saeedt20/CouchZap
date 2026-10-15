@@ -133,7 +133,6 @@
   <string name="list_preserved">پلی‌لیست قبلی حفظ شده است.</string>
   <string name="back">بازگشت</string>
   <string name="language">زبان</string>
-  <string name="choose_language">زبان خود را انتخاب کنید / Choose your language</string>
   <string name="copy_log">کپی گزارش</string>
   <string name="log_copy_done">گزارش تشخیصی کپی شد</string>
   <string name="minutes">%d دقیقه</string>
@@ -160,7 +159,6 @@
   <string name="update_cancelled">به‌روزرسانی لغو شد</string>
   <string name="catalog_empty">گزینه‌ای پیدا نشد</string>
   <string name="system_picker">انتخاب فایل با اندروید</string>
-  <string name="language_required">برای ادامه فارسی یا English را انتخاب کنید</string>
     <string name="saved_playlist_failed">خواندن پلی‌لیست ذخیره‌شده ناموفق بود؛ دوباره آن را وارد کنید.</string>
     <string name="playlist_file">فایل پلی‌لیست</string>
     <string name="empty_files">%s — فایل پلی‌لیستی پیدا نشد؛ برای رفتن به پوشهٔ بالاتر، بازگشت را فشار دهید.</string>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="group_animation">แอนิเมชัน</string>
+    <string name="group_auto">ยานยนต์</string>
+    <string name="group_business">ธุรกิจ</string>
+    <string name="group_classic">คลาสสิก</string>
+    <string name="group_comedy">ตลก</string>
+    <string name="group_cooking">ทำอาหาร</string>
+    <string name="group_culture">วัฒนธรรม</string>
+    <string name="group_documentary">สารคดี</string>
+    <string name="group_education">การศึกษา</string>
+    <string name="group_entertainment">บันเทิง</string>
+    <string name="group_family">ครอบครัว</string>
+    <string name="group_general">ทั่วไป</string>
+    <string name="group_interactive">อินเทอร์แอคทีฟ</string>
+    <string name="group_kids">เด็ก</string>
+    <string name="group_legislative">รัฐสภา</string>
+    <string name="group_lifestyle">ไลฟ์สไตล์</string>
+    <string name="group_movies">ภาพยนตร์</string>
+    <string name="group_music">ดนตรี</string>
+    <string name="group_news">ข่าว</string>
+    <string name="group_outdoor">กิจกรรมกลางแจ้ง</string>
+    <string name="group_public">สาธารณะ</string>
+    <string name="group_relax">ผ่อนคลาย</string>
+    <string name="group_religious">ศาสนา</string>
+    <string name="group_science">วิทยาศาสตร์</string>
+    <string name="group_series">ซีรีส์</string>
+    <string name="group_shop">ช้อปปิ้ง</string>
+    <string name="group_sports">กีฬา</string>
+    <string name="group_travel">ท่องเที่ยว</string>
+    <string name="group_weather">สภาพอากาศ</string>
+    <string name="group_adult">สำหรับผู้ใหญ่</string>
+    <string name="group_undefined">ไม่ระบุ</string>
+</resources>

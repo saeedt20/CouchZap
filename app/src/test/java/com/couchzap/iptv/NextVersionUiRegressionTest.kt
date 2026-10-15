@@ -69,23 +69,23 @@ class NextVersionUiRegressionTest {
     private fun assertDock(activity: MainActivity, panel: View, language: String) {
         val root = activity.findViewById<View>(R.id.root_container)
         assertEquals(420, panel.width)
-        if (language == "fa") assertEquals(root.width, panel.right) else assertEquals(0, panel.left)
-        assertEquals(if (language == "fa") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR, panel.layoutDirection)
+        if (language in listOf("fa", "ar")) assertEquals(root.width, panel.right) else assertEquals(0, panel.left)
+        assertEquals(if (language in listOf("fa", "ar")) View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR, panel.layoutDirection)
         assertEquals(24, panel.paddingEnd)
     }
 
-    @Test fun `both panels follow language after startup live switching and rotation on phone and TV`() {
-        for (phone in listOf(false, true)) for (language in listOf("en", "fa")) screen(language, phone) { activity ->
+    @Test fun `both panels follow all six languages after startup live switching and rotation on phone and TV`() {
+        for (phone in listOf(false, true)) for (language in listOf("en", "es", "hi", "th", "fa", "ar")) screen(language, phone) { activity ->
             val channels = activity.findViewById<View>(R.id.view_channel_list)
             val settings = activity.findViewById<View>(R.id.layout_settings)
             press(activity, KeyEvent.KEYCODE_DPAD_CENTER); assertDock(activity, channels, language)
             val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
-            press(activity, if (language == "fa") KeyEvent.KEYCODE_DPAD_RIGHT else KeyEvent.KEYCODE_DPAD_LEFT)
+            press(activity, if (language in listOf("fa", "ar")) KeyEvent.KEYCODE_DPAD_RIGHT else KeyEvent.KEYCODE_DPAD_LEFT)
             assertTrue(activity.findViewById<View>(R.id.btn_filter_all).isFocused)
             press(activity, KeyEvent.KEYCODE_BACK); press(activity, KeyEvent.KEYCODE_MENU)
             assertDock(activity, settings, language)
-            val next = if (language == "fa") "en" else "fa"
-            choice(activity, R.id.btn_settings_language, if (next == "fa") "فارسی" else "English")
+            val next = if (language in listOf("fa", "ar")) "en" else "ar"
+            choice(activity, R.id.btn_settings_language, if (next == "ar") "العربية" else "English")
             assertDock(activity, settings, next)
             assertTrue(activity.findViewById<View>(R.id.btn_settings_language).isFocused)
             assertEquals(if (phone) activity.getString(R.string.touch_mode) else activity.getString(R.string.tv_mode), activity.findViewById<TextView>(R.id.tv_settings_mode_value).text.toString())

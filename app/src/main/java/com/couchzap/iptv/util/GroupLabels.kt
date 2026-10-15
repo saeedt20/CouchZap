@@ -27,7 +27,7 @@ object GroupLabels {
 
     fun display(context: Context, group: String?): String {
         if (group.isNullOrBlank()) return context.getString(R.string.other_group)
-        if (context.resources.configuration.locales[0].language != "fa") return group
+        if (context.resources.configuration.locales[0].language == AppLanguage.DEFAULT) return group
         return categories[group.trim().lowercase(Locale.ROOT)]?.let(context::getString) ?: group
     }
 }
