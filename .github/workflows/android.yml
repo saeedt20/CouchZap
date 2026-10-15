@@ -83,8 +83,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          if gh release view v2.1.2 >/dev/null 2>&1; then
-            echo 'Release v2.1.2 already exists; leaving its assets unchanged.'
+          if gh release view v2.1.4 >/dev/null 2>&1; then
+            echo 'Release v2.1.4 already exists; leaving its assets unchanged.'
             exit 0
           fi
           build_run=$(python3 -c "import json; print(json.load(open('distribution/release-recipe.json'))['build_run_id'])")
@@ -96,13 +96,13 @@ jobs:
           python3 scripts/assemble-reviewed-release.py \
             distribution/release-recipe.json \
             "$RUNNER_TEMP/reviewed-build/app-release-unsigned.apk" \
-            distribution/CouchZap-2.1.2.apk
+            distribution/CouchZap-2.1.4.apk
           gh run download "$GITHUB_RUN_ID" --name couchzap-2.1.2-unsigned --dir "$RUNNER_TEMP/current-build"
-          python3 scripts/verify-reviewed-release.py "$RUNNER_TEMP/current-build/app-release-unsigned.apk" distribution/CouchZap-2.1.2.apk
-          (cd distribution && sha256sum --check CouchZap-2.1.2.apk.sha256)
-          gh release create v2.1.2 \
-            distribution/CouchZap-2.1.2.apk \
-            distribution/CouchZap-2.1.2.apk.sha256 \
+          python3 scripts/verify-reviewed-release.py "$RUNNER_TEMP/current-build/app-release-unsigned.apk" distribution/CouchZap-2.1.4.apk
+          (cd distribution && sha256sum --check CouchZap-2.1.4.apk.sha256)
+          gh release create v2.1.4 \
+            distribution/CouchZap-2.1.4.apk \
+            distribution/CouchZap-2.1.4.apk.sha256 \
             --target "$GITHUB_SHA" \
-            --title 'CouchZap 2.1.2 — Android 16 focus halo and settings fixes' \
-            --notes-file docs/releases/v2.1.2.md
+            --title 'CouchZap 2.1.4 — Persian UI and uninterrupted channel search' \
+            --notes-file docs/releases/v2.1.4.md

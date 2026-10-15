@@ -18,7 +18,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **CouchZap-2.1.2.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.1.2.apk.sha256) accompanies the signed APK.
+1. Download **CouchZap-2.1.4.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.1.4.apk.sha256) accompanies the signed APK.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. Choose Persian or English, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
@@ -29,37 +29,48 @@ Public channel availability depends on the source and your location. CouchZap do
 
 ## Screenshots
 
-These images render the app's actual Android views using Robolectric 4.16.1 native graphics on API 28 (TV/welcome) and API 36 (phone settings). Channel data and the illustrative background are fixtures. They are not live broadcasts or physical-device captures; motion is disabled for stable screenshots.
+These images render the app's actual Android views using Robolectric 4.16.1 native graphics on API 28 (TV/welcome) and API 36 (phone). Channel data and the illustrative background are fixtures. They are not live broadcasts or physical-device captures; motion is disabled for stable screenshots. Updated channel/settings images show the Persian panels on the right and English panels on the left.
 
 | Screen | English | فارسی |
 | --- | --- | --- |
 | Welcome | ![English welcome](docs/screenshots/v2.1.2/stage4-welcome-en.png) | ![ورود فارسی](docs/screenshots/v2.1.2/stage4-welcome-fa.png) |
-| Channels | ![English channels](docs/screenshots/v2.1.2/stage4-channels-en.png) | ![فهرست فارسی](docs/screenshots/v2.1.2/stage4-channels-fa.png) |
-| Info | ![English Info](docs/screenshots/v2.1.2/stage4-info-en.png) | ![اطلاعات فارسی](docs/screenshots/v2.1.2/stage4-info-fa.png) |
-| Settings | ![English settings](docs/screenshots/v2.1.2/stage4-settings-en.png) | ![تنظیمات فارسی](docs/screenshots/v2.1.2/stage4-settings-fa.png) |
+| Channels | ![English channels](docs/work/phase07/screenshots/stage4-channels-en.png) | ![فهرست فارسی در سمت راست](docs/work/phase07/screenshots/stage4-channels-fa.png) |
+| Info | ![English TV Info](docs/work/phase07/screenshots/stage7-info-en-tv-api28-favourite-off.png) | ![اطلاعات فارسی در گوشی](docs/work/phase07/screenshots/stage7-info-fa-phone-api36-favourite-off.png) |
+| Settings | ![English settings](docs/work/phase07/screenshots/stage4-settings-en.png) | ![تنظیمات فارسی در سمت راست](docs/work/phase07/screenshots/stage4-settings-fa.png) |
 
 <details>
-<summary>Phone welcome and Android 16 settings</summary>
+<summary>Phone welcome, Android 16 settings and Persian search</summary>
 
 <img src="docs/screenshots/v2.1.2/stage3-welcome-phone-en.png" alt="English phone welcome" width="270">
 <img src="docs/screenshots/v2.1.2/stage3-welcome-phone-fa.png" alt="Persian phone welcome" width="270">
 
-<img src="docs/screenshots/v2.1.2/ui-fix-settings-phone-en-api36.png" alt="English Android 16 settings after Back" width="270">
-<img src="docs/screenshots/v2.1.2/ui-fix-settings-phone-fa-api36.png" alt="Persian Android 16 settings after Back" width="270">
+<img src="docs/work/phase07/screenshots/ui-fix-settings-phone-en-api36.png" alt="English Android 16 settings after Back" width="270">
+<img src="docs/work/phase07/screenshots/ui-fix-settings-phone-fa-api36.png" alt="Persian Android 16 settings after Back" width="270">
+
+<img src="docs/work/phase08/screenshots/stage8-fa-phone-api36-search.png" alt="Multiword Persian search and translated channel group" width="270">
+<img src="docs/work/phase08/screenshots/stage8-fa-phone-api36-aspect.png" alt="Persian picture ratios" width="270">
+
+</details>
+
+<details>
+<summary>Favourite button: absent and added</summary>
+
+<img src="docs/work/phase07/screenshots/stage7-info-fa-phone-api36-favourite-off.png" alt="Favourite absent: outlined star" width="270">
+<img src="docs/work/phase07/screenshots/stage7-info-fa-phone-api36-favourite-on.png" alt="Favourite added: filled star" width="270">
 
 </details>
 
 ## Features
 
 - **A calmer interface:** couch-and-lightning identity, warm sage accents, generous buttons and visible remote focus.
-- **A better channel browser:** left-docked panel, search, groups, favourites, channel logos and a distinct playback-status label. Focus and the currently selected channel remain separate, including during asynchronous connection errors. Up from the first visible channel wraps to the last; Down wraps back to the first.
+- **A better channel browser:** search that retains typing and the cursor while results update, groups, favourites, channel logos and a distinct playback-status label. The panel docks right in Persian and left in English. Focus and the currently selected channel remain separate, including during asynchronous connection errors. Up from the first visible channel wraps to the last; Down wraps back to the first.
 - **Flexible playlist sources:** local files, HTTP(S) links and selectable public iptv-org and Free-TV directories. Cached channels remain available between launches; failed imports preserve the previous playlist.
-- **Useful Info controls:** channel name, number, clock, play/pause, favourites and a second level for available codec, resolution and bitrate information.
+- **Useful Info controls:** channel name, number, clock, play/pause, an outlined/filled favourite star and a second level for available codec, resolution and bitrate information.
 - **Programme guide:** XMLTV from a file or link, including gzip files. Shows now/next and programme progress when guide IDs match the playlist.
 - **Playback options:** HLS, DASH, RTSP and compatible progressive streams, available audio/subtitle tracks, Fit/Fill/16:9/4:3 picture modes, reconnect attempts and a retry/next-channel error panel.
 - **Updates from Settings:** check the latest stable GitHub release, download it with progress, verify its checksum and CouchZap signing certificate, then open Android’s installer. Installation always requires your confirmation.
 - **Diagnostic reports:** preview, share or save an app-only log from Settings. It contains device/version details and error classes/stacks; playlist URLs, channel names, tokens and account data are excluded. Boxes without a sharing/file app can copy the report to the clipboard.
-- **Persian and English:** switch language inside the settings panel, with RTL Persian content and LTR English. Channels and settings remain docked on the left. Settings subpages retain parent focus and scroll when you press Back.
+- **Persian and English:** switch language inside the settings panel, with RTL Persian content and LTR English. Channels and settings dock on the right in Persian and on the left in English. Known IPTV groups, the TV mode label and picture-ratio digits are localized in Persian. Settings subpages retain parent focus and scroll when you press Back; settings hide scrollbars while the channel browser keeps its scroll indicator on phone and TV.
 - **Light welcome motion:** a one-time intro that completes on the first key or touch while still handling that input. System animation settings are respected; Android 7 panels open immediately.
 - **Optional CRT click:** enable **Settings → Playback → Channel switch sound** for an original, quiet 160ms sample. It is off by default, previews when enabled and plays only on committed channel changes; browsing, retries and reconnects stay silent. Media volume and mute are respected.
 - **Everyday conveniences:** last watched channel, numeric selection for large playlists, a 15/30/60/90-minute sleep timer and saved interface preferences.
@@ -144,9 +155,9 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-The 2.1.2 implementation passed **98 unit/Robolectric cases** with zero failures or skips, debug/release lint with zero errors (126 debug and 125 release warnings remain), and optimized release assembly. Coverage includes API 24, 28 and 36, remote/touch sound toggles, settings spacing, retained focus and scroll, and the native focus overlay after returning from settings subpages. Native screenshots use API 28 and API 36 with fixture data. See the [settings fixes](docs/work/phase05-ui-fixes.md), [focus-halo regression](docs/work/phase06-focus-halo.md) and [2.1.2 release notes](docs/releases/v2.1.2.md).
+The 2.1.4 implementation passed **116 unit/Robolectric cases** with zero failures, errors or skips, debug/release lint with zero errors (125 debug and 124 release warnings remain), and optimized release assembly. Coverage includes API 24, 28 and 36, continuous multiword/composing-text search, delayed remote navigation, Persian group filtering and labels, saved mode/aspect values, bilingual panel docking, favourite state, settings scrollbars and the Android 16 focus-halo regression. Native screenshots use API 28 and API 36 with fixture data. See the [bilingual UI checks](docs/work/phase07-bilingual-panels.md), [localization/search checks](docs/work/phase08-localization-search.md) and [2.1.4 release notes](docs/releases/v2.1.4.md).
 
-The user confirmed the white-halo fix in this exact APK on a Xiaomi M2101K7AG running **Android 16 / API 36**. Publication also checks the same signed APK on Android TV 7: clean installation, first language choice, public import, sound toggle, diagnostics and update UI. The original Android 7 font-crash fix and TLS trust configuration are retained; the [2.1.0 network integration results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) document the earlier network checks. Physical TV remote behavior, hardware decoding, startup/frame timing and perceived sound loudness still require device checks.
+The user tested the 2.1.3 UI fixes and the 2.1.4 candidate and approved publication. The published APK preserves the exact bytes of the tested 2.1.4 candidate and the existing release certificate. An [independent GitHub build](https://github.com/saeedt20/CouchZap/actions/runs/38660365176) passed and matched all 658 app payload entries; only signing records and VCS metadata are excluded from that comparison. Publication also checks the same signed APK on Android TV 7: clean installation, first language choice, public import, sound toggle, diagnostics and update UI. The previously user-confirmed Android 16 white-halo fix, Android 7 font-crash fix and TLS trust configuration are retained; the [2.1.0 network integration results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) document the earlier network checks. Physical TV remote behavior, hardware decoding, startup/frame timing and perceived sound loudness still require device checks.
 
 Automated checks do not validate physical TV remotes, hardware decoders or live stream availability. Playback depends on the device's codec support and source availability. There is no provider-account login, DRM configuration, recording, catch-up service or SmoothStreaming module. Opaque HLS/DASH links use manifest hints or a server's HEAD content type; servers that supply neither may require a conventional manifest URL.
 
