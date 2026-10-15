@@ -17,6 +17,7 @@
     <string name="aspect_fill">Fill</string>
     <string name="aspect_16_9">16:9</string>
     <string name="aspect_4_3">4:3</string>
+    <string name="tv_mode">TV</string>
     <string name="public_channels">Start with public channels</string>
     <string name="playlist_formats">M3U · M3U8 · TXT</string>
     <string name="no_playlist">Don’t have a playlist?</string>

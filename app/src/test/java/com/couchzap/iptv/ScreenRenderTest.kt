@@ -206,6 +206,52 @@ class ScreenRenderTest {
             }
         }
     }
+    @Test
+    @Config(sdk = [28, 36])
+    fun `Persian mode ratios and group labels render with correctly ordered digits and continuous search`() {
+        for (phone in listOf(false, true)) {
+            RuntimeEnvironment.setQualifiers(if (phone) "w360dp-h800dp-port-mdpi" else "w960dp-h540dp-land-mdpi")
+            render(true, phone, "fa") { activity ->
+                val width = if (phone) 360 else 960; val height = if (phone) 800 else 540
+                fun key(code: Int) {
+                    activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code)); activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code)); layout(activity, width, height)
+                }
+                fun buttons(root: View): List<Button> = if (root is ViewGroup)
+                    (0 until root.childCount).flatMap { buttons(root.getChildAt(it)) } else if (root is Button) listOf(root) else emptyList()
+                val stem = "stage8-fa-${if (phone) "phone" else "tv"}-api${android.os.Build.VERSION.SDK_INT}"
+                key(KeyEvent.KEYCODE_MENU)
+                activity.findViewById<View>(R.id.btn_settings_mode).performClick(); layout(activity, width, height)
+                assertTrue(buttons(activity.findViewById(R.id.settings_pages)).any { it.text.toString().contains("تلویزیون") })
+                save(activity, "$stem-mode", width, height)
+                activity.findViewById<View>(R.id.settings_back).performClick()
+                activity.findViewById<View>(R.id.btn_settings_aspect).performClick(); layout(activity, width, height)
+                for (ratio in listOf("۱۶:۹", "۴:۳")) {
+                    val button = buttons(activity.findViewById(R.id.settings_pages)).first { it.text.toString().contains(ratio) }
+                    val text = button.text.toString(); val start = text.indexOf(ratio)
+                    val first = Path(); val last = Path()
+                    button.layout.getSelectionPath(start, start + 1, first)
+                    button.layout.getSelectionPath(start + ratio.length - 1, start + ratio.length, last)
+                    val firstBounds = RectF(); val lastBounds = RectF()
+                    first.computeBounds(firstBounds, true); last.computeBounds(lastBounds, true)
+                    assertTrue("ratio reversed: $ratio", firstBounds.left < lastBounds.left)
+                }
+                save(activity, "$stem-aspect", width, height)
+                key(KeyEvent.KEYCODE_BACK); key(KeyEvent.KEYCODE_BACK); key(KeyEvent.KEYCODE_DPAD_CENTER)
+                val search = activity.findViewById<android.widget.EditText>(R.id.et_channel_search)
+                assertTrue(search.requestFocusFromTouch())
+                val input = search.onCreateInputConnection(android.view.inputmethod.EditorInfo())!!
+                for (word in listOf("World", "World ", "World News")) {
+                    input.setComposingText(word, 1); input.performEditorAction(android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED)
+                    layout(activity, width, height); shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(80))
+                    assertTrue(search.isFocused)
+                }
+                assertEquals("World News", search.text.toString())
+                val list = activity.findViewById<RecyclerView>(R.id.rv_channels)
+                assertEquals("اخبار", list.findViewHolderForAdapterPosition(0)!!.itemView.findViewById<android.widget.TextView>(R.id.tv_item_channel_group).text.toString())
+                save(activity, "$stem-search", width, height)
+            }
+        }
+    }
     private fun render(playlist: Boolean, phone: Boolean, language: String? = "en", block: (MainActivity) -> Unit) {
         val context = ApplicationProvider.getApplicationContext<Context>()
         if (language == null) context.getSharedPreferences("couchzap_prefs", 0).edit().remove("language").commit()

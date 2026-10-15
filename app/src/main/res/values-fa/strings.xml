@@ -16,8 +16,9 @@
   <string name="settings_exit">خروج از برنامه</string>
   <string name="aspect_fit">متناسب</string>
   <string name="aspect_fill">تمام صفحه</string>
-  <string name="aspect_16_9">16:9</string>
-  <string name="aspect_4_3">4:3</string>
+  <string name="aspect_16_9">۱۶:۹</string>
+  <string name="aspect_4_3">۴:۳</string>
+  <string name="tv_mode">تلویزیون</string>
   <string name="public_channels">شروع با شبکه‌های عمومی</string>
   <string name="playlist_formats">M3U · M3U8 · TXT</string>
   <string name="no_playlist">پلی‌لیست ندارید؟</string>

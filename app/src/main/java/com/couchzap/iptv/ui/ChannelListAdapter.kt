@@ -8,6 +8,7 @@ import com.couchzap.iptv.R
 import com.couchzap.iptv.data.Channel
 import com.couchzap.iptv.databinding.ItemChannelBinding
 import com.couchzap.iptv.player.ChannelPlaybackStatus
+import com.couchzap.iptv.util.GroupLabels
 
 class ChannelListAdapter(
     private val artwork: ChannelArtwork? = null,
@@ -53,7 +54,7 @@ class ChannelListAdapter(
         fun bind(channel: Channel, selected: Boolean) {
             binding.tvItemChannelNum.text = String.format(java.util.Locale.US, "%03d", channel.number)
             binding.tvItemChannelName.text = channel.name
-            binding.tvItemChannelGroup.text = channel.group ?: binding.root.context.getString(R.string.other_group)
+            binding.tvItemChannelGroup.text = GroupLabels.display(binding.root.context, channel.group)
             bindStatus(channel, selected)
             artwork?.bind(binding.ivChannelLogo, channel.logo)
             binding.root.setOnFocusChangeListener { _, focused ->

@@ -33,6 +33,9 @@ import android.view.ViewGroup
 import android.view.FocusFinder
 import android.view.ViewConfiguration
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import com.couchzap.iptv.util.GroupLabels
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -306,7 +309,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         if (channels.isNotEmpty() && !sleepExpired) {
             playCurrentChannel()
         }
-        if (binding.viewChannelList.root.visibility == View.VISIBLE) focusCurrentChannel()
+        if (binding.viewChannelList.root.visibility == View.VISIBLE && !binding.viewChannelList.etChannelSearch.hasFocus()) focusCurrentChannel()
         updatePlaybackErrorFocus()
     }
 
@@ -506,13 +509,26 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         binding.viewChannelList.btnCloseChannelList.setOnClickListener {
             closeChannelListOverlay()
         }
+        binding.viewChannelList.etChannelSearch.setOnFocusChangeListener { _, focused ->
+            if (focused) { cancelRowConfirm(); channelNavigation.cancel() }
+        }
         binding.viewChannelList.etChannelSearch.doAfterTextChanged { updateChannelListAdapter() }
-        binding.viewChannelList.etChannelSearch.setOnEditorActionListener { _, _, _ -> focusChannel(0); true }
+        binding.viewChannelList.etChannelSearch.setOnEditorActionListener { search, action, event ->
+            val submitted = action in listOf(EditorInfo.IME_ACTION_SEARCH, EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_GO) ||
+                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN && !event.isShiftPressed)
+            if (submitted) {
+                if ((binding.viewChannelList.rvChannels.adapter?.itemCount ?: 0) > 0) {
+                    (getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager)?.hideSoftInputFromWindow(search.windowToken, 0)
+                    focusChannel(0)
+                }
+                true
+            } else action == EditorInfo.IME_ACTION_UNSPECIFIED
+        }
         binding.viewChannelList.btnFilterAll.setOnClickListener { favouritesOnly = false; selectedGroup = null; updateChannelListAdapter(); focusCurrentChannel() }
         binding.viewChannelList.btnFilterFavourites.setOnClickListener { favouritesOnly = true; selectedGroup = null; updateChannelListAdapter(); focusCurrentChannel() }
         binding.viewChannelList.btnFilterGroups.setOnClickListener {
             val values = channels.map { it.group.orEmpty() }.distinct().sorted()
-            val names = values.map { it.ifEmpty { getString(R.string.other_group) } }.toTypedArray()
+            val names = values.map { GroupLabels.display(this, it) }.toTypedArray()
             AlertDialog.Builder(this).setTitle(R.string.groups).setItems(names) { _, index ->
                 selectedGroup = values[index]; favouritesOnly = false; updateChannelListAdapter(); focusCurrentChannel()
             }.setNegativeButton(R.string.cancel, null).show()
@@ -521,7 +537,8 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun updateChannelListAdapter() {
         val adapter = binding.viewChannelList.rvChannels.adapter as? ChannelListAdapter
-        val restoreRow = ::channelNavigation.isInitialized && binding.viewChannelList.root.visibility == View.VISIBLE &&
+        val restoreRow = !binding.viewChannelList.etChannelSearch.hasFocus() &&
+            ::channelNavigation.isInitialized && binding.viewChannelList.root.visibility == View.VISIBLE &&
             (channelNavigation.hasPending || channelNavigation.focusedPosition() >= 0)
         if (::channelNavigation.isInitialized) channelNavigation.cancel()
         val query = binding.viewChannelList.etChannelSearch.text.toString().trim()
@@ -611,14 +628,14 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         settingsPanel.onClick(binding.btnSettingsMode) {
             val modes = listOf("Auto", "TV", "Phone")
             settingsPanel.choices("mode", R.string.interface_mode,
-                listOf(getString(R.string.automatic), "TV", getString(R.string.touch_mode)), modes.indexOf(prefs.getInterfaceMode())) { which ->
+                listOf(getString(R.string.automatic), getString(R.string.tv_mode), getString(R.string.touch_mode)), modes.indexOf(prefs.getInterfaceMode())) { which ->
                 prefs.setInterfaceMode(modes[which]); applyInterfaceMode(); settingsPanel.back()
             }
         }
         settingsPanel.onClick(binding.btnSettingsReimport) { playlistMenus.show() }
         settingsPanel.onClick(binding.btnSettingsAspect) {
             settingsPanel.choices("aspect", R.string.choose_aspect,
-                listOf(getString(R.string.aspect_fit), getString(R.string.aspect_fill), "16:9", "4:3"), currentAspectIndex) { which ->
+                listOf(getString(R.string.aspect_fit), getString(R.string.aspect_fill), getString(R.string.aspect_16_9), getString(R.string.aspect_4_3)), currentAspectIndex) { which ->
                 currentAspectIndex = which; prefs.setAspectRatioMode(aspectRatios[which])
                 playerController?.setAspectRatioMode(aspectRatios[which]); updateAspectLabel(); settingsPanel.back()
             }
@@ -1021,7 +1038,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             !packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)
         isTvMode = mode == "TV" || (mode == "Auto" && detectedTv)
         requestedOrientation = if (isTvMode) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        binding.tvSettingsModeValue.text = when (mode) { "Auto" -> getString(R.string.automatic); "Phone" -> getString(R.string.touch_mode); else -> "TV" }
+        binding.tvSettingsModeValue.text = when (mode) { "Auto" -> getString(R.string.automatic); "Phone" -> getString(R.string.touch_mode); else -> getString(R.string.tv_mode) }
         binding.btnQuickSettings.visibility = if (isTvMode) View.GONE else View.VISIBLE
         updateResponsiveLayout()
     }

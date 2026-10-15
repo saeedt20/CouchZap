@@ -1,0 +1,33 @@
+<resources>
+    <string name="group_animation">انیمیشن</string>
+    <string name="group_auto">خودرو</string>
+    <string name="group_business">کسب‌وکار</string>
+    <string name="group_classic">کلاسیک</string>
+    <string name="group_comedy">کمدی</string>
+    <string name="group_cooking">آشپزی</string>
+    <string name="group_culture">فرهنگ</string>
+    <string name="group_documentary">مستند</string>
+    <string name="group_education">آموزش</string>
+    <string name="group_entertainment">سرگرمی</string>
+    <string name="group_family">خانواده</string>
+    <string name="group_general">عمومی</string>
+    <string name="group_interactive">تعاملی</string>
+    <string name="group_kids">کودکان</string>
+    <string name="group_legislative">پارلمانی</string>
+    <string name="group_lifestyle">سبک زندگی</string>
+    <string name="group_movies">فیلم</string>
+    <string name="group_music">موسیقی</string>
+    <string name="group_news">اخبار</string>
+    <string name="group_outdoor">فضای باز</string>
+    <string name="group_public">همگانی</string>
+    <string name="group_relax">آرامش</string>
+    <string name="group_religious">مذهبی</string>
+    <string name="group_science">علمی</string>
+    <string name="group_series">سریال</string>
+    <string name="group_shop">خرید</string>
+    <string name="group_sports">ورزش</string>
+    <string name="group_travel">سفر</string>
+    <string name="group_weather">آب‌وهوا</string>
+    <string name="group_adult">بزرگسالان</string>
+    <string name="group_undefined">نامشخص</string>
+</resources>

@@ -88,10 +88,10 @@ class NextVersionUiRegressionTest {
             choice(activity, R.id.btn_settings_language, if (next == "fa") "فارسی" else "English")
             assertDock(activity, settings, next)
             assertTrue(activity.findViewById<View>(R.id.btn_settings_language).isFocused)
-            assertEquals(if (phone) activity.getString(R.string.touch_mode) else "TV", activity.findViewById<TextView>(R.id.tv_settings_mode_value).text.toString())
+            assertEquals(if (phone) activity.getString(R.string.touch_mode) else activity.getString(R.string.tv_mode), activity.findViewById<TextView>(R.id.tv_settings_mode_value).text.toString())
             activity.onConfigurationChanged(Configuration(activity.resources.configuration)); layout(activity)
             assertDock(activity, settings, next)
-            assertEquals(if (phone) activity.getString(R.string.touch_mode) else "TV", activity.findViewById<TextView>(R.id.tv_settings_mode_value).text.toString())
+            assertEquals(if (phone) activity.getString(R.string.touch_mode) else activity.getString(R.string.tv_mode), activity.findViewById<TextView>(R.id.tv_settings_mode_value).text.toString())
             press(activity, KeyEvent.KEYCODE_BACK); press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
             assertDock(activity, channels, next)
             assertTrue(list.isVerticalScrollBarEnabled)
@@ -111,7 +111,7 @@ class NextVersionUiRegressionTest {
             assertEquals(update.textSize, lang.textSize, 0f)
             val value = activity.findViewById<TextView>(R.id.tv_settings_mode_value)
             assertEquals(activity.getString(R.string.touch_mode), value.text.toString())
-            for (label in listOf("TV", activity.getString(R.string.touch_mode), activity.getString(R.string.automatic))) {
+            for (label in listOf(activity.getString(R.string.tv_mode), activity.getString(R.string.touch_mode), activity.getString(R.string.automatic))) {
                 activity.findViewById<View>(R.id.btn_settings_mode).performClick(); layout(activity)
                 val child = activity.findViewById<ViewGroup>(R.id.settings_pages).getChildAt(0) as ScrollView
                 assertFalse(child.isVerticalScrollBarEnabled)

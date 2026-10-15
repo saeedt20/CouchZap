@@ -1,0 +1,33 @@
+<resources>
+    <string name="group_animation">Animation</string>
+    <string name="group_auto">Auto</string>
+    <string name="group_business">Business</string>
+    <string name="group_classic">Classic</string>
+    <string name="group_comedy">Comedy</string>
+    <string name="group_cooking">Cooking</string>
+    <string name="group_culture">Culture</string>
+    <string name="group_documentary">Documentary</string>
+    <string name="group_education">Education</string>
+    <string name="group_entertainment">Entertainment</string>
+    <string name="group_family">Family</string>
+    <string name="group_general">General</string>
+    <string name="group_interactive">Interactive</string>
+    <string name="group_kids">Kids</string>
+    <string name="group_legislative">Legislative</string>
+    <string name="group_lifestyle">Lifestyle</string>
+    <string name="group_movies">Movies</string>
+    <string name="group_music">Music</string>
+    <string name="group_news">News</string>
+    <string name="group_outdoor">Outdoor</string>
+    <string name="group_public">Public</string>
+    <string name="group_relax">Relax</string>
+    <string name="group_religious">Religious</string>
+    <string name="group_science">Science</string>
+    <string name="group_series">Series</string>
+    <string name="group_shop">Shop</string>
+    <string name="group_sports">Sports</string>
+    <string name="group_travel">Travel</string>
+    <string name="group_weather">Weather</string>
+    <string name="group_adult">XXX</string>
+    <string name="group_undefined">Undefined</string>
+</resources>
