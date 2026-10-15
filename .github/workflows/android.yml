@@ -97,7 +97,7 @@ jobs:
             distribution/release-recipe.json \
             "$RUNNER_TEMP/reviewed-build/app-release-unsigned.apk" \
             distribution/CouchZap-2.1.4.apk
-          gh run download "$GITHUB_RUN_ID" --name couchzap-2.1.2-unsigned --dir "$RUNNER_TEMP/current-build"
+          gh run download "$GITHUB_RUN_ID" --name "$artifact_name" --dir "$RUNNER_TEMP/current-build"
           python3 scripts/verify-reviewed-release.py "$RUNNER_TEMP/current-build/app-release-unsigned.apk" distribution/CouchZap-2.1.4.apk
           (cd distribution && sha256sum --check CouchZap-2.1.4.apk.sha256)
           gh release create v2.1.4 \
