@@ -116,14 +116,27 @@ class PlaylistMenus(
                     val entries = loadCatalog(provider, kind)
                     currentCoroutineContext().ensureActive()
                     status.visibility = View.GONE
-                    val search = EditText(activity).apply { hint = activity.getString(R.string.search); isSingleLine = true; setTextColor(android.graphics.Color.WHITE) }
+                    val search = EditText(activity).apply {
+                        id = View.generateViewId()
+                        hint = activity.getString(R.string.search); isSingleLine = true; setTextColor(android.graphics.Color.WHITE)
+                        nextFocusUpId = R.id.settings_back
+                    }
                     val rows = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
                     body.addView(search); body.addView(rows)
                     fun update(query: String) {
                         rows.removeAllViews()
                         val filtered = entries.filter { it.label.contains(query, true) }
                         if (filtered.isEmpty()) panel.text(rows, activity.getString(R.string.catalog_empty))
-                        filtered.forEach { (label, code) -> panel.button(rows, label) { accept(if (provider == "free-tv") PlaylistSource.freeTv(code, label) else PlaylistSource.public(kind, code, label)) } }
+                        val buttons = filtered.map { (label, code) ->
+                            panel.button(rows, label) { accept(if (provider == "free-tv") PlaylistSource.freeTv(code, label) else PlaylistSource.public(kind, code, label)) }
+                                .apply { id = View.generateViewId() }
+                        }
+                        // Keep remote navigation in list order even when most rows are off-screen.
+                        search.nextFocusDownId = buttons.firstOrNull()?.id ?: search.id
+                        buttons.forEachIndexed { index, button ->
+                            button.nextFocusUpId = buttons.getOrNull(index - 1)?.id ?: search.id
+                            button.nextFocusDownId = buttons.getOrNull(index + 1)?.id ?: button.id
+                        }
                     }
                     update(""); search.doAfterTextChanged { update(it.toString()) }; panel.focusFirst()
                 } catch (cancelled: CancellationException) { throw cancelled }

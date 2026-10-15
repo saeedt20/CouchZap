@@ -18,12 +18,12 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **CouchZap-2.2.0.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](distribution/CouchZap-2.2.0.apk.sha256). Source archives are also available on each release page.
+1. Download **CouchZap-2.2.1.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](distribution/CouchZap-2.2.1.apk.sha256). Source archives are also available on each release page.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. The app opens the welcome screen directly. Optionally choose a language, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
 
-Use **Settings → Playlist sources** to import an HTTP(S) link, choose another source or refresh the current playlist. Choose a provider, then a country/language/category for iptv-org or a country/themed list for Free-TV. Choose source order or natural name order; source channel numbers remain unchanged. Public imports are opt-in.
+Use **Settings → Playlist sources** to import an HTTP(S) link, choose another source or refresh the current playlist. Choose a provider, then a country/language/category for iptv-org or a country/themed list for Free-TV. Remote Up/Down moves one option at a time, including in long or filtered public lists. Choose source order or natural name order; source channel numbers remain unchanged. Public imports are opt-in.
 
 Public channel availability depends on the source and your location. CouchZap downloads playlists when requested; it does not bundle streams or provide a subscription service.
 
@@ -179,9 +179,9 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-The multilingual implementation passed **119 unit/Robolectric cases**, with zero failures, errors or skips, in [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38729586837). Debug/release lint completed with no errors, and Debug and optimized Release APK assembly passed. Existing lint warnings remain.
+Version 2.2.1 passed **125 unit/Robolectric cases**, with zero failures, errors or skips, in [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38751612163). Debug/release lint completed with no errors, and Debug and optimized Release APK assembly passed. Existing lint warnings remain.
 
-Coverage includes API 24, 28 and 36, optional first-launch language selection, the six-language menu order, saved language after restart, live RTL/LTR switching, channel/settings panel docking, native TV/phone layouts, multiword/composing-text search, favourites, settings focus and playlist persistence. See the [2.2.0 release notes](docs/releases/v2.2.0.md) and earlier [localization/search checks](docs/work/phase08-localization-search.md).
+Coverage includes API 24, 28 and 36, optional first-launch language selection, the six-language menu order, saved language after restart, live RTL/LTR switching, channel/settings panel docking, native TV/phone layouts, multiword/composing-text search, favourites, settings focus and playlist persistence. Public catalog regressions on API 24 and 36 traverse a 240-country list, select middle rows, recover missing focus and check filtered/empty results and held remote keys in English, Persian and Arabic. See the [2.2.1 release notes](docs/releases/v2.2.1.md) and earlier [localization/search checks](docs/work/phase08-localization-search.md).
 
 The Android 16 focus-overlay fix and Android 7 startup/TLS fixes are retained. The [earlier network integration results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) document live Android 7 network checks. Release publication separately verifies the signed APK against the independent build and exercises the same signed bytes on Android TV 7; see the [publishing process](docs/releases/publishing.md).
 

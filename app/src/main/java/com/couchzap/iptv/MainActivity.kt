@@ -967,27 +967,23 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             KeyEvent.KEYCODE_DPAD_RIGHT -> View.FOCUS_RIGHT
             else -> return false
         }
-        if (currentFocus is android.widget.EditText && direction in listOf(View.FOCUS_LEFT, View.FOCUS_RIGHT)) return false
+        val focused = panel.findFocus()
+        if (focused is android.widget.EditText && direction in listOf(View.FOCUS_LEFT, View.FOCUS_RIGHT)) return false
         if (event.action == KeyEvent.ACTION_DOWN) {
             cancelRowConfirm()
-            val focused = currentFocus?.takeIf { isWithin(it, panel) }
-            if (focused == null) recordFocusState("focus_recovered", if (panel === binding.viewChannelList.root) "channels" else "settings")
+            if (focused == null) {
+                recordFocusState("focus_recovered", if (panel === binding.viewChannelList.root) "channels" else "settings")
+                if (panel === binding.viewChannelList.root) { channelNavigation.cancel(); focusCurrentChannel() }
+                else settingsPanel.focusFirst()
+                return true
+            }
             val next = FocusFinder.getInstance().findNextFocus(panel, focused, direction)
             if (panel === binding.viewChannelList.root) channelNavigation.cancel()
             if (next != null) {
                 if (isTvMode) next.requestFocusFromTouch() else next.requestFocus()
-            } else if (focused == null) {
-                if (panel === binding.viewChannelList.root) focusCurrentChannel()
-                else settingsPanel.focusFirst()
             }
         }
         return true
-    }
-
-    private fun isWithin(view: View, parent: ViewGroup): Boolean {
-        var node: android.view.ViewParent? = view.parent
-        while (node != null) { if (node === parent) return true; node = node.parent }
-        return view === parent
     }
 
     private fun updatePlaybackErrorFocus() {
