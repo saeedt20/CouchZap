@@ -78,6 +78,17 @@ class CatalogRemoteRegressionTest {
         press(activity, KeyEvent.KEYCODE_DPAD_CENTER)
         assertEquals("c50", accepted.single().code)
     }
+    @Test fun `lost catalog focus recovers to search before moving to the first country`() = catalog { activity, _ ->
+        val panel = activity.findViewById<View>(R.id.layout_settings)
+        val root = activity.findViewById<View>(R.id.root_container)
+        assertTrue(root.requestFocusFromTouch()); settle(activity)
+        assertFalse(panel.hasFocus())
+        press(activity, KeyEvent.KEYCODE_DPAD_DOWN)
+        assertTrue(panel.findFocus() is EditText)
+        press(activity, KeyEvent.KEYCODE_DPAD_DOWN)
+        assertSame(choices(activity).first(), panel.findFocus())
+    }
+
     @Test fun `filtered and empty catalogs keep ordered remote focus across LTR RTL and held keys`() {
         for (language in listOf("en", "fa", "ar")) catalog(language) { activity, accepted ->
             val panel = activity.findViewById<View>(R.id.layout_settings)

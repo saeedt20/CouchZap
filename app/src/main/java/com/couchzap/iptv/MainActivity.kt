@@ -971,14 +971,16 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         if (focused is android.widget.EditText && direction in listOf(View.FOCUS_LEFT, View.FOCUS_RIGHT)) return false
         if (event.action == KeyEvent.ACTION_DOWN) {
             cancelRowConfirm()
-            if (focused == null) recordFocusState("focus_recovered", if (panel === binding.viewChannelList.root) "channels" else "settings")
+            if (focused == null) {
+                recordFocusState("focus_recovered", if (panel === binding.viewChannelList.root) "channels" else "settings")
+                if (panel === binding.viewChannelList.root) { channelNavigation.cancel(); focusCurrentChannel() }
+                else settingsPanel.focusFirst()
+                return true
+            }
             val next = FocusFinder.getInstance().findNextFocus(panel, focused, direction)
             if (panel === binding.viewChannelList.root) channelNavigation.cancel()
             if (next != null) {
                 if (isTvMode) next.requestFocusFromTouch() else next.requestFocus()
-            } else if (focused == null) {
-                if (panel === binding.viewChannelList.root) focusCurrentChannel()
-                else settingsPanel.focusFirst()
             }
         }
         return true
