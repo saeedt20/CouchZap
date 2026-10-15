@@ -59,7 +59,7 @@ class SettingsLanguageRegressionTest {
 
     @Test fun `first use opens welcome immediately and language choice is optional`() = screen(language = null) { activity ->
         assertEquals(View.GONE, activity.findViewById<View>(R.id.layout_settings).visibility)
-        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.import_container).visibility)
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.view_import).visibility)
         assertTrue(activity.findViewById<View>(R.id.btn_import).isEnabled)
         assertTrue(activity.findViewById<View>(R.id.btn_public).isEnabled)
         assertNull(Prefs(activity).getLanguage())
