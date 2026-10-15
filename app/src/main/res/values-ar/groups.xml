@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="group_animation">رسوم متحركة</string>
+    <string name="group_auto">سيارات</string>
+    <string name="group_business">أعمال</string>
+    <string name="group_classic">كلاسيكيات</string>
+    <string name="group_comedy">كوميديا</string>
+    <string name="group_cooking">طبخ</string>
+    <string name="group_culture">ثقافة</string>
+    <string name="group_documentary">وثائقيات</string>
+    <string name="group_education">تعليم</string>
+    <string name="group_entertainment">ترفيه</string>
+    <string name="group_family">عائلة</string>
+    <string name="group_general">عام</string>
+    <string name="group_interactive">تفاعلي</string>
+    <string name="group_kids">أطفال</string>
+    <string name="group_legislative">برلمان</string>
+    <string name="group_lifestyle">نمط الحياة</string>
+    <string name="group_movies">أفلام</string>
+    <string name="group_music">موسيقى</string>
+    <string name="group_news">أخبار</string>
+    <string name="group_outdoor">أنشطة خارجية</string>
+    <string name="group_public">قنوات عامة</string>
+    <string name="group_relax">استرخاء</string>
+    <string name="group_religious">دين</string>
+    <string name="group_science">علوم</string>
+    <string name="group_series">مسلسلات</string>
+    <string name="group_shop">تسوق</string>
+    <string name="group_sports">رياضة</string>
+    <string name="group_travel">سفر</string>
+    <string name="group_weather">طقس</string>
+    <string name="group_adult">للبالغين</string>
+    <string name="group_undefined">غير محدد</string>
+</resources>

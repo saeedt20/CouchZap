@@ -20,7 +20,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 1. Download **CouchZap-2.1.4.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest). A [SHA-256 checksum](distribution/CouchZap-2.1.4.apk.sha256) accompanies the signed APK.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
-3. Choose Persian or English, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
+3. On the welcome screen, optionally choose a language, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
 
 Use **Settings → Playlist sources** to import an HTTP(S) link, choose another source or refresh the current playlist. Choose a provider, then a country/language/category for iptv-org or a country/themed list for Free-TV. Choose source order or natural name order; source channel numbers remain unchanged. Public imports are opt-in.
@@ -63,14 +63,14 @@ These images render the app's actual Android views using Robolectric 4.16.1 nati
 ## Features
 
 - **A calmer interface:** couch-and-lightning identity, warm sage accents, generous buttons and visible remote focus.
-- **A better channel browser:** search that retains typing and the cursor while results update, groups, favourites, channel logos and a distinct playback-status label. The panel docks right in Persian and left in English. Focus and the currently selected channel remain separate, including during asynchronous connection errors. Up from the first visible channel wraps to the last; Down wraps back to the first.
+- **A better channel browser:** search that retains typing and the cursor while results update, groups, favourites, channel logos and a distinct playback-status label. The panel docks right in Persian and Arabic, and left in English, Spanish, Hindi and Thai. Focus and the currently selected channel remain separate, including during asynchronous connection errors. Up from the first visible channel wraps to the last; Down wraps back to the first.
 - **Flexible playlist sources:** local files, HTTP(S) links and selectable public iptv-org and Free-TV directories. Cached channels remain available between launches; failed imports preserve the previous playlist.
 - **Useful Info controls:** channel name, number, clock, play/pause, an outlined/filled favourite star and a second level for available codec, resolution and bitrate information.
 - **Programme guide:** XMLTV from a file or link, including gzip files. Shows now/next and programme progress when guide IDs match the playlist.
 - **Playback options:** HLS, DASH, RTSP and compatible progressive streams, available audio/subtitle tracks, Fit/Fill/16:9/4:3 picture modes, reconnect attempts and a retry/next-channel error panel.
 - **Updates from Settings:** check the latest stable GitHub release, download it with progress, verify its checksum and CouchZap signing certificate, then open Android’s installer. Installation always requires your confirmation.
 - **Diagnostic reports:** preview, share or save an app-only log from Settings. It contains device/version details and error classes/stacks; playlist URLs, channel names, tokens and account data are excluded. Boxes without a sharing/file app can copy the report to the clipboard.
-- **Persian and English:** switch language inside the settings panel, with RTL Persian content and LTR English. Channels and settings dock on the right in Persian and on the left in English. Known IPTV groups, the TV mode label and picture-ratio digits are localized in Persian. Settings subpages retain parent focus and scroll when you press Back; settings hide scrollbars while the channel browser keeps its scroll indicator on phone and TV.
+- **Six interface languages:** choose English, Español, हिन्दी, ไทย, فارسی or العربية, in that order, from the welcome screen or Settings. First launch opens the welcome screen directly, with English as the default. Persian and Arabic use RTL text and right-docked channels/settings; English, Spanish, Hindi and Thai use LTR text and left-docked panels. Known IPTV groups are translated without changing playlist identities. Settings subpages retain parent focus and scroll when you press Back.
 - **Light welcome motion:** a one-time intro that completes on the first key or touch while still handling that input. System animation settings are respected; Android 7 panels open immediately.
 - **Optional CRT click:** enable **Settings → Playback → Channel switch sound** for an original, quiet 160ms sample. It is off by default, previews when enabled and plays only on committed channel changes; browsing, retries and reconnects stay silent. Media volume and mute are respected.
 - **Everyday conveniences:** last watched channel, numeric selection for large playlists, a 15/30/60/90-minute sleep timer and saved interface preferences.

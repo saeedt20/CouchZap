@@ -57,17 +57,33 @@ class SettingsLanguageRegressionTest {
     }
     private fun open(activity: MainActivity, id: Int) { activity.findViewById<View>(id).apply { requestFocusFromTouch(); performClick() }; layout(activity) }
 
-    @Test fun `first use requires a language before any playlist action and persists Persian`() = screen(language = null) { activity ->
-        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.layout_settings).visibility)
-        assertFalse(activity.findViewById<View>(R.id.btn_import).isFocused)
+    @Test fun `first use opens welcome immediately and language choice is optional`() = screen(language = null) { activity ->
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.layout_settings).visibility)
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.import_container).visibility)
+        assertTrue(activity.findViewById<View>(R.id.btn_import).isEnabled)
+        assertTrue(activity.findViewById<View>(R.id.btn_public).isEnabled)
+        assertNull(Prefs(activity).getLanguage())
+        open(activity, R.id.btn_import_language)
+        val labels = descendants(activity.findViewById(R.id.settings_pages)).filterIsInstance<Button>()
+            .map { it.text.toString().removePrefix("✓  ") }
+        assertEquals(listOf("English", "Español", "हिन्दी", "ไทย", "فارسی", "العربية"), labels)
         press(activity, KeyEvent.KEYCODE_BACK)
-        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.layout_settings).visibility)
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.layout_settings).visibility)
+        assertTrue(activity.findViewById<View>(R.id.btn_import_language).isFocused)
+        open(activity, R.id.btn_import_language)
         choose(activity, "فارسی")
         assertEquals("fa", Prefs(activity).getLanguage())
         assertEquals(View.GONE, activity.findViewById<View>(R.id.layout_settings).visibility)
         assertEquals(View.LAYOUT_DIRECTION_RTL, activity.findViewById<View>(R.id.root_container).layoutDirection)
         assertEquals("وارد کردن پلی‌لیست", activity.findViewById<Button>(R.id.btn_import).text.toString())
         assertFalse(PlaylistRepository(activity).isPlaylistReady())
+    }
+    @Test fun `welcome import can start without choosing a language`() = screen(language = null) { activity ->
+        open(activity, R.id.btn_import)
+        assertEquals(activity.getString(R.string.btn_import_playlist), activity.findViewById<TextView>(R.id.settings_title).text.toString())
+        assertTrue(descendants(activity.findViewById(R.id.settings_pages)).filterIsInstance<Button>()
+            .any { it.text.toString() == activity.getString(R.string.import_link) })
+        assertNull(Prefs(activity).getLanguage())
     }
     @Test fun `saved Persian inflates on Android 7 and switching live to English preserves the library`() = screen(language = "fa", playlist = true) { activity ->
         val repo = PlaylistRepository(activity); val current = runBlocking { repo.loadCachedChannels() }.first(); repo.toggleFavourite(current)
@@ -201,6 +217,7 @@ class SettingsLanguageRegressionTest {
     }
 
     @Test fun `language choice survives activity restart and a system configuration update`() = screen(language = null) { activity ->
+        open(activity, R.id.btn_import_language)
         choose(activity, "فارسی")
         val config = android.content.res.Configuration(activity.resources.configuration).apply { setLocale(java.util.Locale.ENGLISH) }
         @Suppress("DEPRECATION")
@@ -216,4 +233,30 @@ class SettingsLanguageRegressionTest {
         } finally { restarted.destroy() }
     }
 
+    @Test
+    @Config(sdk = [24, 36])
+    fun `every welcome language persists across restart with translated groups and controls`() {
+        val languages = listOf(
+            Triple("en", "English", "Import playlist"), Triple("es", "Español", "Importar lista"),
+            Triple("hi", "हिन्दी", "प्लेलिस्ट आयात करें"), Triple("th", "ไทย", "นำเข้าเพลย์ลิสต์"),
+            Triple("fa", "فارسی", "وارد کردن پلی‌لیست"), Triple("ar", "العربية", "استيراد قائمة تشغيل")
+        )
+        val news = listOf("News", "Noticias", "समाचार", "ข่าว", "اخبار", "أخبار")
+        languages.forEachIndexed { index, (code, name, label) -> screen(language = null) { activity ->
+            open(activity, R.id.btn_import_language); choose(activity, name)
+            assertEquals(label, activity.findViewById<Button>(R.id.btn_import).text.toString())
+            assertEquals(news[index], com.couchzap.iptv.util.GroupLabels.display(activity, "News"))
+            assertEquals("Custom Group", com.couchzap.iptv.util.GroupLabels.display(activity, "Custom Group"))
+            val restarted = Robolectric.buildActivity(MainActivity::class.java).create().visible()
+            try {
+                val next = restarted.get()
+                assertEquals(code, Prefs(next).getLanguage())
+                assertEquals(code, next.resources.configuration.locales[0].language)
+                assertEquals(label, next.findViewById<Button>(R.id.btn_import).text.toString())
+                assertEquals(View.GONE, next.findViewById<View>(R.id.layout_settings).visibility)
+                assertEquals(if (code in listOf("fa", "ar")) View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR,
+                    next.findViewById<View>(R.id.root_container).layoutDirection)
+            } finally { restarted.destroy() }
+        } }
+    }
 }

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="group_animation">एनीमेशन</string>
+    <string name="group_auto">वाहन</string>
+    <string name="group_business">व्यवसाय</string>
+    <string name="group_classic">क्लासिक</string>
+    <string name="group_comedy">कॉमेडी</string>
+    <string name="group_cooking">खाना बनाना</string>
+    <string name="group_culture">संस्कृति</string>
+    <string name="group_documentary">वृत्तचित्र</string>
+    <string name="group_education">शिक्षा</string>
+    <string name="group_entertainment">मनोरंजन</string>
+    <string name="group_family">परिवार</string>
+    <string name="group_general">सामान्य</string>
+    <string name="group_interactive">इंटरैक्टिव</string>
+    <string name="group_kids">बच्चे</string>
+    <string name="group_legislative">संसद</string>
+    <string name="group_lifestyle">जीवनशैली</string>
+    <string name="group_movies">फ़िल्में</string>
+    <string name="group_music">संगीत</string>
+    <string name="group_news">समाचार</string>
+    <string name="group_outdoor">बाहरी गतिविधियाँ</string>
+    <string name="group_public">सार्वजनिक</string>
+    <string name="group_relax">सुकून</string>
+    <string name="group_religious">धर्म</string>
+    <string name="group_science">विज्ञान</string>
+    <string name="group_series">धारावाहिक</string>
+    <string name="group_shop">खरीदारी</string>
+    <string name="group_sports">खेल</string>
+    <string name="group_travel">यात्रा</string>
+    <string name="group_weather">मौसम</string>
+    <string name="group_adult">वयस्क</string>
+    <string name="group_undefined">अपरिभाषित</string>
+</resources>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="group_animation">Animación</string>
+    <string name="group_auto">Automóviles</string>
+    <string name="group_business">Negocios</string>
+    <string name="group_classic">Clásicos</string>
+    <string name="group_comedy">Comedia</string>
+    <string name="group_cooking">Cocina</string>
+    <string name="group_culture">Cultura</string>
+    <string name="group_documentary">Documentales</string>
+    <string name="group_education">Educación</string>
+    <string name="group_entertainment">Entretenimiento</string>
+    <string name="group_family">Familia</string>
+    <string name="group_general">General</string>
+    <string name="group_interactive">Interactivo</string>
+    <string name="group_kids">Infantil</string>
+    <string name="group_legislative">Parlamento</string>
+    <string name="group_lifestyle">Estilo de vida</string>
+    <string name="group_movies">Cine</string>
+    <string name="group_music">Música</string>
+    <string name="group_news">Noticias</string>
+    <string name="group_outdoor">Al aire libre</string>
+    <string name="group_public">Públicos</string>
+    <string name="group_relax">Relajación</string>
+    <string name="group_religious">Religión</string>
+    <string name="group_science">Ciencia</string>
+    <string name="group_series">Series</string>
+    <string name="group_shop">Compras</string>
+    <string name="group_sports">Deportes</string>
+    <string name="group_travel">Viajes</string>
+    <string name="group_weather">El tiempo</string>
+    <string name="group_adult">Adultos</string>
+    <string name="group_undefined">Sin definir</string>
+</resources>

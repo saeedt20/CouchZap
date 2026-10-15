@@ -83,7 +83,6 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private lateinit var welcomeIntro: WelcomeIntro
     private lateinit var crtSound: CrtSwitchSound
     private lateinit var settingsPanel: SettingsPanel
-    private var languageGate = false
     override fun attachBaseContext(newBase: Context) { super.attachBaseContext(AppLanguage.wrap(newBase)) }
 
     private lateinit var updateMenu: UpdateMenu
@@ -193,15 +192,15 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         DiagnosticLog.record("app_start")
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.root.layoutDirection = if (Prefs(this).getLanguage() == "fa") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
+        binding.root.layoutDirection = if (AppLanguage.isRtl(Prefs(this).getLanguage())) View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
 
         repository = PlaylistRepository(this)
         prefs = Prefs(this)
         crtSound = CrtSwitchSound.create(this, prefs)
         welcomeIntro = WelcomeIntro(binding.viewImport, prefs)
         settingsPanel = SettingsPanel(this, binding).also { panel ->
-            panel.onClose = { if (!languageGate && !importCommitting) closeSettingsMenu() }
-            panel.onRootBack = { if (welcomeFlowOrigin != null && !languageGate) closeSettingsMenu() }
+            panel.onClose = { if (!importCommitting) closeSettingsMenu() }
+            panel.onRootBack = { if (welcomeFlowOrigin != null) closeSettingsMenu() }
         }
         updateMenu = UpdateMenu(this, settingsPanel)
         diagnosticMenu = DiagnosticMenu(this, settingsPanel, ::notice)
@@ -283,8 +282,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             loadChannelsAndStartPlayback()
         } else {
             importScreen.show()
-            if (prefs.getLanguage() == null) { languageGate = true; toggleSettingsMenu(); importScreen.hide(); languageMenu() }
-            else welcomeIntro.start()
+            welcomeIntro.start()
         }
     }
 
@@ -624,7 +622,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             binding.btnSettingsCrtRow.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)
         }
         binding.btnQuickSettings.setOnClickListener { toggleSettingsMenu() }
-        settingsPanel.onClick(binding.btnSettingsClose) { if (!languageGate) closeSettingsMenu() }
+        settingsPanel.onClick(binding.btnSettingsClose) { closeSettingsMenu() }
         settingsPanel.onClick(binding.btnSettingsMode) {
             val modes = listOf("Auto", "TV", "Phone")
             settingsPanel.choices("mode", R.string.interface_mode,
@@ -664,7 +662,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             settingsPanel.page("about", R.string.about) { body ->
                 settingsPanel.text(body, getString(R.string.about_body))
                 val version = packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
-                settingsPanel.text(body, getString(R.string.version_label, androidx.core.text.BidiFormatter.getInstance(prefs.getLanguage() == "fa").unicodeWrap(version, false)))
+                settingsPanel.text(body, getString(R.string.version_label, androidx.core.text.BidiFormatter.getInstance(AppLanguage.isRtl(prefs.getLanguage())).unicodeWrap(version, false)))
                 settingsPanel.button(body, getString(R.string.github)) {
                     runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/saeedt20/CouchZap"))) }
                         .onFailure { notice(getString(R.string.update_failed)) }
@@ -680,20 +678,18 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private fun updateSleepLabel() { binding.tvSettingsSleepValue.text = if (sleepMinutes == 0) getString(R.string.off) else getString(R.string.minutes, sleepMinutes) }
     private fun languageMenu() {
         welcomeIntro.finish(); Anim.finishAll(binding.root)
-        settingsPanel.choices("language", if (languageGate) R.string.choose_language else R.string.language,
-            listOf("فارسی", "English"), listOf("fa", "en").indexOf(prefs.getLanguage())) { which ->
-            val language = if (which == 0) "fa" else "en"
+        settingsPanel.choices("language", R.string.language,
+            AppLanguage.supported.map { it.name }, AppLanguage.supported.indexOfFirst { it.code == (prefs.getLanguage() ?: AppLanguage.DEFAULT) }) { which ->
+            val language = AppLanguage.supported[which].code
             prefs.setLanguage(language)
             AppLanguage.apply(this, binding.root, language)
             AppLanguage.translate(this, binding.settingsRootScroll)
             settingsPanel.back(); settingsPanel.header()
             applyInterfaceMode(); updateAspectLabel(); updateSleepLabel(); updateSourceLabel()
-            binding.viewChannelList.rvChannels.adapter?.notifyDataSetChanged()
+            updateChannelListAdapter()
             playerController?.refreshPlaybackInfo()
             osdController.refresh()
-            if (languageGate) { languageGate = false; binding.btnSettingsClose.visibility = View.VISIBLE; importScreen.show(); closeSettingsMenu(); welcomeIntro.start() }
         }
-        if (languageGate) { binding.settingsBack.visibility = View.GONE; binding.btnSettingsClose.visibility = View.GONE }
     }
 
     private fun cycleAspectRatio() {
@@ -718,7 +714,6 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     }
 
     private fun openWelcomeFlow(origin: View, action: () -> Unit) {
-        if (languageGate) return
         welcomeFlowOrigin = origin
         if (binding.layoutSettings.visibility != View.VISIBLE) toggleSettingsMenu()
         action()
@@ -743,7 +738,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun updateSourceLabel() {
         val source = repository.source()
-        val label = source?.label?.let { androidx.core.text.BidiFormatter.getInstance(prefs.getLanguage() == "fa").unicodeWrap(it) }
+        val label = source?.label?.let { androidx.core.text.BidiFormatter.getInstance(AppLanguage.isRtl(prefs.getLanguage())).unicodeWrap(it) }
         binding.tvSettingsSource.text = if (source == null) getString(R.string.playlist_not_added) else label + "\n" +
             getString(R.string.source_updated, DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(repository.updatedAt())))
     }
@@ -871,7 +866,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             return true
         }
         if (Keys.isMenuKey(key) && !importInProgress) {
-            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !languageGate) toggleSettingsMenu()
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) toggleSettingsMenu()
             return true
         }
         if (binding.viewChannelList.root.visibility == View.VISIBLE) {
@@ -1013,7 +1008,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun handleBack() {
         when {
-            binding.layoutSettings.visibility == View.VISIBLE -> { if (importCommitting) notice(getString(R.string.finishing_import)) else if (fileBrowser.isVisible()) fileBrowser.handleBack() else if (languageGate) notice(getString(R.string.language_required)) else if (!settingsPanel.back()) closeSettingsMenu() }
+            binding.layoutSettings.visibility == View.VISIBLE -> { if (importCommitting) notice(getString(R.string.finishing_import)) else if (fileBrowser.isVisible()) fileBrowser.handleBack() else if (!settingsPanel.back()) closeSettingsMenu() }
             importInProgress -> Toast.makeText(this, getString(R.string.finishing_import), Toast.LENGTH_SHORT).show()
             fileBrowser.isVisible() -> fileBrowser.handleBack()
             numberEntryController.isTyping() -> numberEntryController.cancel()
@@ -1079,11 +1074,10 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         super.onConfigurationChanged(newConfig)
         if (::binding.isInitialized && ::prefs.isInitialized) {
             welcomeIntro.finish(); Anim.finishAll(binding.root)
-            AppLanguage.apply(this, binding.root, prefs.getLanguage() ?: "en")
+            AppLanguage.apply(this, binding.root, prefs.getLanguage() ?: AppLanguage.DEFAULT)
             AppLanguage.translate(this, binding.settingsRootScroll)
             updateAspectLabel(); updateSleepLabel(); updateSourceLabel()
             settingsPanel.header()
-            if (languageGate) { binding.settingsBack.visibility = View.GONE; binding.btnSettingsClose.visibility = View.GONE }
             playerController?.refreshPlaybackInfo(); osdController.refresh()
         }
         applyInterfaceMode()
