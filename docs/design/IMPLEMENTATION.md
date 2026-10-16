@@ -113,3 +113,7 @@ The [Claude handoff](CLAUDE_HANDOFF.md), [original design contract](SPEC.md), se
 ### Published beta verification
 
 See the [3.0 beta release notes](../releases/v3.0-beta.md) and [beta APK audit](verification/beta-release-audit.json). The original signed APK checksum is retained. CI compares all app payload entries with the published beta, excluding only signature records and VCS build metadata using the existing comparison script. Branch runs upload raw test XML and lint XML as downloadable artifacts. Historical font/build hashes in `artifacts.json` describe the earlier 2.2.1-metadata design build; they are not the signed beta checksum.
+
+### Stable-update test fixtures
+
+The first independent beta CI run ([38889879629](https://github.com/saeedt20/CouchZap/actions/runs/38889879629)) passed both APK builds and both lint tasks, then reported two update UI test failures out of 156. The tests had inherited the application's now-prerelease installed-version name. Stable-to-stable update UI fixtures now explicitly install the stable version name in Robolectric; all original progress, Cancel/focus, single-request and return-state assertions remain. No production updater code is changed. The actual beta updater's inability to compare installed prerelease names is documented in the release notes; beta updates currently require manual downloads.

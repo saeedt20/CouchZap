@@ -5,6 +5,11 @@ import android.widget.TextView
 import com.couchzap.iptv.ui.SettingRow
 import com.couchzap.iptv.ui.design.ChoiceRow
 
+/** Stable-to-stable update UI scenarios must not inherit a prerelease app version. */
+fun MainActivity.useStableUpdateFixtureVersion() {
+    org.robolectric.Shadows.shadowOf(packageManager).getInternalMutablePackageInfo(packageName).versionName = "2.2.1"
+}
+
 /** Access actual retained views/windows; no duplicate tree or platform lookup override. */
 val View.isUiAction get()=this is SettingRow||this is ChoiceRow||this is android.widget.Button
 fun View.uiLabel():TextView=when(this){is ChoiceRow->title;is SettingRow->requireNotNull(labelView);is TextView->this;else->error("Not a labeled action: ${javaClass.name}")}

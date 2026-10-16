@@ -174,6 +174,7 @@ class SettingsLanguageRegressionTest {
         }
     }
     private fun injectUpdates(activity: MainActivity, fake: FakeUpdates): UpdateMenu {
+        activity.useStableUpdateFixtureVersion()
         val panelField = MainActivity::class.java.getDeclaredField("settingsPanel").apply { isAccessible = true }
         val updater = UpdateMenu(activity, panelField.get(activity) as com.couchzap.iptv.ui.SettingsPanel, fake)
         MainActivity::class.java.getDeclaredField("updateMenu").apply { isAccessible = true }.set(activity, updater)

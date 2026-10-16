@@ -48,6 +48,8 @@ The [3.0 Beta prerelease](https://github.com/saeedt20/CouchZap/releases/tag/v3.0
 
 The beta uses version code 16 and the same signing certificate, so it installs over 2.2.1. Returning to stable 2.2.1 (code 15) is a downgrade that ordinary installation rejects; uninstalling to return can remove local playlists, favourites and settings.
 
+Use manual GitHub downloads for beta updates: the current in-app updater does not compare an installed prerelease version name. See the beta release notes for this known limitation.
+
 TV Settings now has **Playback / Playlist / App** sections, remembers the last row and supports mirrored navigation in Persian/Arabic. Back returns from a child page, then from detail to the section rail, then closes Settings. Compact phones use a grouped full-width page. **App → Visual effects** offers Auto, Full depth, Safe and Off; Safe keeps video/subtitles untransformed, and unsupported devices fall back conservatively.
 
 Welcome keeps optional language selection and offers file/link import or public sources. Long public catalogs use a virtualized list with one-step remote traversal and retained search. Phone Info keeps playback controls visible while expanded technical information scrolls.

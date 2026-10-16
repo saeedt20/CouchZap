@@ -62,6 +62,7 @@ class ScreenRenderTest {
         for(language in listOf("en","fa","ar")){
             RuntimeEnvironment.setQualifiers("w960dp-h540dp-land-mdpi")
             render(true,false,language){a->
+                a.useStableUpdateFixtureVersion()
                 press(a,KeyEvent.KEYCODE_MENU)
                 val panel=MainActivity::class.java.getDeclaredField("settingsPanel").apply{isAccessible=true}.get(a) as com.couchzap.iptv.ui.SettingsPanel
                 val check=kotlinx.coroutines.CompletableDeferred<com.couchzap.iptv.support.ReleaseUpdater.Release>()
