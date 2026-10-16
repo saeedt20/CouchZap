@@ -553,7 +553,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             val query = binding.viewChannelList.etChannelSearch.text.toString().trim()
             val values = channels.map { it.group.orEmpty() }.distinct().sorted()
             val groups = values.map { group -> GroupsPicker.Group(group, GroupLabels.display(this, group),
-                channels.count { it.group.orEmpty() == group && (query.isEmpty() || it.name.contains(query, true) || it.number.toString().startsWith(query)) }) }
+                channels.count { it.group.orEmpty() == group && (query.isEmpty() || it.name.contains(query, true) || it.number.toString().startsWith(com.couchzap.iptv.util.LocalizedNumbers.normalizeForComparison(query))) }) }
             groupsPicker.show(groups, selectedGroup, binding.viewChannelList.btnFilterGroups, binding.viewChannelList.root) { group ->
                 selectedGroup = group; favouritesOnly = false; updateChannelListAdapter(); focusCurrentChannel()
             }
@@ -567,7 +567,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         }
         listOf(binding.viewChannelList.btnFilterAll,binding.viewChannelList.btnFilterFavourites,binding.viewChannelList.btnFilterGroups,
             binding.viewChannelList.btnCloseChannelList,binding.viewChannelList.btnChannelClear,
-            binding.viewChannelList.root.findViewById(R.id.cz_channel_empty_action)).forEach { it.isFocusableInTouchMode=true;FocusMotionBinder.bind(it) }
+            binding.viewChannelList.root.findViewById(R.id.cz_channel_empty_action)).forEach { com.couchzap.iptv.ui.design.TouchActivationPolicy.apply(it);FocusMotionBinder.bind(it) }
 
     }
 
@@ -581,7 +581,9 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         val favourites = repository.favouriteIds()
         val filtered = channels.filter { (!favouritesOnly || it.stableId in favourites) &&
             (selectedGroup == null || it.group.orEmpty() == selectedGroup) &&
-            (query.isEmpty() || it.name.contains(query, true) || it.number.toString().startsWith(query)) }
+            // Item 9: localized digits in the query are normalized for comparison only;
+            // the typed text, caret and name matching are preserved.
+            (query.isEmpty() || it.name.contains(query, true) || it.number.toString().startsWith(com.couchzap.iptv.util.LocalizedNumbers.normalizeForComparison(query))) }
         val playingId = channels.getOrNull(currentIndex)?.stableId
         adapter?.setChannels(filtered, filtered.indexOfFirst { it.stableId == playingId }, favourites)
         adapter?.updatePlayback(playingId, playbackStatus)
@@ -641,15 +643,33 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         notice(getString(if (added) R.string.favourite_added else R.string.favourite_removed))
     }
 
+    /** Item 1: dismiss the channel-search IME on selection/panel close while the
+     * editor's window token is still attached, before the panel hides. Uses the
+     * AndroidX insets controller plus an InputMethodManager fallback suitable
+     * for API 24, then clears editor focus so a focus-return callback cannot
+     * reopen the IME. Does not clear the query or caret state. */
+    private fun dismissChannelSearchIme() {
+        val editor = binding.viewChannelList.etChannelSearch
+        runCatching {
+            androidx.core.view.ViewCompat.getWindowInsetsController(editor)
+                ?.hide(androidx.core.view.WindowInsetsCompat.Type.ime())
+        }
+        (getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager)
+            ?.hideSoftInputFromWindow(editor.windowToken, 0)
+        editor.clearFocus()
+    }
+
     private fun selectChannel(channel: Channel) {
         val index = channels.indexOf(channel)
         if (index < 0) return
         pendingIndex = index
         executeZap()
+        dismissChannelSearchIme()
         closeChannelListOverlay()
     }
 
     private fun closeChannelListOverlay() {
+        dismissChannelSearchIme()
         cancelRowConfirm()
         channelNavigation.cancel()
         val owned = channelMotion.desiredOpen
@@ -662,6 +682,8 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     private fun setupSettingsMenu() {
         updateSoundLabel()
+        // Item 3: the channel-switch sound row toggles immediately; it navigates nowhere.
+        binding.btnSettingsCrtRow.navigates = false
         settingsPanel.onClick(binding.btnSettingsCrtRow) {
             val enabled = !prefs.isCrtSoundEnabled()
             crtSound.setEnabled(enabled)
@@ -719,6 +741,9 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             settingsPanel.page("about", R.string.about) { body ->
                 body.addView(android.widget.ImageView(this).apply{setImageResource(R.drawable.ic_brand);importantForAccessibility=View.IMPORTANT_FOR_ACCESSIBILITY_NO},android.widget.LinearLayout.LayoutParams(settingsPanel.dp(48),settingsPanel.dp(48)).apply{marginStart=settingsPanel.dp(8);bottomMargin=settingsPanel.dp(12)})
                 settingsPanel.text(body, getString(R.string.about_body))
+                // Item 6: creator credit with exact per-locale name; bidi-isolated for RTL.
+                val creditName = androidx.core.text.BidiFormatter.getInstance(AppLanguage.isRtl(prefs.getLanguage())).unicodeWrap(getString(R.string.about_creator_name))
+                settingsPanel.text(body, getString(R.string.about_credit_label) + " " + creditName)
                 val version = packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
                 settingsPanel.text(body, getString(R.string.version_label, androidx.core.text.BidiFormatter.getInstance(AppLanguage.isRtl(prefs.getLanguage())).unicodeWrap(version, false)))
                 settingsPanel.button(body, getString(R.string.github)) {
@@ -1196,7 +1221,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         if (targetIndex != -1) {
             pendingIndex = targetIndex
             executeZap()
-        } else notice(getString(R.string.no_channel_number, channelNum.toString()))
+        } else notice(getString(R.string.no_channel_number, com.couchzap.iptv.util.LocalizedNumbers.localize(channelNum, prefs.getLanguage())))
     }
 
     private fun scheduleDebouncedZap() {

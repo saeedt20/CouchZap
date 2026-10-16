@@ -46,7 +46,8 @@ class GroupsPicker(private val activity: androidx.appcompat.app.AppCompatActivit
             override fun onCreateViewHolder(parent:ViewGroup,type:Int):RecyclerView.ViewHolder=object:RecyclerView.ViewHolder(ChoiceRow(activity).apply {layoutParams=RecyclerView.LayoutParams(-1,-2)}){}
             override fun onBindViewHolder(holder:RecyclerView.ViewHolder,position:Int) {
                 val item=groups[position];val row=holder.itemView as ChoiceRow
-                row.bind(item.id,item.label,item.count.toString(),item.id==selected)
+                // Item 9: group counts use localized digits for FA/AR.
+                row.bind(item.id,item.label,com.couchzap.iptv.util.LocalizedNumbers.localize(item.count,com.couchzap.iptv.util.Prefs(activity).getLanguage()),item.id==selected)
                 row.minimumHeight=if(tv)68.dp else 64.dp
                 row.setOnClickListener {close();onSelected(item.id)}
             }
@@ -55,7 +56,7 @@ class GroupsPicker(private val activity: androidx.appcompat.app.AppCompatActivit
         list.isFocusableInTouchMode=true
         list.viewTreeObserver.addOnGlobalLayoutListener {pending?.let {index->list.findViewHolderForAdapterPosition(index)?.itemView?.let {pending=null;it.requestFocusFromTouch()} }}
         shell.addView(list,LinearLayout.LayoutParams(-1,0,1f))
-        val cancel=Button(activity).apply {setText(R.string.cancel);isAllCaps=false;isFocusableInTouchMode=true;minimumHeight=56.dp;CouchZapTokens.text(this,CouchZapTokens.Text.CONTROL);setOnClickListener {window.cancel()};FocusMotionBinder.bind(this)}
+        val cancel=Button(activity).apply {setText(R.string.cancel);isAllCaps=false;isFocusable=true;minimumHeight=56.dp;CouchZapTokens.text(this,CouchZapTokens.Text.CONTROL);setOnClickListener {window.cancel()};FocusMotionBinder.bind(this);com.couchzap.iptv.ui.design.TouchActivationPolicy.apply(this)}
         shell.addView(cancel,LinearLayout.LayoutParams(-1,-2))
         val bounds=AdaptiveUi.from(activity.findViewById(R.id.root_container))
         val height=minOf(bounds.safeHeight,(160+groups.size.coerceAtMost(6)*68).dp)

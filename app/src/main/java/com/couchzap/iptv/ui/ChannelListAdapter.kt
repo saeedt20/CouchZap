@@ -50,7 +50,8 @@ class ChannelListAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ChannelViewHolder(ItemChannelBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     override fun onBindViewHolder(holder: ChannelViewHolder, position: Int) = holder.bind(channels[position], position == selectedIndex)
     override fun onBindViewHolder(holder: ChannelViewHolder, position: Int, payloads: MutableList<Any>) {
-        if (payloads.isNotEmpty()&&"presentation" !in payloads) holder.bindStatus(channels[position], position == selectedIndex)
+        if (payloads.isNotEmpty()&&"presentation" !in payloads) holder.bindStatus(channels[position], position == selectedIndex,
+            language?:com.couchzap.iptv.util.Prefs(holder.itemView.context).getLanguage()?:"en")
         else onBindViewHolder(holder, position)
     }
     override fun getItemCount() = channels.size
@@ -73,13 +74,15 @@ class ChannelListAdapter(
             CouchZapTokens.text(binding.tvItemChannelStatus, CouchZapTokens.Text.VALUE,tv,lang)
             CouchZapTokens.text(binding.tvItemChannelNum, CouchZapTokens.Text.FOOTER,tv,lang)
             binding.root.setTag(R.id.cz_action_key, channel.stableId)
-            binding.tvItemChannelNum.text = String.format(java.util.Locale.US, "%03d", channel.number)
+            binding.tvItemChannelNum.text = com.couchzap.iptv.util.LocalizedNumbers.channelNumber(channel.number, lang)
+            // Item 9: keep localized digit sequences in logical order under RTL.
+            binding.tvItemChannelNum.textDirection=View.TEXT_DIRECTION_LTR
             binding.tvItemChannelNum.layoutParams=binding.tvItemChannelNum.layoutParams.apply{width=maxOf((36*binding.root.resources.displayMetrics.density).toInt(),kotlin.math.ceil(binding.tvItemChannelNum.paint.measureText(binding.tvItemChannelNum.text.toString())).toInt())}
             binding.tvItemChannelNum.fontFeatureSettings="tnum"
             binding.ivChannelLogo.layoutParams=binding.ivChannelLogo.layoutParams.apply{val size=if(tv)40 else 36;width=(size*binding.root.resources.displayMetrics.density).toInt();height=width}
             binding.tvItemChannelName.text = channel.name
             binding.tvItemChannelGroup.text = GroupLabels.display(binding.root.context, channel.group)
-            bindStatus(channel, selected)
+            bindStatus(channel, selected, lang)
             artwork?.bind(binding.ivChannelLogo, channel.logo)
             binding.root.setOnClickListener {
                 val index = bindingAdapterPosition
@@ -87,7 +90,7 @@ class ChannelListAdapter(
             }
             binding.root.setOnLongClickListener { channelAt(bindingAdapterPosition)?.let(onFavourite); true }
         }
-        fun bindStatus(channel: Channel, selected: Boolean) {
+        fun bindStatus(channel: Channel, selected: Boolean, lang: String) {
             val label = when (playbackStatus) {
                 ChannelPlaybackStatus.CONNECTING -> R.string.connecting
                 ChannelPlaybackStatus.BUFFERING -> R.string.buffering
@@ -104,7 +107,7 @@ class ChannelListAdapter(
             binding.tvItemChannelGroup.visibility = if (selected) View.GONE else View.VISIBLE
             binding.tvItemChannelStatus.visibility = if (binding.tvItemChannelStatus.text.isEmpty()) View.GONE else View.VISIBLE
             binding.root.isSelected = selected
-            binding.root.contentDescription = listOfNotNull(channel.number.toString(), channel.name,
+            binding.root.contentDescription = listOfNotNull(com.couchzap.iptv.util.LocalizedNumbers.localize(channel.number, lang), channel.name,
                 binding.tvItemChannelStatus.text.toString().takeIf { it.isNotEmpty() },
                 binding.root.context.getString(R.string.favourites).takeIf { channel.stableId in favourites }).joinToString(", ")
         }

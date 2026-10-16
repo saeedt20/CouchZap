@@ -48,6 +48,10 @@ The [3.0 Beta prerelease](https://github.com/saeedt20/CouchZap/releases/tag/v3.0
 
 The beta uses version code 16 and the same signing certificate, so it installs over 2.2.1. Returning to stable 2.2.1 (code 15) is a downgrade that ordinary installation rejects; uninstalling to return can remove local playlists, favourites and settings.
 
+### 3.0 Beta 2
+
+The [3.0 Beta 2 prerelease](https://github.com/saeedt20/CouchZap/releases/tag/v3.0-beta.2) fixes ten owner-reported issues: keyboard dismissal after channel search, favourite star marker, sound-toggle chevron, compact Settings sections, mobile Info layout, About with creator credit and MIT license, first-tap activation, FA/AR chevrons, localized digits and a native download progress bar. Version code 17. See the [Beta 2 release notes](docs/releases/v3.0-beta.2.md). Still a beta; 2.2.1 remains stable.
+
 Use manual GitHub downloads for beta updates: the current in-app updater does not compare an installed prerelease version name. See the beta release notes for this known limitation.
 
 TV Settings now has **Playback / Playlist / App** sections, remembers the last row and supports mirrored navigation in Persian/Arabic. Back returns from a child page, then from detail to the section rail, then closes Settings. Compact phones use a grouped full-width page. **App → Visual effects** offers Auto, Full depth, Safe and Off; Safe keeps video/subtitles untransformed, and unsupported devices fall back conservatively.
@@ -225,3 +229,13 @@ The [original CRT sample](docs/assets/crt_sound.md) is synthesized locally witho
 Thanks to [Free-TV](https://github.com/Free-TV/IPTV), [iptv-org](https://github.com/iptv-org/iptv) for its public playlist directory and metadata API, [AndroidX Media3](https://github.com/androidx/media) for playback, [AndroidSVG](https://github.com/BigBadaboom/androidsvg) for SVG artwork, and [Robolectric](https://github.com/robolectric/robolectric) for Android regression testing.
 
 For bugs, include device/Android version, reproduction steps and sanitized logs in [GitHub Issues](https://github.com/saeedt20/CouchZap/issues).
+
+## License
+
+CouchZap is open-source software released under the [MIT License](LICENSE).
+Copyright (c) 2026 Saeed Taheri.
+
+The MIT license covers the project's code. Third-party notices are preserved
+separately: the CRT sample is dedicated under CC0 1.0 (see
+`docs/assets/crt_sound.md`), and upstream dependency licenses (e.g. AndroidX
+Media3, AndroidSVG, Robolectric) remain with their respective projects.

@@ -101,11 +101,13 @@
     <string name="favourite_removed">Removed from favourites</string>
     <string name="favourite_add_action">Add to favourites</string>
     <string name="favourite_remove_action">Remove from favourites</string>
-    <string name="about_body">Your playlist. Your remote. Your couch.
+    <string name="about_body">CouchZap is a native, open-source IPTV player for Android TV, TV boxes and Android phones, released under the MIT license.
 
-Native Android TV and phone player.
+Use your own playlist or optionally choose public playlists from iptv-org and Free-TV. Stream availability can change.
 
-Playlists, favourites and preferences stay on your device. Public playlists are provided by iptv-org and Free-TV; stream availability varies.</string>
+Your playlists, favourites and settings stay on your device. Explore the source code and contribute on GitHub.</string>
+    <string name="about_credit_label">Created by</string>
+    <string name="about_creator_name">Saeed Taheri</string>
     <string name="pick_failure">No file picker installed. Enable a system Files app to import playlists.</string>
     <string name="check_updates">Check for updates</string>
     <string name="checking_updates">Checking the latest GitHub release…</string>
@@ -113,7 +115,7 @@ Playlists, favourites and preferences stay on your device. Public playlists are 
     <string name="update_available">CouchZap %s is available</string>
     <string name="update_download_prompt">Download the official update (%d MB)? Your playlists and preferences will be kept.</string>
     <string name="download_update">Download update</string>
-    <string name="update_progress">Downloading… %d%%</string>
+    <string name="update_progress">Downloading… %s%%</string>
     <string name="update_ready">Update ready</string>
     <string name="update_ready_body">The download and CouchZap signature have been verified. Android will ask you to confirm installation.</string>
     <string name="install_update">Install update</string>

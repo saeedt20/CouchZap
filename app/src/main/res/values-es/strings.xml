@@ -102,7 +102,13 @@
     <string name="favourite_removed">Eliminado de favoritos</string>
     <string name="favourite_add_action">Añadir a favoritos</string>
     <string name="favourite_remove_action">Eliminar de favoritos</string>
-    <string name="about_body">Tu lista. Tu mando. Tu sofá.\n\nReproductor nativo para Android TV y teléfonos.\n\nLas listas, los favoritos y las preferencias se guardan en tu dispositivo. Las listas públicas proceden de iptv-org y Free-TV; la disponibilidad de las transmisiones varía.</string>
+    <string name="about_body">CouchZap es un reproductor de IPTV nativo y de código abierto para Android TV, TV boxes y teléfonos Android, publicado bajo la licencia MIT.
+
+Usa tu propia lista de reproducción o elige listas públicas de iptv-org y Free-TV. La disponibilidad de las transmisiones puede variar.
+
+Tus listas, favoritos y ajustes permanecen en tu dispositivo. Explora el código fuente y contribuye en GitHub.</string>
+    <string name="about_credit_label">Creado por</string>
+    <string name="about_creator_name">Saeed Taheri</string>
     <string name="pick_failure">No hay un selector de archivos instalado. Activa la aplicación Archivos del sistema para importar listas.</string>
     <string name="check_updates">Buscar actualizaciones</string>
     <string name="checking_updates">Buscando la última versión en GitHub…</string>
@@ -110,7 +116,7 @@
     <string name="update_available">CouchZap %s está disponible</string>
     <string name="update_download_prompt">¿Descargar la actualización oficial (%d MB)? Se conservarán tus listas y preferencias.</string>
     <string name="download_update">Descargar actualización</string>
-    <string name="update_progress">Descargando… %d%%</string>
+    <string name="update_progress">Descargando… %s%%</string>
     <string name="update_ready">Actualización lista</string>
     <string name="update_ready_body">Se han verificado la descarga y la firma de CouchZap. Android te pedirá confirmar la instalación.</string>
     <string name="install_update">Instalar actualización</string>

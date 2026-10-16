@@ -64,9 +64,12 @@ class FocusMotionBinder private constructor(private val view: View, private val 
     }
     override fun onViewDetachedFromWindow(v: View) = reset()
     override fun onViewAttachedToWindow(v: View) = refresh()
+    fun setSelectedMarkerEnabled(enabled: Boolean) { chrome.drawSelectedMarker = enabled }
     companion object {
-        fun bind(view: View,role: Role=Role.ROW): FocusMotionBinder = (view.getTag(R.id.cz_focus_binder) as? FocusMotionBinder)
-            ?: FocusMotionBinder(view,role).also { view.setTag(R.id.cz_focus_binder,it) }
+        fun bind(view: View,role: Role=Role.ROW,selectedMarker: Boolean=true): FocusMotionBinder =
+            ((view.getTag(R.id.cz_focus_binder) as? FocusMotionBinder)
+                ?: FocusMotionBinder(view,role).also { view.setTag(R.id.cz_focus_binder,it) })
+                .also { it.setSelectedMarkerEnabled(selectedMarker) }
         fun configure(root: View, tier: String? = null) {
             root.setTag(R.id.cz_animations_enabled, Anim.enabled(root))
             if(tier!=null)root.setTag(R.id.cz_motion_owner,tier)

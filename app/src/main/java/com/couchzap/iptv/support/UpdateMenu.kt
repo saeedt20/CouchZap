@@ -37,12 +37,22 @@ class UpdateMenu(private val activity: AppCompatActivity, private val panel: Set
         panel.page("update", R.string.check_updates, leave = { render = null }) { body ->
             var renderedState: State? = null
             var progressLabel: android.widget.TextView? = null
+            var progressBar: android.widget.ProgressBar? = null
+            // Item 9/10: percentage digits localized for FA/AR.
+            fun localizedPercent(): String = com.couchzap.iptv.util.LocalizedNumbers.localize(
+                percent.coerceIn(0, 100), com.couchzap.iptv.util.Prefs(activity).getLanguage())
             val renderer: () -> Unit = renderer@ {
                 if (renderedState == state && state == State.DOWNLOADING) {
-                    progressLabel?.text = activity.getString(R.string.update_progress, percent)
+                    // Item 10 fast path: update the retained bar and label in place.
+                    // No removeAllViews(), no Cancel recreation, no focus reset.
+                    val pct = localizedPercent()
+                    progressBar?.progress = percent.coerceIn(0, 100)
+                    progressLabel?.text = activity.getString(R.string.update_progress, pct)
+                    progressBar?.contentDescription = activity.getString(R.string.update_progress, pct)
                     return@renderer
                 }
                 renderedState = state
+                progressBar = null
                 val focusedIndex = (0 until body.childCount).indexOfFirst { body.getChildAt(it).hasFocus() }
                 body.removeAllViews()
                 when (state) {
@@ -57,7 +67,28 @@ class UpdateMenu(private val activity: AppCompatActivity, private val panel: Set
                             panel.text(body, r.notes)
                         }
                     }
-                    State.DOWNLOADING -> { progressLabel = panel.text(body, activity.getString(R.string.update_progress, percent)); cancelButton(body) }
+                    State.DOWNLOADING -> {
+                        // Item 10: native horizontal progress bar with real values.
+                        // Not a focus stop; progress semantics exposed without per-tick announcements.
+                        progressBar = android.widget.ProgressBar(activity, null, android.R.attr.progressBarStyleHorizontal).apply {
+                            max = 100
+                            progress = percent.coerceIn(0, 100)
+                            isFocusable = false
+                            importantForAccessibility = android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                            if (android.os.Build.VERSION.SDK_INT >= 21) {
+                                progressTintList = android.content.res.ColorStateList.valueOf(activity.getColor(R.color.cz_sage))
+                                progressBackgroundTintList = android.content.res.ColorStateList.valueOf(activity.getColor(R.color.cz_divider))
+                            }
+                        }
+                        val pct = localizedPercent()
+                        progressBar?.contentDescription = activity.getString(R.string.update_progress, pct)
+                        body.addView(progressBar, android.widget.LinearLayout.LayoutParams(-1, panel.dp(6)).apply {
+                            topMargin = panel.dp(12); bottomMargin = panel.dp(4)
+                            marginStart = panel.dp(8); marginEnd = panel.dp(8)
+                        })
+                        progressLabel = panel.text(body, activity.getString(R.string.update_progress, pct))
+                        cancelButton(body)
+                    }
                     State.READY -> {
                         panel.text(body, activity.getString(R.string.update_ready_body))
                         panel.button(body, activity.getString(R.string.install_update)) { install() }

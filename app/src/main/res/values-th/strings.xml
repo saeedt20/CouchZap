@@ -102,7 +102,13 @@
     <string name="favourite_removed">นำออกจากรายการโปรดแล้ว</string>
     <string name="favourite_add_action">เพิ่มในรายการโปรด</string>
     <string name="favourite_remove_action">นำออกจากรายการโปรด</string>
-    <string name="about_body">เพลย์ลิสต์ของคุณ รีโมตของคุณ โซฟาของคุณ\n\nแอปเล่นวิดีโอสำหรับ Android TV และโทรศัพท์โดยเฉพาะ\n\nเพลย์ลิสต์ รายการโปรด และการตั้งค่าจะอยู่ในอุปกรณ์ของคุณ เพลย์ลิสต์สาธารณะให้บริการโดย iptv-org และ Free-TV ความพร้อมใช้งานของสตรีมอาจแตกต่างกัน</string>
+    <string name="about_body">CouchZap คือเครื่องเล่น IPTV แบบเนทีฟโอเพนซอร์สสำหรับ Android TV, กล่องทีวี และโทรศัพท์ Android ซึ่งเผยแพร่ภายใต้สัญญาอนุญาต MIT
+
+ใช้เพลย์ลิสต์ของคุณเอง หรือเลือกเพลย์ลิสต์สาธารณะจาก iptv-org และ Free-TV ความพร้อมของสตรีมอาจเปลี่ยนแปลงได้
+
+เพลย์ลิสต์ รายการโปรด และการตั้งค่าของคุณจะอยู่ในอุปกรณ์ของคุณ สำรวจซอร์สโคดและร่วมพัฒนาได้บน GitHub</string>
+    <string name="about_credit_label">สร้างโดย</string>
+    <string name="about_creator_name">Saeed Taheri</string>
     <string name="pick_failure">ไม่มีแอปเลือกไฟล์ เปิดใช้แอป Files ของระบบเพื่อนำเข้าเพลย์ลิสต์</string>
     <string name="check_updates">ตรวจสอบอัปเดต</string>
     <string name="checking_updates">กำลังตรวจสอบรุ่นล่าสุดบน GitHub…</string>
@@ -110,7 +116,7 @@
     <string name="update_available">มี CouchZap %s พร้อมให้ใช้งาน</string>
     <string name="update_download_prompt">ดาวน์โหลดอัปเดตอย่างเป็นทางการ (%d MB) หรือไม่? เพลย์ลิสต์และการตั้งค่าของคุณจะยังอยู่</string>
     <string name="download_update">ดาวน์โหลดอัปเดต</string>
-    <string name="update_progress">กำลังดาวน์โหลด… %d%%</string>
+    <string name="update_progress">กำลังดาวน์โหลด… %s%%</string>
     <string name="update_ready">อัปเดตพร้อมแล้ว</string>
     <string name="update_ready_body">ตรวจสอบไฟล์ดาวน์โหลดและลายเซ็น CouchZap แล้ว Android จะขอให้คุณยืนยันการติดตั้ง</string>
     <string name="install_update">ติดตั้งอัปเดต</string>

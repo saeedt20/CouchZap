@@ -102,7 +102,13 @@
     <string name="favourite_removed">تمت الإزالة من المفضلة</string>
     <string name="favourite_add_action">إضافة إلى المفضلة</string>
     <string name="favourite_remove_action">إزالة من المفضلة</string>
-    <string name="about_body">قائمتك. جهاز تحكمك. أريكتك.\n\nمشغّل أصلي لأجهزة Android TV والهواتف.\n\nتبقى قوائم التشغيل والمفضلة والتفضيلات على جهازك. توفر iptv-org وFree-TV القوائم العامة؛ وقد يختلف توفر البث.</string>
+    <string name="about_body">CouchZap هو مشغّل IPTV أصلي ومفتوح المصدر لأجهزة Android TV وصناديق التلفاز وهواتف Android، صدر بموجب ترخيص MIT.
+
+استخدم قائمة التشغيل الخاصة بك أو اختر قوائم التشغيل العامة من iptv-org و Free-TV. قد تتغير إتاحة البث.
+
+تبقى قوائم التشغيل والمفضلة والإعدادات على جهازك. استكشف الشيفرة المصدرية وساهم على GitHub.</string>
+    <string name="about_credit_label">تصميم وتطوير</string>
+    <string name="about_creator_name">سعید طاهری</string>
     <string name="pick_failure">لا يوجد منتقي ملفات مثبت. فعّل تطبيق ملفات النظام لاستيراد قوائم التشغيل.</string>
     <string name="check_updates">البحث عن تحديثات</string>
     <string name="checking_updates">جارٍ التحقق من أحدث إصدار على GitHub…</string>
@@ -110,7 +116,7 @@
     <string name="update_available">يتوفر CouchZap %s</string>
     <string name="update_download_prompt">هل تريد تنزيل التحديث الرسمي (%d ميغابايت)؟ سيتم الاحتفاظ بقوائمك وتفضيلاتك.</string>
     <string name="download_update">تنزيل التحديث</string>
-    <string name="update_progress">جارٍ التنزيل… %d%%</string>
+    <string name="update_progress">جارٍ التنزيل… %s%%</string>
     <string name="update_ready">التحديث جاهز</string>
     <string name="update_ready_body">تم التحقق من التنزيل وتوقيع CouchZap. سيطلب Android منك تأكيد التثبيت.</string>
     <string name="install_update">تثبيت التحديث</string>

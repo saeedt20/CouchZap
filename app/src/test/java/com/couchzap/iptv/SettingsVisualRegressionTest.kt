@@ -60,7 +60,11 @@ class SettingsVisualRegressionTest {
             assertTrue("label must retain a useful text column", label.width >= 120)
             assertEquals(activity.getString(R.string.crt_sound), label.text.toString())
             assertFalse(toggle.isFocusable)
+            // Item 7: rows are keyboard/D-pad focusable but not touch-focusable in production.
+            // For this focusability check, temporarily allow touch focus.
+            row.isFocusableInTouchMode = true
             assertTrue("sound focus phone=$phone language=$language shown=${row.isShown} visibility=${row.visibility} panelFocus=${activity.uiView<View>(R.id.layout_settings).findFocus()?.id}", row.requestFocusFromTouch())
+            row.isFocusableInTouchMode = false
             activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER))
             activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
             shadowOf(Looper.getMainLooper()).idle()

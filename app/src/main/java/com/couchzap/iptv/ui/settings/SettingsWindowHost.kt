@@ -67,7 +67,8 @@ class SettingsWindowHost(
         root.addView(scrim,FrameLayout.LayoutParams(-1,-1));root.addView(shell,FrameLayout.LayoutParams(-1,-1))
         window.setContentView(root);window.setCanceledOnTouchOutside(false);window.setCancelable(false)
         if(Build.VERSION.SDK_INT>=26)window.window?.decorView?.defaultFocusHighlightEnabled=false
-        binding.settingsBack.isFocusableInTouchMode=true;binding.btnSettingsClose.isFocusableInTouchMode=true
+        binding.settingsBack.isFocusable=true;binding.btnSettingsClose.isFocusable=true
+        TouchActivationPolicy.apply(binding.settingsBack);TouchActivationPolicy.apply(binding.btnSettingsClose)
         window.window?.apply{setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT));clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);attributes=attributes.apply{windowAnimations=0}}
         scrim.setOnClickListener{close()}
         window.setOnKeyListener{_,key,event->dispatchLocalKey(key,event)}

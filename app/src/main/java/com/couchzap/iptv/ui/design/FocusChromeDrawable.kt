@@ -19,6 +19,8 @@ class FocusChromeDrawable(context: Context, private val channel: Boolean = false
     var full = false
     var keyboard = true
     var rtl = false
+    /** Item 2: per-component opt-out for the selected-state edge marker. */
+    var drawSelectedMarker = true
     var onPressChanged: (Boolean) -> Unit = {}
     private var selected = false
     private var pressed = false
@@ -38,7 +40,7 @@ class FocusChromeDrawable(context: Context, private val channel: Boolean = false
             paint.color=if(focusAlpha>0 || pressed) fill else selectedFill
             canvas.drawRoundRect(rect,radius,radius,paint)
         }
-        if(selected) {
+        if(selected && drawSelectedMarker) {
             paint.color=sage
             val x=if(rtl) rect.right-3*density else rect.left
             canvas.drawRoundRect(x,rect.top+12*density,x+3*density,rect.bottom-12*density,1.5f*density,1.5f*density,paint)

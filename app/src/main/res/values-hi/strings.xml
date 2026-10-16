@@ -102,7 +102,13 @@
     <string name="favourite_removed">पसंदीदा से हटाया गया</string>
     <string name="favourite_add_action">पसंदीदा में जोड़ें</string>
     <string name="favourite_remove_action">पसंदीदा से हटाएँ</string>
-    <string name="about_body">आपकी प्लेलिस्ट। आपका रिमोट। आपका सोफ़ा।\n\nAndroid TV और फ़ोन के लिए नेटिव प्लेयर।\n\nप्लेलिस्ट, पसंदीदा और प्राथमिकताएँ आपके डिवाइस पर रहती हैं। सार्वजनिक प्लेलिस्ट iptv-org और Free-TV से मिलती हैं; स्ट्रीम की उपलब्धता बदल सकती है।</string>
+    <string name="about_body">CouchZap Android TV, TV बॉक्स और Android फ़ोन के लिए एक नेटिव, ओपन-सोर्स IPTV प्लेयर है, जो MIT लाइसेंस के तहत जारी किया गया है।
+
+अपनी खुद की प्लेलिस्ट उपयोग करें या iptv-org और Free-TV से सार्वजनिक प्लेलिस्ट चुनें। स्ट्रीम की उपलब्धता बदल सकती है।
+
+आपकी प्लेलिस्ट, पसंदीदा और सेटिंग्स आपके डिवाइस पर ही रहती हैं। GitHub पर सोर्स कोड देखें और योगदान करें।</string>
+    <string name="about_credit_label">द्वारा निर्मित</string>
+    <string name="about_creator_name">Saeed Taheri</string>
     <string name="pick_failure">कोई फ़ाइल चुनने वाला ऐप नहीं है। प्लेलिस्ट आयात करने के लिए सिस्टम का Files ऐप चालू करें।</string>
     <string name="check_updates">अपडेट की जाँच करें</string>
     <string name="checking_updates">GitHub पर नवीनतम रिलीज़ की जाँच हो रही है…</string>
@@ -110,7 +116,7 @@
     <string name="update_available">CouchZap %s उपलब्ध है</string>
     <string name="update_download_prompt">आधिकारिक अपडेट (%d MB) डाउनलोड करें? आपकी प्लेलिस्ट और प्राथमिकताएँ सुरक्षित रहेंगी।</string>
     <string name="download_update">अपडेट डाउनलोड करें</string>
-    <string name="update_progress">डाउनलोड हो रहा है… %d%%</string>
+    <string name="update_progress">डाउनलोड हो रहा है… %s%%</string>
     <string name="update_ready">अपडेट तैयार है</string>
     <string name="update_ready_body">डाउनलोड और CouchZap के हस्ताक्षर सत्यापित हो गए हैं। Android आपसे इंस्टॉल करने की पुष्टि माँगेगा।</string>
     <string name="install_update">अपडेट इंस्टॉल करें</string>

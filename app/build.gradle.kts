@@ -9,8 +9,8 @@ android {
         applicationId = "com.couchzap.iptv"
         minSdk = 24
         targetSdk = 35
-        versionCode = 16
-        versionName = "3.0-beta"
+        versionCode = 17
+        versionName = "3.0-beta.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

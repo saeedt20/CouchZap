@@ -45,8 +45,9 @@
         <FrameLayout android:id="@+id/settings_pages" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
           <ScrollView android:id="@+id/settings_root_scroll" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:scrollbars="none">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:id="@+id/settings_root_groups">
+              <LinearLayout android:id="@+id/settings_playback_section" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView android:id="@+id/localized_label_6" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:layout_marginBottom="8dp" android:text="@string/playback_section" android:textColor="@color/text_gray" android:textSize="13sp" />
               <LinearLayout android:id="@+id/settings_playback_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                <TextView android:id="@+id/localized_label_6" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:layout_marginBottom="10dp" android:text="@string/playback_section" android:textColor="@color/text_gray" android:textSize="13sp" />
                 <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_aspect" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:paddingStart="14dp" android:paddingEnd="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
                   <TextView android:id="@+id/localized_label_7" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:duplicateParentState="true" android:text="@string/choose_aspect" android:textSize="16sp" android:textColor="@color/selector_channel_text" android:importantForAccessibility="no" android:tag="cz_label" />
                   <TextView android:id="@+id/tv_settings_aspect_value" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="110dp" android:maxLines="1" android:ellipsize="end" android:duplicateParentState="true" android:text="@string/aspect_fit" android:textSize="15sp" android:textColor="@color/selector_channel_text" android:importantForAccessibility="no" android:tag="cz_value" />
@@ -63,8 +64,10 @@
                   <TextView android:id="@+id/tv_settings_crt_value" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/off" android:tag="cz_value" android:importantForAccessibility="no" />
                 </com.couchzap.iptv.ui.SettingRow>
               </LinearLayout>
+              </LinearLayout>
+              <LinearLayout android:id="@+id/settings_playlist_section" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView android:id="@+id/localized_label_9" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:layout_marginBottom="8dp" android:text="@string/playlist_section" android:textColor="@color/text_gray" android:textSize="13sp" />
               <LinearLayout android:id="@+id/settings_playlist_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                <TextView android:id="@+id/localized_label_9" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:layout_marginBottom="10dp" android:text="@string/playlist_section" android:textColor="@color/text_gray" android:textSize="13sp" />
                 <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_reimport" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:focusable="true" android:paddingStart="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
                   <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
                     <TextView android:id="@+id/tv_settings_reimport_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/playlist_sources" android:tag="cz_label" android:importantForAccessibility="no" />
@@ -75,8 +78,10 @@
                   <TextView android:id="@+id/tv_settings_guide_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/programme_guide" android:tag="cz_label" android:importantForAccessibility="no" />
                 </com.couchzap.iptv.ui.SettingRow>
               </LinearLayout>
+              </LinearLayout>
+              <LinearLayout android:id="@+id/settings_app_section" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView android:id="@+id/localized_label_10" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:layout_marginBottom="8dp" android:text="@string/app_section" android:textColor="@color/text_gray" android:textSize="13sp" />
               <LinearLayout android:id="@+id/settings_app_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                <TextView android:id="@+id/localized_label_10" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:layout_marginBottom="10dp" android:text="@string/app_section" android:textColor="@color/text_gray" android:textSize="13sp" />
                 <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_mode" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:paddingStart="14dp" android:paddingEnd="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
                   <TextView android:id="@+id/localized_label_11" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:duplicateParentState="true" android:text="@string/interface_mode" android:textSize="16sp" android:textColor="@color/selector_channel_text" android:importantForAccessibility="no" android:tag="cz_label" />
                   <TextView android:id="@+id/tv_settings_mode_value" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="110dp" android:maxLines="1" android:ellipsize="end" android:duplicateParentState="true" android:text="@string/automatic" android:textSize="15sp" android:textColor="@color/selector_channel_text" android:importantForAccessibility="no" android:tag="cz_value" />
@@ -101,6 +106,7 @@
                 <com.couchzap.iptv.ui.SettingRow android:id="@+id/btn_settings_exit" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="0dp" android:background="@drawable/bg_row" android:focusable="true" android:paddingStart="14dp" android:minHeight="64dp" android:paddingTop="8dp" android:paddingBottom="8dp">
                   <TextView android:id="@+id/tv_settings_exit_label" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/settings_exit" android:tag="cz_label" android:importantForAccessibility="no" />
                 </com.couchzap.iptv.ui.SettingRow>
+              </LinearLayout>
               </LinearLayout>
             </LinearLayout>
           </ScrollView>

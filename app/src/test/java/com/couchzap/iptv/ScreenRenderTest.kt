@@ -110,7 +110,11 @@ class ScreenRenderTest {
                 assertEquals(6,choices.size)
                 save(activity,"$stem-language-entry",size.width,size.height)
                 for((index,row) in choices.withIndex()){
+                    // Item 7: rows are keyboard/D-pad focusable but not touch-focusable in production.
+                    // Temporarily allow touch focus for this focusability check.
+                    row.isFocusableInTouchMode = true
                     assertTrue("$stem language $index focus",row.requestFocusFromTouch())
+                    row.isFocusableInTouchMode = false
                     shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(32));layout(activity,size.width,size.height)
                     val bounds=Rect();assertTrue("$stem language $index not visible: row=${row.width}x${row.height} parent=${(row.parent as View).height}",row.getGlobalVisibleRect(bounds))
                     assertTrue("$stem language $index clipped: $bounds height=${row.height}",bounds.height()>=48)
@@ -243,6 +247,11 @@ class ScreenRenderTest {
             val second = activity.uiView<View>(R.id.btn_public)
             assertEquals(first.width, second.width)
             assertTrue(first.width >= 320)
+            // Item 7: btn_import is keyboard/D-pad focusable but not touch-focusable in production.
+            // Temporarily allow touch focus for this focusability check.
+            first.isFocusableInTouchMode = true
+            assertTrue(first.requestFocusFromTouch())
+            first.isFocusableInTouchMode = false
             assertTrue(first.isFocused)
             val bounds = Rect(); second.getGlobalVisibleRect(bounds)
             assertEquals(second.height, bounds.height())

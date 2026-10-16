@@ -77,14 +77,20 @@ class NumberEntryController(
         }
     }
 
+    private fun language(): String? = com.couchzap.iptv.util.Prefs(tvDigitGhost.context).getLanguage()
+
     private fun updateDigitOverlay() {
-        val display = digitBuffer.toString().toCharArray().joinToString(" ") + " _"
+        // Item 9: buffer stays ASCII; only the rendered digits are localized.
+        val display = com.couchzap.iptv.util.LocalizedNumbers.localize(digitBuffer.toString(), language())
+            .toCharArray().joinToString(" ") + " _"
         tvDigitGhost.text = display
+        tvDigitGhost.textDirection = View.TEXT_DIRECTION_LTR
         tvDigitGhost.visibility = View.VISIBLE
     }
 
     private fun flashInvalidChannelMessage(number: Int) {
-        tvToastMsg.text = tvToastMsg.context.getString(com.couchzap.iptv.R.string.no_channel_number, number.toString())
+        val shown = com.couchzap.iptv.util.LocalizedNumbers.localize(number, language())
+        tvToastMsg.text = tvToastMsg.context.getString(com.couchzap.iptv.R.string.no_channel_number, shown)
         tvToastMsg.visibility = View.VISIBLE
         handler.removeCallbacks(hideToastRunnable)
         handler.postDelayed(hideToastRunnable, 1200L)

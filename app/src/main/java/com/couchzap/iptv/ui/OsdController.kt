@@ -71,7 +71,9 @@ class OsdController(
                 binding.tvOsdActionLabel.text = button.contentDescription ?: binding.root.context.getString(R.string.previous_watched)
                 resetAutoHide()
             } }
-            FocusMotionBinder.bind(button,FocusMotionBinder.Role.ICON)
+            // Item 2: the favourite star keeps selected state semantics but draws no edge marker.
+            if (button === binding.btnOsdFavourite) FocusMotionBinder.bind(button,FocusMotionBinder.Role.ICON,selectedMarker=false)
+            else FocusMotionBinder.bind(button,FocusMotionBinder.Role.ICON)
         }
         handler.post(clock)
     }
@@ -82,7 +84,7 @@ class OsdController(
         currentChannel = channel; controlsActive = autoHideMs <= 0
         if (changed || !controlsActive) { expanded = false; updateExpanded() }
         binding.root.descendantFocusability = if (controlsActive) android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS else android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS
-        binding.tvOsdChannelNumber.text = String.format(java.util.Locale.US, "%03d", channel.number)
+        binding.tvOsdChannelNumber.text = com.couchzap.iptv.util.LocalizedNumbers.channelNumber(channel.number, com.couchzap.iptv.util.Prefs(binding.root.context).getLanguage())
         binding.tvOsdChannelName.text = channel.name
         binding.tvOsdChannelName.contentDescription = channel.name
         updateFavourite(channel)
@@ -140,12 +142,25 @@ class OsdController(
         secondary.visibility=if(tv)View.GONE else View.VISIBLE
         val primary=if(tv)listOf(binding.btnOsdChannels,binding.btnOsdPrev,binding.btnOsdPlayPause,binding.btnOsdNext,binding.btnOsdFavourite,binding.btnOsdAspect,binding.btnOsdSettings)
             else listOf(binding.btnOsdPrev,binding.btnOsdPlayPause,binding.btnOsdNext,binding.btnOsdFavourite)
-        primary.forEach { button -> (button.parent as? ViewGroup)?.removeView(button);controls.addView(button) }
-        if(!tv) listOf(binding.btnOsdChannels,binding.btnOsdAspect,binding.btnOsdSettings).forEach { button -> (button.parent as? ViewGroup)?.removeView(button);secondary.addView(button) }
+        // Item 5: rebuild row membership only when the assignment actually changed,
+        // so focus is not reset and touch streams are not interrupted.
+        fun ensureRow(container:LinearLayout,desired:List<View>){
+            val current=(0 until container.childCount).map{container.getChildAt(it)}
+            if(current!=desired)desired.forEach{button->(button.parent as? ViewGroup)?.removeView(button);container.addView(button)}
+        }
+        ensureRow(controls,primary)
+        if(!tv)ensureRow(secondary,listOf(binding.btnOsdChannels,binding.btnOsdAspect,binding.btnOsdSettings))
         buttons.filter { it !== binding.btnOsdLastChannel }.forEach { button ->
-            button.layoutParams=LinearLayout.LayoutParams(((if(tv)56 else 48)*d).toInt(),((if(tv)56 else 48)*d).toInt()).apply { marginEnd=((if(tv)8 else 12)*d).toInt() }
+            val size=((if(tv)56 else 48)*d).toInt()
+            val lp=LinearLayout.LayoutParams(size,size)
+            if(tv)lp.marginEnd=(8*d).toInt()
+            // Item 5: symmetric inter-item spacing on phone; no trailing-only offset.
+            else{val gap=(6*d).toInt();lp.setMargins(gap,0,gap,0)}
+            button.layoutParams=lp
             val inset=((if(tv)16 else 12)*d).toInt();button.setPadding(inset,inset,inset,inset)
         }
+        // Item 5: the focus-dependent action label is stale on touch; hide it on phone.
+        binding.tvOsdActionLabel.visibility=if(tv)View.VISIBLE else View.GONE
         binding.tvOsdChannelName.maxLines=if(tv)1 else 2
         if(controlsActive&&motion.desiredOpen&&focused!=null)binding.root.findViewById<View>(focused)?.requestFocusFromTouch()
     }
@@ -161,7 +176,7 @@ class OsdController(
     fun refreshChannel(channel: Channel) {
         currentChannel = channel
         binding.tvOsdChannelName.text = channel.name
-        binding.tvOsdChannelNumber.text = String.format(java.util.Locale.US, "%03d", channel.number)
+        binding.tvOsdChannelNumber.text = com.couchzap.iptv.util.LocalizedNumbers.channelNumber(channel.number, com.couchzap.iptv.util.Prefs(binding.root.context).getLanguage())
         refresh()
     }
     fun refresh() {

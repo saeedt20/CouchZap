@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0-beta.2 — 2026-10-16 (prerelease)
+
+Ten owner-reported beta fixes on the native redesign: keyboard dismissal after channel search selection, favourite star without the green selected line, no chevron on the Channel switch sound toggle, separated compact-phone Settings sections, aligned mobile Info buttons, rewritten About with creator credit and MIT license (root LICENSE added), first-tap activation for mobile buttons, right-pointing FA/AR settings chevrons, Persian/Arabic localized digits, and a native download progress bar. Version code 17. See [release notes](docs/releases/v3.0-beta.2.md). Beta, not stable; 2.2.1 remains the stable release.
+
 ## 2.2.1 — 2026-10-15
 
 Fix remote Up/Down jumping across the public country/language/category picker on Android TV, reported on the XDSR 685 HDR with Android 7. Follow the focused control inside the active panel and link catalog rows in displayed order, including after filtering. See [release notes](docs/releases/v2.2.1.md).
