@@ -49,6 +49,17 @@ jobs:
           cache: gradle
       - name: Install SDK components
         run: |
+          installed_sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          if [ -n "$installed_sdk" ] &&
+             [ -f "$installed_sdk/platforms/android-35/android.jar" ] &&
+             [ -x "$installed_sdk/build-tools/36.0.0/aapt2" ] &&
+             [ -x "$installed_sdk/build-tools/36.0.0/apksigner" ]; then
+            echo "Using runner-provided Android platform 35 and Build Tools 36.0.0"
+            "$installed_sdk/build-tools/36.0.0/aapt2" version
+            echo "ANDROID_HOME=$installed_sdk" >> "$GITHUB_ENV"
+            echo "ANDROID_SDK_ROOT=$installed_sdk" >> "$GITHUB_ENV"
+            exit 0
+          fi
           sdk_dir="$RUNNER_TEMP/android-sdk"
           tools_zip="$RUNNER_TEMP/android-command-line-tools.zip"
           mkdir -p "$sdk_dir/cmdline-tools"
