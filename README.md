@@ -50,7 +50,7 @@ The beta uses version code 16 and the same signing certificate, so it installs o
 
 ### 3.0 Beta 2
 
-The [3.0 Beta 2 prerelease](https://github.com/saeedt20/CouchZap/releases/tag/v3.0-beta.2) fixes ten owner-reported issues: keyboard dismissal after channel search, favourite star marker, sound-toggle chevron, compact Settings sections, mobile Info layout, About with creator credit and MIT license, first-tap activation, FA/AR chevrons, localized digits and a native download progress bar. Version code 17. See the [Beta 2 release notes](docs/releases/v3.0-beta.2.md). Still a beta; 2.2.1 remains stable.
+The [3.0 Beta 2 prerelease](https://github.com/saeedt20/CouchZap/releases/tag/v3.0-beta.2) fixes ten owner-reported issues: keyboard dismissal after channel search, favourite star marker, sound-toggle chevron, compact Settings sections, mobile Info layout, About with creator credit and MIT license, first-tap activation for Settings Back/Close and channel-panel actions, FA/AR chevrons, localized digits and a native download progress bar. Settings navigation and choice rows retain their existing focus behavior for remote navigation. Version code 17. See the [Beta 2 release notes](docs/releases/v3.0-beta.2.md). Still a beta; 2.2.1 remains stable.
 
 Use manual GitHub downloads for beta updates: the current in-app updater does not compare an installed prerelease version name. See the beta release notes for this known limitation.
 
