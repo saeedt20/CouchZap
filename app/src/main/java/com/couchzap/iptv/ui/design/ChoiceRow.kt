@@ -18,7 +18,7 @@ class ChoiceRow(context: Context) : LinearLayout(context) {
     val subtitle=TextView(context)
     private val mark=RadioMark(context)
     init {
-        orientation=HORIZONTAL; gravity=Gravity.CENTER_VERTICAL; isFocusable=true; isClickable=true; TouchActivationPolicy.apply(this)
+        orientation=HORIZONTAL; gravity=Gravity.CENTER_VERTICAL; isFocusable=true; isClickable=true; isFocusableInTouchMode=true
         val d=resources.displayMetrics.density
         minimumHeight=(if(AdaptiveUi.isTv(context))64*d else 60*d).toInt()
         setPadding((16*d).toInt(),(8*d).toInt(),(16*d).toInt(),(8*d).toInt())

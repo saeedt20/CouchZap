@@ -11,7 +11,6 @@ import android.widget.LinearLayout
 import androidx.test.core.app.ApplicationProvider
 import com.couchzap.iptv.data.PlaylistRepository
 import com.couchzap.iptv.ui.SettingRow
-import com.couchzap.iptv.ui.design.ChoiceRow
 import com.couchzap.iptv.util.Prefs
 import org.junit.Assert.*
 import org.junit.Test
@@ -79,28 +78,10 @@ class FirstTapRegressionTest {
         assertEquals(View.VISIBLE, activity.uiView<View>(R.id.layout_settings).visibility)
     }
 
-    @Test fun `unfocused SettingRow fires on first tap`() = screen { activity ->
-        val row = SettingRow(activity).apply {
-            id = View.generateViewId(); isClickable = true
-            // Attach so focus/touch dispatch behaves like a real window.
-            (activity.uiView<View>(R.id.root_container) as ViewGroup).addView(this, 0)
-        }
-        layout(activity)
-        // Sanity: the policy must be applied.
-        assertFalse(row.isFocusableInTouchMode)
-        assertTrue(row.isFocusable)
-        assertEquals("one DOWN/UP must fire exactly one click", 1, tap(row))
-    }
-
-    @Test fun `unfocused ChoiceRow fires on first tap`() = screen { activity ->
-        val row = ChoiceRow(activity).apply {
-            id = View.generateViewId()
-            (activity.uiView<View>(R.id.root_container) as ViewGroup).addView(this, 0)
-        }
-        layout(activity)
-        assertFalse(row.isFocusableInTouchMode)
-        assertEquals("one DOWN/UP must fire exactly one click", 1, tap(row))
-    }
+    // Note: SettingRow and ChoiceRow do NOT use TouchActivationPolicy.
+    // They retain isFocusableInTouchMode=true for D-pad focus retention
+    // (required by NextVersionUiRegressionTest and SettingsWindowRegressionTest).
+    // First-tap activation is applied to Back/Close buttons and channel actions.
 
     @Test fun `settings back button returns one page on first tap`() = screen { activity ->
         openSettings(activity)

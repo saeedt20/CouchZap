@@ -36,7 +36,7 @@ open class SettingRow(context: Context, attrs: AttributeSet? = null) : LinearLay
             arrow?.visibility = GONE
         }
     }
-    init { orientation = HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; isFocusable = true; isClickable = true; TouchActivationPolicy.apply(this) }
+    init { orientation = HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; isFocusable = true; isClickable = true; isFocusableInTouchMode = true }
     val labelView:TextView? get()=texts(this).firstOrNull{it.tag=="cz_label"}
     val valueView:TextView? get()=texts(this).firstOrNull{it.tag=="cz_value"||resources.getResourceEntryNameSafe(it.id).endsWith("_value")}
     private fun texts(v:View):List<TextView> = if(v is TextView)listOf(v) else if(v is ViewGroup)(0 until v.childCount).flatMap{texts(v.getChildAt(it))} else emptyList()

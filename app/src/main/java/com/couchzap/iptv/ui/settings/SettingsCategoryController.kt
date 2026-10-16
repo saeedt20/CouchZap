@@ -33,7 +33,7 @@ class SettingsCategoryController(private val binding:ActivityMainBinding,private
         panel.categories=this
         buttons.forEachIndexed{index,button->
             button.isFocusable=true
-            com.couchzap.iptv.ui.design.TouchActivationPolicy.apply(button)
+            button.isFocusableInTouchMode=true
             button.setTag(R.id.cz_action_key,"category:$index")
             button.setOnFocusChangeListener{_,focused->if(focused){val token=++selectionToken;button.postOnAnimation{if(token==selectionToken&&button.isFocused)select(index)}}}
             button.setOnClickListener{select(index);enterDetail()}
