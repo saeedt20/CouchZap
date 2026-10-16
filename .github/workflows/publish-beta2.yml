@@ -1,0 +1,75 @@
+name: Publish reviewed CouchZap Beta 2
+
+on:
+  push:
+    branches: [codex/publish-beta2]
+    paths:
+      - .github/workflows/publish-beta2.yml
+      - distribution/beta2/**
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: couchzap-beta2-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify and publish the reviewed signed APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          source_commit=c8eb91d5fe581f1988516a68d59425d780302c0f
+          build_run=38942517488
+          release_tag=v3.0-beta.2
+          test "$(git rev-parse "$release_tag^{commit}")" = "$source_commit"
+          git diff --exit-code "$source_commit" HEAD -- app scripts gradle gradlew gradlew.bat build.gradle.kts settings.gradle.kts gradle.properties
+          test "$(gh api "repos/$GH_REPO/actions/runs/$build_run" --jq '.conclusion')" = success
+          test "$(gh api "repos/$GH_REPO/actions/runs/$build_run" --jq '.head_sha')" = "$source_commit"
+          test "$(gh release view "$release_tag" --json isDraft --jq '.isDraft')" = true
+          unsigned_dir="$RUNNER_TEMP/reviewed-beta2-build"
+          apk_dir="$RUNNER_TEMP/reviewed-beta2-release"
+          mkdir -p "$unsigned_dir" "$apk_dir"
+          gh run download "$build_run" --name couchzap-3.0-beta.2-unsigned --dir "$unsigned_dir"
+          python3 scripts/assemble-reviewed-release.py \
+            distribution/beta2/release-recipe.json \
+            "$unsigned_dir/app-release-unsigned.apk" \
+            "$apk_dir/CouchZap-3.0-beta.2.apk"
+          python3 scripts/verify-reviewed-release.py \
+            "$unsigned_dir/app-release-unsigned.apk" "$apk_dir/CouchZap-3.0-beta.2.apk"
+          cp distribution/beta2/CouchZap-3.0-beta.2.apk.sha256 "$apk_dir/"
+          (cd "$apk_dir" && sha256sum --check CouchZap-3.0-beta.2.apk.sha256)
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify \
+            --min-sdk-version 24 --max-sdk-version 36 --verbose --print-certs \
+            "$apk_dir/CouchZap-3.0-beta.2.apk" > "$apk_dir/certificate.txt"
+          python3 - "$apk_dir/certificate.txt" <<'PY'
+          import sys
+          from pathlib import Path
+          text = Path(sys.argv[1]).read_text()
+          assert 'Number of signers: 1' in text
+          assert 'Signer #1 certificate SHA-256 digest: 539f14a4b71cc830108cffefa8778ec06797be539c90ab80bc0c89b0c60eb187' in text
+          print('Verified established CouchZap release certificate for API 24–36')
+          PY
+          gh release upload "$release_tag" \
+            "$apk_dir/CouchZap-3.0-beta.2.apk" \
+            "$apk_dir/CouchZap-3.0-beta.2.apk.sha256" --clobber
+          gh release edit "$release_tag" --draft=false --prerelease=true --latest=false \
+            --title 'CouchZap 3.0 Beta 2' \
+            --notes-file distribution/beta2/release-notes.md
+          test "$(gh api "repos/$GH_REPO/releases/latest" --jq '.tag_name')" = v2.2.1
+          test "$(gh release view "$release_tag" --json isPrerelease --jq '.isPrerelease')" = true
+          test "$(gh release view "$release_tag" --json isDraft --jq '.isDraft')" = false

@@ -1,0 +1,43 @@
+# CouchZap 3.0 Beta 2 — Ten owner-reported fixes
+
+**Beta, not stable.** Version 3 is available for early testing and is not yet as stable as [2.2.1](https://github.com/saeedt20/CouchZap/releases/tag/v2.2.1). Keep 2.2.1 for everyday watching and [report beta issues](https://github.com/saeedt20/CouchZap/issues). This release remains a GitHub prerelease; stable 2.2.1 remains `releases/latest`.
+
+## The ten fixes
+
+1. **Keyboard dismissal:** selecting a searched channel now dismisses the soft keyboard on the channel panel (Android 7 TV box), without the Recent-Apps workaround.
+2. **Favourite star:** the green selected-state line beside the Info favourite star is removed; favourite state, persistence and focus outline are unchanged.
+3. **Sound toggle:** the Channel switch sound row no longer shows a chevron; it remains an immediate On/Off action.
+4. **Compact Settings:** phone Settings sections are visibly separated cards with readable headings outside the row surfaces.
+5. **Mobile Info:** phone playback controls use one deliberate layout with aligned columns and consistent spacing; the stale focus-dependent footer label is hidden on touch.
+6. **About & license:** About rewritten in all six languages with creator credit (Saeed Taheri / سعید طاهری) and MIT licensing; project root LICENSE added.
+7. **First tap:** Settings Back/Close buttons and channel-panel actions activate on the first tap. Settings navigation and choice rows retain their existing focus behavior to preserve remote navigation and return focus.
+8. **FA/AR chevrons:** Persian/Arabic settings rows use the owner's right-pointing › chevron while layout/text stay RTL.
+9. **Localized digits:** Persian digits in Persian, Arabic digits in Arabic for channel numbers, group counts and the remote numeric-entry overlay; ASCII search still finds the same channels.
+10. **Download progress:** Check for updates shows a native progress bar with real percentages, retained Cancel action and full verification before Install.
+
+## Install and returning to stable
+
+Download **CouchZap-3.0-beta.2.apk** and its checksum from [this prerelease](https://github.com/saeedt20/CouchZap/releases/tag/v3.0-beta.2). Package `com.couchzap.iptv`, version **3.0-beta.2**, code **17**, Android **7.0+ / API 24**, target/compile API **35**.
+
+The signing certificate is unchanged, so Beta 2 installs as an update over 3.0-beta/code 16 and over 2.2.1/code 15. Playlists, favourites, language and preferences are preserved on update. Installing an older APK over Beta 2 is a downgrade that ordinary Android installation rejects. Uninstalling to return to 2.2.1 can delete local data.
+
+**Known beta limitation:** use manual GitHub downloads for beta updates. The in-app updater accepts stable version names only and cannot compare an installed `3.0-beta.2` version. The new progress bar does not change the update channel.
+
+```text
+SHA-256 (CouchZap-3.0-beta.2.apk)
+e931079d8f5f72cf1a98c78ef9d1eaa2345d1a923daa79090fd689e6385e5e93
+
+Signing certificate SHA-256
+539f14a4b71cc830108cffefa8778ec06797be539c90ab80bc0c89b0c60eb187
+```
+
+## Validation
+
+Full unit/Robolectric suite: **173 tests, 0 failures** (156 baseline tests + 17 new tests). Debug and Release lint: 0 errors. Both APK builds pass.
+
+New regression tests cover first-tap activation with real touch events (Back/Close buttons), IME dismissal, digit localization, About/MIT strings, chevron policy and the download progress bar. Physical-device checks (Android 7 IME dismissal, XDSR 685 remote, HDR/decoder behavior) remain owner-side; see the release checklist.
+
+
+Source: [c8eb91d](https://github.com/saeedt20/CouchZap/commit/c8eb91d5fe581f1988516a68d59425d780302c0f).
+
+[Android CI checks](https://github.com/saeedt20/CouchZap/actions/runs/38942517488).
