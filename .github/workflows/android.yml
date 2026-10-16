@@ -2,7 +2,7 @@ name: Android checks and release
 
 on:
   push:
-    branches: [main, codex/couchzap-2.0, codex/couchzap-2.1, codex/settings-ui-fixes, codex/persian-ui-2.1.3, codex/localization-search-2.1.4]
+    branches: [main, codex/couchzap-2.0, codex/couchzap-2.1, codex/settings-ui-fixes, codex/persian-ui-2.1.3, codex/localization-search-2.1.4, codex/native-design]
   pull_request:
   workflow_dispatch:
 
@@ -31,7 +31,12 @@ jobs:
           python3 - <<'PYTHON'
           import json, os, re
           from pathlib import Path
-          version = re.search(r'versionName = "([0-9]+\.[0-9]+\.[0-9]+)"', Path('app/build.gradle.kts').read_text()).group(1)
+          match = re.search(r'versionName\s*=\s*"([^"]+)"', Path('app/build.gradle.kts').read_text())
+          if match is None:
+              raise SystemExit('versionName is missing from app/build.gradle.kts')
+          version = match.group(1)
+          if not re.fullmatch(r'[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?', version):
+              raise SystemExit(f'Unsupported versionName: {version}')
           recipe = json.loads(Path('distribution/release-recipe.json').read_text())
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write(f'version={version}\nartifact_name=couchzap-{version}-unsigned\n')
@@ -66,6 +71,29 @@ jobs:
           echo "ANDROID_SDK_ROOT=$sdk_dir" >> "$GITHUB_ENV"
       - name: Test, lint and build
         run: ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease
+
+      - name: Compare published 3.0 beta with this source build
+        if: steps.release_metadata.outputs.version == '3.0-beta'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          beta_dir="$RUNNER_TEMP/couchzap-beta-review"
+          mkdir -p "$beta_dir"
+          gh release download v3.0-beta --pattern CouchZap-3.0-beta.apk --dir "$beta_dir"
+          echo "40bba1dc882667c61210a2221d11634e85bf0297c4c3b452485108ad1a66eedd  $beta_dir/CouchZap-3.0-beta.apk" | sha256sum --check
+          python3 scripts/verify-reviewed-release.py app/build/outputs/apk/release/app-release-unsigned.apk "$beta_dir/CouchZap-3.0-beta.apk"
+
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: couchzap-verification-${{ github.sha }}
+          path: |
+            app/build/test-results/testDebugUnitTest/*.xml
+            app/build/reports/lint-results-*.xml
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Upload unsigned release for signing
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

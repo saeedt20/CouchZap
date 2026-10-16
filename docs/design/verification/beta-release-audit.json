@@ -1,0 +1,33 @@
+{
+  "reviewed_at": "2026-10-16",
+  "release_tag": "v3.0-beta",
+  "package_name": "com.couchzap.iptv",
+  "version_name": "3.0-beta",
+  "version_code": 16,
+  "min_sdk": 24,
+  "target_sdk": 35,
+  "signed_apk_sha256": "40bba1dc882667c61210a2221d11634e85bf0297c4c3b452485108ad1a66eedd",
+  "release_certificate_sha256": "539f14a4b71cc830108cffefa8778ec06797be539c90ab80bc0c89b0c60eb187",
+  "certificate_matches_downloaded_2_2_1": true,
+  "apksigner_api_range": [
+    24,
+    36
+  ],
+  "zip_integrity": "passed",
+  "zipalign_4byte_and_16k_page_check": "passed",
+  "signing_material_entries": [],
+  "stable_release_retained": "v2.2.1",
+  "beta_prerelease": true,
+  "original_tag_source_commit": "dedc238358e9a7a24788958d09006b8380bb4ddd",
+  "source_version_correction": "2.2.1/code 15 -> 3.0-beta/code 16",
+  "signed_apk_replaced": false,
+  "payload_comparison_exclusions": [
+    "signature records",
+    "META-INF/version-control-info.textproto"
+  ],
+  "hardware_checks_performed": false,
+  "fresh_unsigned_build": "passed",
+  "identical_app_payload_entries": 680,
+  "payload_comparison": "passed",
+  "unsigned_apk_sha256": "2e233f6640ce48a5d1c979f7952f1e32ef45bc3cc3d8189e814ec39501e87003"
+}

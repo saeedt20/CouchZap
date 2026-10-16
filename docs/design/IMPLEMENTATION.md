@@ -3,7 +3,7 @@
 Baseline: `30cf8de44ca78ae5ad120a9a59177ac20608af6f` (main, 2.2.1, version code 15).
 Contract: the user-supplied [COUCHZAP_DESIGN_SPEC.md](SPEC.md), prepared 15 October 2026.
 
-Implementation is on `codex/native-design`; the user subsequently authorized committing and pushing this source branch for continuation with Claude. Versioning, signing, publication, SDK/toolchain and operational data/player/security code are outside this change. The only added production dependency is AndroidX DynamicAnimation 1.1.0.
+Implementation is on `codex/native-design`. The redesign was released as **3.0-beta**, version code **16**, for early testing; **2.2.1 remains the stable release**. On 16 October 2026 the user authorized aligning the committed version with the existing beta APK, correcting CI and completing the release documentation. SDK/toolchain, private signing material and operational data/player/security code remain outside these corrections. The only added production dependency is AndroidX DynamicAnimation 1.1.0.
 
 ## Checkpoint 1: Channels and Info
 
@@ -60,34 +60,36 @@ Native adaptive checkpoint passed 360×800, 412×915, 800×360, 600×800, 840×8
 | Activity seams | `MainActivity.kt`: UI controller construction, actual Settings view registry, overlay dispatch/ownership, insets/layout, root row bindings, presentation-only guide observer and lifecycle cleanup |
 | Support UI | `UpdateMenu.kt`: retained progress/Cancel renderer and window-local focus; `DiagnosticMenu.kt`: readable monospace report metrics |
 | Language / preferences | `AppLanguage.kt`: compound-row labels and detached host; `Prefs.kt`: only `effects_mode`; six localized `cz_strings.xml` files and plural counts |
-| Build | Only DynamicAnimation 1.1.0 in the existing catalog and app dependency list |
+| Build / beta metadata | DynamicAnimation 1.1.0 in the existing catalog/app dependencies; `app/build.gradle.kts` version 3.0-beta/code 16; `.github/workflows/android.yml` beta version parsing, branch checks, test/lint artifacts and published APK payload comparison |
 | Review | `README.md`, this report, `FONTS.md`, selected native captures and adapted/added regression tests |
 
 ## Scope review
 
-The baseline hash manifest covers 37 protected data/player/security/release/script files; all remain unchanged. An additional MainActivity method comparison found import/picker/fallback, cache loading, source acceptance, zap/debounce/commit/play, player callbacks, track selection, guide import and hard exit unchanged. Player creation/lifecycle calls remain in their existing operational paths. No version, application ID, SDK, signing, installer, wrapper, CI, distribution or network-security change. No APK publication, merge, release or operation on the supplied release signing material. The user subsequently authorized publishing this source branch for continuation with Claude. Release assembly explicitly clears `COUCHZAP_KEYSTORE` to produce an unsigned review artifact.
+The original design baseline manifest covers 37 data/player/security/release/script files. The user-authorized beta CI correction changes only `.github/workflows/android.yml` among those 37 files; the other 36 still match the pinned hashes. The manifest remains the original baseline rather than being rewritten to hide the exception. An additional MainActivity comparison found import/picker/fallback, cache loading, source acceptance, zap/debounce/commit/play, player callbacks, track selection, guide import and hard exit unchanged. Player creation/lifecycle calls remain in their existing paths.
+
+The beta correction changes version metadata and verification/documentation only. Application ID, SDK/toolchain, installer, wrapper, distribution reconstruction recipe and network security remain unchanged. The existing signed beta APK is retained; the private signing backup is not used. The source tag is aligned with the committed beta metadata. No merge to main or stable-release promotion is part of this correction. Release assembly clears `COUCHZAP_KEYSTORE` to produce an unsigned comparison artifact.
 
 ## Final verification
 
 | Check | Result |
 | --- | --- |
 | `:app:assembleDebug` | Passed |
-| `:app:assembleRelease` | Passed; unsigned review APK |
-| `:app:testDebugUnitTest` | Final run stopped at the user's request; no final verdict. See [Claude handoff](CLAUDE_HANDOFF.md). |
+| `:app:assembleRelease` | Fresh aligned beta build passed in 2m 38s; all 680 app payload entries match the published signed beta, excluding signatures/VCS metadata |
+| `:app:testDebugUnitTest` | 156 passed, 0 failures/errors/skips in the independent 16 October source review; [machine-readable result](verification/final-tests-summary.json). Corrected beta metadata is checked again by branch CI. |
 | `:app:lintDebug` | Passed: 0 errors, 207 warnings |
 | `:app:lintRelease` | Passed: 0 errors, 208 warnings |
 | `git diff --check` and local documentation links | Passed |
-| Protected-file SHA-256 comparison | All 37 match the pinned baseline |
+| Protected-file SHA-256 comparison | 36 unchanged; only the explicitly authorized CI workflow differs from the original manifest |
 | Release font/resource audit | All 12 added static fonts retained byte-for-byte, with all four upstream license notices |
 
-The final production build and both lint tasks completed successfully in 8m 2s. The final full test run also exercises every one of 240 catalog entries down and back up, filtered/held-key paths, rapid category transitions, six-language Settings navigation and return state. Lint still reports warnings; this is not a warning-free build. SDK/toolchain and version metadata remain minSdk 24, compile/target 35, version 2.2.1/code 15.
+The final production build and both lint tasks completed successfully in 8m 2s. The final full test run also exercises every one of 240 catalog entries down and back up, filtered/held-key paths, rapid category transitions, six-language Settings navigation and return state. Lint still reports warnings; this is not a warning-free build. SDK/toolchain remain minSdk 24 and compile/target 35. The committed version now matches the published APK: 3.0-beta/code 16. The 16 October independent complete suite finished successfully in 4 minutes. The earlier interrupted run is historical and has been superseded.
 
 ### Review artifacts
 
 - Selected native previews are source review files under [captures/](captures/): [TV welcome](captures/welcome-tv-en.png), [Arabic welcome](captures/welcome-tv-ar.png), [Hindi phone welcome](captures/welcome-phone-hi.png), [Playback settings](captures/settings-tv-en.png), [Arabic language choices](captures/language-tv-ar.png), [Arabic Groups](captures/groups-tv-ar.png) and [expanded TV Info at font scale 2](captures/info-expanded-tv.png).
 - The complete native PNG inventory is `/workspace/couchzap-design-captures/final/`. It includes welcome/language scripts, Channels/Groups/Info, Settings roots and child pages, source/catalog loading/error/Retry/empty, update/diagnostic/About, short-phone IME and the adaptive matrix. These use fixture channel metadata and backdrops.
 - Deterministic Full presentation frames: `/workspace/couchzap-design-captures/final/native-progress-full-{0,25,50,75,100}.png`. These API 28 fixtures exercise presentation progress through a test hook; they do not prove platform blur or live SurfaceView behavior.
-- Build/lint log: `/workspace/couchzap-design-final-window-release.log`. Final suite log: `/workspace/couchzap-design-final-complete-tests.log`. Machine-readable artifact hashes and audits: `/workspace/couchzap-design-verification/artifacts.json`.
+- Build/lint log: `/workspace/couchzap-design-final-window-release.log`. Completed independent suite log: `/workspace/couchzap-3beta-review/tests.log`; summary: [final-tests-summary.json](verification/final-tests-summary.json). The earlier `/workspace/couchzap-design-final-complete-tests.log` was interrupted and is not final evidence. Machine-readable artifact hashes and audits: `/workspace/couchzap-design-verification/artifacts.json`.
 - Local Debug APK: `app/build/outputs/apk/debug/app-debug.apk`; unsigned Release APK: `app/build/outputs/apk/release/app-release-unsigned.apk`. No release signing material is packaged. The unsigned artifact is for review and is not an update signed with the user's production key.
 
 ### Effective tiers and remaining device checks
@@ -107,3 +109,7 @@ Policy and motion cases run on Robolectric API 24 and 36; native layout fixtures
 ### Portable continuation evidence
 
 The [Claude handoff](CLAUDE_HANDOFF.md), [original design contract](SPEC.md), selected native previews and [verification summaries](verification/) are included in this source branch. Absolute `/workspace/` paths above refer to the original machine and are not expected to exist after cloning elsewhere. The historical test summaries are explicitly not a final whole-tree verdict. Build artifacts, caches, private signing files and the full local capture inventory are not included.
+
+### Published beta verification
+
+See the [3.0 beta release notes](../releases/v3.0-beta.md) and [beta APK audit](verification/beta-release-audit.json). The original signed APK checksum is retained. CI compares all app payload entries with the published beta, excluding only signature records and VCS build metadata using the existing comparison script. Branch runs upload raw test XML and lint XML as downloadable artifacts. Historical font/build hashes in `artifacts.json` describe the earlier 2.2.1-metadata design build; they are not the signed beta checksum.

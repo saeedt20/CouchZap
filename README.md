@@ -42,9 +42,11 @@ Choose a language from the welcome screen or **Settings → Language**. Selectio
 
 Each language includes interface messages, settings, updates, diagnostics and known channel categories. Custom channel/group names and playlist identities are preserved.
 
-## Native design in this source branch
+## 3.0 Beta — native redesign
 
-The native redesign on this branch keeps Kotlin/XML, Media3 and the existing import/playback core. It is **not included in the published 2.2.1 APK**. See the [implementation and verification notes](docs/design/IMPLEMENTATION.md) for scope, evidence and hardware checks.
+The [3.0 Beta prerelease](https://github.com/saeedt20/CouchZap/releases/tag/v3.0-beta) is available for early testing. **2.2.1 remains the stable version for everyday watching.** The beta keeps Kotlin/XML, Media3 and the existing import/playback core. See the [beta release notes](docs/releases/v3.0-beta.md) and [implementation and verification notes](docs/design/IMPLEMENTATION.md) for evidence and hardware checks.
+
+The beta uses version code 16 and the same signing certificate, so it installs over 2.2.1. Returning to stable 2.2.1 (code 15) is a downgrade that ordinary installation rejects; uninstalling to return can remove local playlists, favourites and settings.
 
 TV Settings now has **Playback / Playlist / App** sections, remembers the last row and supports mirrored navigation in Persian/Arabic. Back returns from a child page, then from detail to the section rail, then closes Settings. Compact phones use a grouped full-width page. **App → Visual effects** offers Auto, Full depth, Safe and Off; Safe keeps video/subtitles untransformed, and unsupported devices fall back conservatively.
 
