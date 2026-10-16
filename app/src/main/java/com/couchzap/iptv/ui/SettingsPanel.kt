@@ -133,10 +133,13 @@ class SettingsPanel(private val activity: AppCompatActivity, private val binding
         binding.settingsTitle.maxLines=2;binding.settingsTitle.ellipsize=android.text.TextUtils.TruncateAt.END
         ViewCompat.setAccessibilityHeading(binding.settingsTitle,true)
         binding.settingsBack.visibility=if(stack.isEmpty())View.GONE else View.VISIBLE
-        binding.settingsBack.setImageResource(R.drawable.ic_back)
+        // 3.1: scoped header back-icon override (e.g. About in FA/AR). Reset on leave.
+        binding.settingsBack.setImageResource(headerBackIconOverride?:R.drawable.ic_back)
         binding.settingsBack.contentDescription=activity.getString(R.string.back)
         categories?.updateHeader()
     }
+    /** 3.1: optional per-page back-icon override; cleared when the page is left. */
+    var headerBackIconOverride:Int?=null
     fun focusFirst(){
         if(!accepting||!hostOwnsInput())return
         val view=stack.lastOrNull()?.view?:categories?.takeIf{it.expanded}?.detailRoot?:root

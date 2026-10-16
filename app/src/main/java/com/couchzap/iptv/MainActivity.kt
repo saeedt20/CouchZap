@@ -738,17 +738,67 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         settingsPanel.onClick(binding.btnSettingsUpdate) { updateMenu.show() }
         settingsPanel.onClick(binding.btnSettingsLogs) { diagnosticMenu.show(repository.source()?.kind, channels.size) }
         settingsPanel.onClick(binding.btnSettingsAbout) {
-            settingsPanel.page("about", R.string.about) { body ->
-                body.addView(android.widget.ImageView(this).apply{setImageResource(R.drawable.ic_brand);importantForAccessibility=View.IMPORTANT_FOR_ACCESSIBILITY_NO},android.widget.LinearLayout.LayoutParams(settingsPanel.dp(48),settingsPanel.dp(48)).apply{marginStart=settingsPanel.dp(8);bottomMargin=settingsPanel.dp(12)})
-                settingsPanel.text(body, getString(R.string.about_body))
-                // Item 6: creator credit with exact per-locale name; bidi-isolated for RTL.
-                val creditName = androidx.core.text.BidiFormatter.getInstance(AppLanguage.isRtl(prefs.getLanguage())).unicodeWrap(getString(R.string.about_creator_name))
-                settingsPanel.text(body, getString(R.string.about_credit_label) + " " + creditName)
+            // 3.1: approved simpler About. Scoped left-pointing header chevron in
+            // FA/AR; reset on leave so other pages keep the standard back icon.
+            val aboutRtl = AppLanguage.isRtl(prefs.getLanguage())
+            settingsPanel.headerBackIconOverride =
+                if (aboutRtl) R.drawable.ic_back_fixed_left else null
+            settingsPanel.page("about", R.string.about, leave = {
+                settingsPanel.headerBackIconOverride = null
+            }) { body ->
+                val ctx = this
+                val dp = { v: Int -> settingsPanel.dp(v) }
+                val rtl = AppLanguage.isRtl(prefs.getLanguage())
+                val bidi = androidx.core.text.BidiFormatter.getInstance(rtl)
+                // Centered brand (never mirrored) and heading.
+                body.addView(android.widget.ImageView(ctx).apply {
+                    setImageResource(R.drawable.ic_brand)
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                }, android.widget.LinearLayout.LayoutParams(dp(72), dp(72)).apply {
+                    gravity = android.view.Gravity.CENTER_HORIZONTAL
+                    topMargin = dp(8); bottomMargin = dp(16)
+                })
+                body.addView(android.widget.TextView(ctx).apply {
+                    text = getString(R.string.about_heading)
+                    gravity = android.view.Gravity.CENTER
+                    CouchZapTokens.text(this, CouchZapTokens.Text.HEADING)
+                    androidx.core.view.ViewCompat.setAccessibilityHeading(this, true)
+                }, android.widget.LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(16) })
+                // Body paragraphs follow the app language direction (start-aligned).
+                listOf(R.string.about_desc, R.string.about_playlist, R.string.about_local).forEach { res ->
+                    settingsPanel.text(body, getString(res)).apply {
+                        textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                    }
+                }
+                // Creator block: small muted label, large name.
+                settingsPanel.text(body, getString(R.string.about_creator_label)).apply {
+                    textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                    CouchZapTokens.text(this, CouchZapTokens.Text.VALUE)
+                }
+                settingsPanel.text(body, bidi.unicodeWrap(getString(R.string.about_creator_name))).apply {
+                    textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                    CouchZapTokens.text(this, CouchZapTokens.Text.HEADING)
+                    androidx.core.view.ViewCompat.setAccessibilityHeading(this, true)
+                }
+                // MIT license line.
+                settingsPanel.text(body, bidi.unicodeWrap(getString(R.string.about_license))).apply {
+                    textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                }
+                // Runtime version; FA/AR show localized digits, underlying value stays ASCII.
                 val version = packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
-                settingsPanel.text(body, getString(R.string.version_label, androidx.core.text.BidiFormatter.getInstance(AppLanguage.isRtl(prefs.getLanguage())).unicodeWrap(version, false)))
-                settingsPanel.button(body, getString(R.string.github)) {
+                val displayVersion = com.couchzap.iptv.util.LocalizedNumbers.localize(version, prefs.getLanguage())
+                settingsPanel.text(body, getString(R.string.about_version, bidi.unicodeWrap(displayVersion))).apply {
+                    textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                }
+                // GitHub action (ActionRow gets the Change-A chevron automatically).
+                settingsPanel.button(body, getString(R.string.about_github)) {
                     runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/saeedt20/CouchZap"))) }
                         .onFailure { notice(getString(R.string.update_failed)) }
+                }
+                // Centered dedication.
+                settingsPanel.text(body, getString(R.string.about_dedication)).apply {
+                    gravity = android.view.Gravity.CENTER
+                    textAlignment = android.view.View.TEXT_ALIGNMENT_CENTER
                 }
             }
         }
@@ -774,6 +824,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             updateChannelListAdapter()
             playerController?.refreshPlaybackInfo()
             osdController.refresh()
+            updateResponsiveLayout()
         }
     }
 
@@ -1170,7 +1221,24 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         (binding.tvDigitGhost.layoutParams as FrameLayout.LayoutParams).apply{marginStart=if(isTvMode)ui.safeX else dp(20);topMargin=if(isTvMode)ui.safeY else dp(20)}
         CouchZapTokens.text(binding.tvGhostNext,CouchZapTokens.Text.CONTROL,isTvMode)
         binding.tvGhostNext.maxWidth=ui.safeWidth
-        (binding.tvGhostNext.layoutParams as FrameLayout.LayoutParams).apply{marginEnd=if(isTvMode)ui.safeX else dp(20);topMargin=if(isTvMode)ui.safeY else dp(20)}
+        // 3.1: the next-channel preview must sit at the physical top-right in
+        // FA/AR. Logical END is the physical left in RTL, so use absolute
+        // RIGHT gravity and rightMargin there; keep END/marginEnd for LTR.
+        // Clear the opposite margins so a language switch cannot leave a stale
+        // inset on the wrong physical edge. Text direction stays locale-aware.
+        val ghostRtl = AppLanguage.isRtl(prefs.getLanguage())
+        (binding.tvGhostNext.layoutParams as FrameLayout.LayoutParams).apply{
+            if (ghostRtl) {
+                gravity = Gravity.TOP or Gravity.RIGHT
+                rightMargin = if(isTvMode)ui.safeX else dp(20)
+                leftMargin = 0; marginStart = 0; marginEnd = 0
+            } else {
+                gravity = Gravity.TOP or Gravity.END
+                marginEnd = if(isTvMode)ui.safeX else dp(20)
+                marginStart = 0; leftMargin = 0; rightMargin = 0
+            }
+            topMargin=if(isTvMode)ui.safeY else dp(20)
+        }
         listOf(binding.viewChannelList.tvChannelListHeader to CouchZapTokens.Text.HEADING,
             binding.viewChannelList.etChannelSearch to CouchZapTokens.Text.CONTROL,
             binding.viewChannelList.btnFilterAll to CouchZapTokens.Text.CONTROL,

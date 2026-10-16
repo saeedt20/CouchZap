@@ -109,6 +109,15 @@
 เพลย์ลิสต์ รายการโปรด และการตั้งค่าของคุณจะอยู่ในอุปกรณ์ของคุณ สำรวจซอร์สโคดและร่วมพัฒนาได้บน GitHub</string>
     <string name="about_credit_label">สร้างโดย</string>
     <string name="about_creator_name">Saeed Taheri</string>
+    <string name="about_heading">ทีวี ในแบบของคุณ</string>
+    <string name="about_desc">เครื่องเล่นง่ายๆ โอเพนซอร์สสำหรับ Android TV และโทรศัพท์ Android</string>
+    <string name="about_playlist">รับชมด้วยเพลย์ลิสต์ของคุณเอง หรือเลือกรายการสาธารณะ</string>
+    <string name="about_local">เพลย์ลิสต์ รายการโปรด และการตั้งค่าของคุณจะอยู่ในอุปกรณ์ของคุณ</string>
+    <string name="about_creator_label">ออกแบบและพัฒนา</string>
+    <string name="about_license">โอเพนซอร์สภายใต้สัญญาอนุญาต MIT</string>
+    <string name="about_version">เวอร์ชัน %1$s</string>
+    <string name="about_github">โปรเจกต์บน GitHub</string>
+    <string name="about_dedication">สร้างด้วยใจ ❤️</string>
     <string name="pick_failure">ไม่มีแอปเลือกไฟล์ เปิดใช้แอป Files ของระบบเพื่อนำเข้าเพลย์ลิสต์</string>
     <string name="check_updates">ตรวจสอบอัปเดต</string>
     <string name="checking_updates">กำลังตรวจสอบรุ่นล่าสุดบน GitHub…</string>

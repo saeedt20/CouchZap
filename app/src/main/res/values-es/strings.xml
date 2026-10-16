@@ -109,6 +109,15 @@ Usa tu propia lista de reproducción o elige listas públicas de iptv-org y Free
 Tus listas, favoritos y ajustes permanecen en tu dispositivo. Explora el código fuente y contribuye en GitHub.</string>
     <string name="about_credit_label">Creado por</string>
     <string name="about_creator_name">Saeed Taheri</string>
+    <string name="about_heading">TV, a tu manera</string>
+    <string name="about_desc">Un reproductor sencillo y de código abierto para Android TV y teléfonos Android.</string>
+    <string name="about_playlist">Mira con tu propia lista o elige una lista pública.</string>
+    <string name="about_local">Tus listas, favoritos y ajustes permanecen en tu dispositivo.</string>
+    <string name="about_creator_label">Diseño y desarrollo</string>
+    <string name="about_license">Código abierto bajo la licencia MIT</string>
+    <string name="about_version">Versión %1$s</string>
+    <string name="about_github">Proyecto en GitHub</string>
+    <string name="about_dedication">Hecho con amor ❤️</string>
     <string name="pick_failure">No hay un selector de archivos instalado. Activa la aplicación Archivos del sistema para importar listas.</string>
     <string name="check_updates">Buscar actualizaciones</string>
     <string name="checking_updates">Buscando la última versión en GitHub…</string>

@@ -196,7 +196,11 @@ class OsdController(
         if (button.isFocused || lastFocused == button.id) binding.tvOsdActionLabel.text = button.contentDescription
     }
     private fun updateStreamDetails() {
-        binding.tvOsdClock.text = StreamInfoFormatter.formatCurrentTime()
+        // 3.1: clock digits follow the selected app language (FA/AR localized),
+        // independent of the device locale. Kept as an LTR sequence in RTL UI.
+        binding.tvOsdClock.text = StreamInfoFormatter.formatCurrentTime(
+            com.couchzap.iptv.util.Prefs(binding.root.context).getLanguage())
+        binding.tvOsdClock.textDirection = android.view.View.TEXT_DIRECTION_LTR
         val resolution = video?.takeIf { it.height > 0 }?.let { "${it.height}p" }
         binding.tvOsdStreamDetails.text = listOfNotNull(status, resolution?.let { androidx.core.text.BidiFormatter.getInstance().unicodeWrap(it,false) }).joinToString(" · ")
         binding.tvOsdTechnical.text = StreamInfoFormatter.buildStreamInfoString(video, null, binding.root.context).replace("  •  ","\n")

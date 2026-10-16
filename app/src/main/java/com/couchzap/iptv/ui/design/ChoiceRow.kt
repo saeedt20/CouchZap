@@ -29,6 +29,25 @@ class ChoiceRow(context: Context) : LinearLayout(context) {
         CouchZapTokens.text(title,CouchZapTokens.Text.CONTROL);CouchZapTokens.text(subtitle,CouchZapTokens.Text.VALUE)
         FocusMotionBinder.bind(this)
     }
+    /**
+     * 3.1 first-tap: same contract as SettingRow — suppress touch-focus
+     * acquisition while DOWN/UP are dispatched so a completed tap activates
+     * once, while D-pad focus (isFocusableInTouchMode=true) is preserved.
+     */
+    override fun onTouchEvent(event: android.view.MotionEvent): Boolean {
+        var suppressed = false
+        val action = event.actionMasked
+        if ((action == android.view.MotionEvent.ACTION_DOWN || action == android.view.MotionEvent.ACTION_UP) &&
+            isFocusableInTouchMode && !isFocused) {
+            isFocusableInTouchMode = false
+            suppressed = true
+        }
+        try {
+            return super.onTouchEvent(event)
+        } finally {
+            if (suppressed) isFocusableInTouchMode = true
+        }
+    }
     fun bind(key: String,label: CharSequence,secondary: CharSequence?=null,checked: Boolean=false) {
         setTag(R.id.cz_action_key,key);title.text=label;subtitle.text=secondary;subtitle.visibility=if(secondary.isNullOrEmpty())GONE else VISIBLE
         isSelected=checked; mark.checked=checked

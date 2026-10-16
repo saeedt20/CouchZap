@@ -109,6 +109,15 @@
 پلی‌لیست‌ها، علاقه‌مندی‌ها و تنظیمات شما روی دستگاه خودتان می‌ماند. سورس‌کد را در GitHub ببینید و مشارکت کنید.</string>
     <string name="about_credit_label">طراحی و توسعه</string>
     <string name="about_creator_name">سعید طاهری</string>
+    <string name="about_heading">تلویزیون، به سلیقهٔ شما</string>
+    <string name="about_desc">پخش‌کننده‌ای ساده و متن‌باز برای تلویزیون و گوشی اندرویدی</string>
+    <string name="about_playlist">با پلی‌لیست خودتان تماشا کنید یا یک فهرست عمومی انتخاب کنید.</string>
+    <string name="about_local">پلی‌لیست‌ها، علاقه‌مندی‌ها و تنظیمات شما روی دستگاه خودتان می‌مانند.</string>
+    <string name="about_creator_label">طراحی و توسعه</string>
+    <string name="about_license">متن‌باز با مجوز MIT</string>
+    <string name="about_version">نسخهٔ %1$s</string>
+    <string name="about_github">پروژه در GitHub</string>
+    <string name="about_dedication">تقدیم با عشق ❤️</string>
   <string name="pick_failure">انتخابگر فایل نصب نیست. برای ورود پلی‌لیست، برنامهٔ سیستمی فایل‌ها را فعال کنید.</string>
   <string name="check_updates">بررسی به‌روزرسانی</string>
   <string name="checking_updates">در حال بررسی آخرین نسخه در GitHub…</string>

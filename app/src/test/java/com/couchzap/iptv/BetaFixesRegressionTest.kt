@@ -88,13 +88,31 @@ class BetaFixesRegressionTest {
         assertTrue("navigable row keeps chevron", descendants(navRow).filterIsInstance<ImageView>().any { it.visibility == View.VISIBLE })
     }
 
-    // Item 8: FA/AR rows use the non-mirrored right-pointing chevron.
-    @Test fun `row chevron drawable is not auto-mirrored`() {
+    // 3.1: FA/AR rows use the auto-mirrored left-pointing chevron; EN keeps ›.
+    // The old beta2 expectation (non-mirrored right chevron in FA/AR) is superseded.
+    @Test fun `row chevron drawable auto-mirrors for RTL`() {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
         val d = ctx.getDrawable(R.drawable.ic_chevron_row) as android.graphics.drawable.VectorDrawable
-        assertFalse("row chevron must not auto-mirror", d.isAutoMirrored)
+        assertTrue("row chevron must auto-mirror so FA/AR shows ‹", d.isAutoMirrored)
         val orig = ctx.getDrawable(R.drawable.ic_chevron) as android.graphics.drawable.VectorDrawable
         assertTrue("original chevron keeps auto-mirror for other uses", orig.isAutoMirrored)
+    }
+
+    // 3.1: the row arrow ImageView inherits the app layout direction, so the
+    // auto-mirrored drawable actually flips in FA/AR at runtime. AppLanguage
+    // sets RTL on the root for FA/AR; children inherit it.
+    @Test fun `settings row arrow follows app layout direction`() = screen { activity ->
+        val row = activity.uiView<SettingRow>(R.id.btn_settings_aspect)
+        row.style(false, "en")
+        val arrow = descendants(row).filterIsInstance<ImageView>()
+            .first { it.visibility == View.VISIBLE }
+        // Simulate FA root: RTL propagates to the arrow by inheritance.
+        row.layoutDirection = View.LAYOUT_DIRECTION_RTL
+        assertEquals("arrow must inherit RTL in FA", View.LAYOUT_DIRECTION_RTL,
+            arrow.layoutDirection)
+        row.layoutDirection = View.LAYOUT_DIRECTION_LTR
+        assertEquals("arrow must inherit LTR in EN", View.LAYOUT_DIRECTION_LTR,
+            arrow.layoutDirection)
     }
 
     // Item 10: download progress uses a retained native bar and label.

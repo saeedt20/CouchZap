@@ -108,6 +108,16 @@ Use your own playlist or optionally choose public playlists from iptv-org and Fr
 Your playlists, favourites and settings stay on your device. Explore the source code and contribute on GitHub.</string>
     <string name="about_credit_label">Created by</string>
     <string name="about_creator_name">Saeed Taheri</string>
+    <!-- 3.1: simpler approved About blocks -->
+    <string name="about_heading">TV, your way</string>
+    <string name="about_desc">A simple, open-source player for Android TV and Android phones.</string>
+    <string name="about_playlist">Watch with your own playlist, or choose a public list.</string>
+    <string name="about_local">Your playlists, favourites and settings stay on your device.</string>
+    <string name="about_creator_label">Design and development</string>
+    <string name="about_license">Open source under the MIT License</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_github">Project on GitHub</string>
+    <string name="about_dedication">Made with love ❤️</string>
     <string name="pick_failure">No file picker installed. Enable a system Files app to import playlists.</string>
     <string name="check_updates">Check for updates</string>
     <string name="checking_updates">Checking the latest GitHub release…</string>

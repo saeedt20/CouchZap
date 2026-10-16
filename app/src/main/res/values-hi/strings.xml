@@ -109,6 +109,15 @@
 आपकी प्लेलिस्ट, पसंदीदा और सेटिंग्स आपके डिवाइस पर ही रहती हैं। GitHub पर सोर्स कोड देखें और योगदान करें।</string>
     <string name="about_credit_label">द्वारा निर्मित</string>
     <string name="about_creator_name">Saeed Taheri</string>
+    <string name="about_heading">टीवी, आपके अंदाज़ में</string>
+    <string name="about_desc">Android TV और Android फ़ोन के लिए एक सरल, ओपन-सोर्स प्लेयर।</string>
+    <string name="about_playlist">अपनी खुद की प्लेलिस्ट से देखें, या कोई सार्वजनिक सूची चुनें।</string>
+    <string name="about_local">आपकी प्लेलिस्ट, पसंदीदा और सेटिंग्स आपके डिवाइस पर ही रहती हैं।</string>
+    <string name="about_creator_label">डिज़ाइन और विकास</string>
+    <string name="about_license">MIT लाइसेंस के तहत ओपन सोर्स</string>
+    <string name="about_version">संस्करण %1$s</string>
+    <string name="about_github">GitHub पर प्रोजेक्ट</string>
+    <string name="about_dedication">प्यार के साथ बनाया गया ❤️</string>
     <string name="pick_failure">कोई फ़ाइल चुनने वाला ऐप नहीं है। प्लेलिस्ट आयात करने के लिए सिस्टम का Files ऐप चालू करें।</string>
     <string name="check_updates">अपडेट की जाँच करें</string>
     <string name="checking_updates">GitHub पर नवीनतम रिलीज़ की जाँच हो रही है…</string>

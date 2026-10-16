@@ -109,6 +109,15 @@
 تبقى قوائم التشغيل والمفضلة والإعدادات على جهازك. استكشف الشيفرة المصدرية وساهم على GitHub.</string>
     <string name="about_credit_label">تصميم وتطوير</string>
     <string name="about_creator_name">سعید طاهری</string>
+    <string name="about_heading">التلفزيون، على ذوقك</string>
+    <string name="about_desc">مشغّل بسيط ومفتوح المصدر لتلفزيون أندرويد وهواتف أندرويد</string>
+    <string name="about_playlist">شاهد باستخدام قائمة التشغيل الخاصة بك، أو اختر قائمة عامة.</string>
+    <string name="about_local">تبقى قوائم التشغيل والمفضّلة والإعدادات على جهازك.</string>
+    <string name="about_creator_label">التصميم والتطوير</string>
+    <string name="about_license">مفتوح المصدر بترخيص MIT</string>
+    <string name="about_version">الإصدار %1$s</string>
+    <string name="about_github">المشروع على GitHub</string>
+    <string name="about_dedication">بكل حب ❤️</string>
     <string name="pick_failure">لا يوجد منتقي ملفات مثبت. فعّل تطبيق ملفات النظام لاستيراد قوائم التشغيل.</string>
     <string name="check_updates">البحث عن تحديثات</string>
     <string name="checking_updates">جارٍ التحقق من أحدث إصدار على GitHub…</string>

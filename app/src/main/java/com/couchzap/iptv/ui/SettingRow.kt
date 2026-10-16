@@ -17,17 +17,18 @@ open class SettingRow(context: Context, attrs: AttributeSet? = null) : LinearLay
     private var checkable=false
     private var checked=false
     private var arrow:ImageView?=null
-    /** Item 3: whether this row navigates to a child page. Rows that perform an
+    /** Whether this row navigates to a child page. Rows that perform an
      * immediate action (e.g. the channel-switch sound toggle) set this to false
-     * and show no chevron. Item 8 overrides item 3 for the sound row: no chevron. */
+     * and show no chevron. */
     var navigates: Boolean = true
         set(value) { field = value; updateArrow() }
     private fun updateArrow() {
         val d = resources.displayMetrics.density
         if (navigates) {
             if (arrow == null) {
-                // Item 8: dedicated non-auto-mirrored chevron so FA/AR rows keep the
-                // owner's right-pointing › while layout/text stay RTL.
+                // 3.1: row chevron auto-mirrors with the app layout direction,
+                // so FA/AR rows show the owner-requested left-pointing ‹ while
+                // EN/ES/HI/TH keep the right-pointing ›. Layout/text stay RTL.
                 arrow = ImageView(context).apply { setImageResource(R.drawable.ic_chevron_row); importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO }
                 addView(arrow, LayoutParams((24 * d).toInt(), (24 * d).toInt()).apply { marginStart = (8 * d).toInt() })
             }
@@ -37,6 +38,32 @@ open class SettingRow(context: Context, attrs: AttributeSet? = null) : LinearLay
         }
     }
     init { orientation = HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; isFocusable = true; isClickable = true; isFocusableInTouchMode = true }
+    /**
+     * 3.1 first-tap: an unfocused touch-focusable row would consume the first
+     * tap by taking focus on DOWN, requiring a second tap to activate. To
+     * preserve the D-pad focus contract (isFocusableInTouchMode=true) while
+     * allowing a completed tap to activate once, suppress touch-focus
+     * acquisition while DOWN/UP are dispatched. D-pad/key focus via
+     * requestFocus() and requestFocusFromTouch() outside touch dispatch is
+     * unaffected, as is pressed/click handling: DOWN still sets pressed, UP
+     * still clicks. Cancellation, scrolling, and disabled state keep native
+     * behavior because we do not consume or synthesize events.
+     */
+    override fun onTouchEvent(event: android.view.MotionEvent): Boolean {
+        var suppressed = false
+        val action = event.actionMasked
+        if ((action == android.view.MotionEvent.ACTION_DOWN || action == android.view.MotionEvent.ACTION_UP) &&
+            isFocusableInTouchMode && !isFocused) {
+            // Don't let the tap take focus; the tap itself is the activation.
+            isFocusableInTouchMode = false
+            suppressed = true
+        }
+        try {
+            return super.onTouchEvent(event)
+        } finally {
+            if (suppressed) isFocusableInTouchMode = true
+        }
+    }
     val labelView:TextView? get()=texts(this).firstOrNull{it.tag=="cz_label"}
     val valueView:TextView? get()=texts(this).firstOrNull{it.tag=="cz_value"||resources.getResourceEntryNameSafe(it.id).endsWith("_value")}
     private fun texts(v:View):List<TextView> = if(v is TextView)listOf(v) else if(v is ViewGroup)(0 until v.childCount).flatMap{texts(v.getChildAt(it))} else emptyList()

@@ -14,6 +14,23 @@ object StreamInfoFormatter {
         return timeFormat.format(Date())
     }
 
+    /**
+     * 3.1: app-language-aware clock. Uses a deterministic ASCII HH:mm base and
+     * shapes digits via [LocalizedNumbers] so FA shows ۰۱۲۳۴۵۶۷۸۹ and AR shows
+     * ٠١٢٣٤٥٦٧٨٩ regardless of the device locale. Other languages keep the
+     * existing system-locale behavior. The time zone is the device default;
+     * only display digits change.
+     */
+    fun formatCurrentTime(language: String?): String = formatTime(Date(), language)
+
+    /** Fixed-time variant for deterministic tests. */
+    fun formatTime(date: Date, language: String?): String {
+        val ascii = SimpleDateFormat("HH:mm", Locale.US).apply {
+            timeZone = java.util.TimeZone.getDefault()
+        }.format(date)
+        return com.couchzap.iptv.util.LocalizedNumbers.localize(ascii, language)
+    }
+
     fun formatVideoCodec(mimeType: String?): String {
         if (mimeType == null) return "Video"
         val lower = mimeType.lowercase()
