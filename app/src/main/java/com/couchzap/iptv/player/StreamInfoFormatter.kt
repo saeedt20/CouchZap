@@ -25,10 +25,11 @@ object StreamInfoFormatter {
 
     /** Fixed-time variant for deterministic tests. */
     fun formatTime(date: Date, language: String?): String {
-        val ascii = SimpleDateFormat("HH:mm", Locale.US).apply {
+        val formatLocale = if(language == "fa" || language == "ar") Locale.US else Locale.getDefault()
+        val formatted = SimpleDateFormat("HH:mm", formatLocale).apply {
             timeZone = java.util.TimeZone.getDefault()
         }.format(date)
-        return com.couchzap.iptv.util.LocalizedNumbers.localize(ascii, language)
+        return com.couchzap.iptv.util.LocalizedNumbers.localize(formatted, language)
     }
 
     fun formatVideoCodec(mimeType: String?): String {

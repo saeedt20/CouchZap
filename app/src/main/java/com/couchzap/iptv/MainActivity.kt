@@ -750,6 +750,24 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
                 val dp = { v: Int -> settingsPanel.dp(v) }
                 val rtl = AppLanguage.isRtl(prefs.getLanguage())
                 val bidi = androidx.core.text.BidiFormatter.getInstance(rtl)
+                // Start at the text, not the only action near the bottom. Native
+                // ScrollView key handling lets remote users read every paragraph
+                // before reaching GitHub; Settings' generic focus search alone
+                // cannot scroll back through a page of noninteractive text.
+                val aboutScroll = body.parent as android.widget.ScrollView
+                aboutScroll.isFocusable = true
+                aboutScroll.isFocusableInTouchMode = true
+                aboutScroll.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
+                if(Build.VERSION.SDK_INT >= 26) aboutScroll.defaultFocusHighlightEnabled = false
+                settingsPanel.initialFocus(aboutScroll)
+                settingsPanel.onDirection { event ->
+                    if(event.keyCode !in listOf(KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN)) false
+                    else if(event.keyCode == KeyEvent.KEYCODE_DPAD_DOWN &&
+                        (binding.settingsBack.isFocused || binding.btnSettingsClose.isFocused)) {
+                        if(event.action == KeyEvent.ACTION_DOWN) aboutScroll.requestFocusFromTouch()
+                        true
+                    } else aboutScroll.hasFocus() && aboutScroll.executeKeyEvent(event)
+                }
                 // Centered brand (never mirrored) and heading.
                 body.addView(android.widget.ImageView(ctx).apply {
                     setImageResource(R.drawable.ic_brand)
@@ -1224,21 +1242,20 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         // 3.1: the next-channel preview must sit at the physical top-right in
         // FA/AR. Logical END is the physical left in RTL, so use absolute
         // RIGHT gravity and rightMargin there; keep END/marginEnd for LTR.
-        // Clear the opposite margins so a language switch cannot leave a stale
-        // inset on the wrong physical edge. Text direction stays locale-aware.
+        // Keep absolute and relative margins consistent. Resetting rightMargin
+        // to zero after marginEnd would erase the LTR safe inset until Android
+        // resolves relative margins again. RTL START is the physical right.
+        // Text direction stays locale-aware.
         val ghostRtl = AppLanguage.isRtl(prefs.getLanguage())
+        val ghostInset = if(isTvMode)ui.safeX else dp(20)
         (binding.tvGhostNext.layoutParams as FrameLayout.LayoutParams).apply{
-            if (ghostRtl) {
-                gravity = Gravity.TOP or Gravity.RIGHT
-                rightMargin = if(isTvMode)ui.safeX else dp(20)
-                leftMargin = 0; marginStart = 0; marginEnd = 0
-            } else {
-                gravity = Gravity.TOP or Gravity.END
-                marginEnd = if(isTvMode)ui.safeX else dp(20)
-                marginStart = 0; leftMargin = 0; rightMargin = 0
-            }
+            gravity = Gravity.TOP or if(ghostRtl)Gravity.RIGHT else Gravity.END
+            marginStart = if(ghostRtl)ghostInset else 0
+            marginEnd = if(ghostRtl)0 else ghostInset
+            leftMargin = 0; rightMargin = ghostInset
             topMargin=if(isTvMode)ui.safeY else dp(20)
         }
+        binding.tvGhostNext.requestLayout()
         listOf(binding.viewChannelList.tvChannelListHeader to CouchZapTokens.Text.HEADING,
             binding.viewChannelList.etChannelSearch to CouchZapTokens.Text.CONTROL,
             binding.viewChannelList.btnFilterAll to CouchZapTokens.Text.CONTROL,

@@ -95,7 +95,9 @@ class CouchZap31RegressionTest {
     // ---------- C: info clock ----------
 
     private fun fixedDate(hour: Int, minute: Int): java.util.Date {
-        val cal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Tehran"))
+        // The formatter displays device-local time. Construct the requested wall
+        // time in that same zone so these assertions work in UTC CI and Tehran.
+        val cal = Calendar.getInstance(TimeZone.getDefault())
         cal.set(2026, Calendar.OCTOBER, 17, hour, minute, 0); cal.set(Calendar.MILLISECOND, 0)
         return cal.time
     }
