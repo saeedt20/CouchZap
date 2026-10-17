@@ -1,8 +1,8 @@
 # Changelog
 
-## 3.1.1 — 2026-10-17 (stable)
+## 3.1.1 — unreleased correction candidate
 
-Four owner-reported refinements on the stable 3.1.0 base. Persian/Arabic Settings row chevrons now use fixed left-pointing assets bound deterministically from the saved app language, so they stay left after exit/relaunch on TV and mobile. The mobile Persian/Arabic About header Back chevron now points right (TV keeps left). TV choice pages (language, interface mode, effects, picture size, sleep timer, audio/subtitle tracks) initially focus the configured value instead of the first option. New floating rotation button on phones toggles landscape/portrait viewing with a session-level override that survives configuration and language changes. Version code 19, established signing certificate. All 223 tests pass; both lint variants have zero errors. Physical-device checks remain not run. Supersedes stable 3.1.0.
+Four owner-reported refinements on the stable 3.1.0 base. Persian/Arabic Settings row chevrons use fixed left-pointing assets bound deterministically from the saved app language. The mobile Persian/Arabic About header points right; TV keeps left. TV choice pages initially focus the configured value. A phone rotation button toggles landscape/portrait with a session override. Independent review fixes the rotation/Settings target overlap and hides quick actions while Settings or channels own the screen; real regression checks replace unconditional assertions. Version code 19. A newly signed corrected APK is required before publication; 3.1.0 remains stable. Physical-device checks remain not run. See the [review record](docs/releases/v3.1.1-review.md).
 
 ## 3.1.0 — 2026-10-17 (stable)
 

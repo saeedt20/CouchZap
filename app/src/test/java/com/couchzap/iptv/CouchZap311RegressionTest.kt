@@ -12,7 +12,11 @@ import androidx.test.core.app.ApplicationProvider
 import com.couchzap.iptv.data.PlaylistRepository
 import com.couchzap.iptv.support.ReleaseUpdater
 import com.couchzap.iptv.ui.SettingRow
+import com.couchzap.iptv.ui.SettingsPanel
+import com.couchzap.iptv.ui.design.ChoiceRow
 import com.couchzap.iptv.util.Prefs
+import org.robolectric.util.ReflectionHelpers
+import java.util.Locale
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -50,20 +54,6 @@ class CouchZap311RegressionTest {
         layout(activity)
         assertEquals(View.VISIBLE, activity.uiView<View>(R.id.layout_settings).visibility)
     }
-    private fun rowArrowDrawableName(row: SettingRow): String? {
-        val arrow = descendants(row).filterIsInstance<ImageView>().firstOrNull { it.visibility == View.VISIBLE }
-        val drawable = arrow?.drawable as? android.graphics.drawable.VectorDrawable ?: return null
-        // Identify by constant state; fall back to checking the drawable resource
-        return try {
-            val resName = arrow.resources.getResourceEntryName(
-                android.util.Log::class.java.getDeclaredField("").let { 0 })
-            resName
-        } catch (_: Exception) {
-            // Use drawable properties: left glyph has different path
-            if (drawable.isAutoMirrored) "auto_mirrored" else "fixed"
-        }
-    }
-
     // ---------- Item 2: deterministic chevron direction ----------
 
     @Test fun `item2 fa row uses fixed left chevron`() = screen("fa") { activity ->
@@ -107,10 +97,12 @@ class CouchZap311RegressionTest {
         activity.uiView<SettingRow>(R.id.btn_settings_about).performClick()
         layout(activity)
         shadowOf(Looper.getMainLooper()).idle()
-        // The override should be the fixed-right drawable on mobile
-        // (verified via the panel's override field through reflection or behavior)
-        // For now, verify the About page opened
-        assertTrue(true) // placeholder - actual drawable check needs panel access
+        val panel = ReflectionHelpers.getField<SettingsPanel>(activity, "settingsPanel")
+        assertEquals("about", panel.currentKey)
+        assertEquals(R.drawable.ic_back_fixed_right, panel.headerBackIconOverride)
+        activity.uiView<View>(R.id.settings_back).performClick()
+        layout(activity)
+        assertNull("About override must not leak into other pages", panel.headerBackIconOverride)
     }
 
     // ---------- Item 3: TV selected-value focus ----------
@@ -120,11 +112,10 @@ class CouchZap311RegressionTest {
         activity.uiView<SettingRow>(R.id.btn_settings_language).performClick()
         layout(activity)
         shadowOf(Looper.getMainLooper()).idle()
-        // Find the focused ChoiceRow; it should be the Persian one (index 4)
-        val focused = descendants(activity.uiView<View>(R.id.layout_settings))
-            .filter { it.isFocused }
-        // At least verify the page opened with choices
-        assertTrue("language page should have choices", focused.isNotEmpty() || true)
+        val rows = descendants(activity.settingsWindowRoot()).filterIsInstance<ChoiceRow>()
+        val selected = rows.single { it.isSelected }
+        assertEquals("language/fa", selected.getTag(R.id.cz_action_key))
+        assertTrue("configured Persian must receive initial focus", selected.isFocused)
     }
 
     // ---------- Item 4: rotation button ----------
@@ -132,8 +123,8 @@ class CouchZap311RegressionTest {
     @Test fun `item4 rotate button exists on phone`() = screen("en", "Phone") { activity ->
         val btn = activity.uiView<View>(R.id.btn_rotate)
         assertNotNull("rotate button must exist", btn)
-        // Phone mode: visible when quick settings visible
-        // (visibility logic tested via updateQuickActionsVisibility)
+        assertEquals("phone quick rotation must be visible", View.VISIBLE, btn.visibility)
+        assertTrue("phone quick rotation must be enabled", btn.isEnabled)
     }
 
     @Test fun `item4 rotate button hidden on tv`() = screen("en", "TV") { activity ->
@@ -145,8 +136,12 @@ class CouchZap311RegressionTest {
 
     @Test fun `item4 rotation strings exist in all locales`() {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
-        assertTrue(ctx.getString(R.string.rotate_to_landscape).isNotBlank())
-        assertTrue(ctx.getString(R.string.rotate_to_portrait).isNotBlank())
+        for (language in listOf("en", "es", "hi", "th", "fa", "ar")) {
+            val config = Configuration(ctx.resources.configuration).apply { setLocale(Locale.forLanguageTag(language)) }
+            val localized = ctx.createConfigurationContext(config)
+            assertTrue(language, localized.getString(R.string.rotate_to_landscape).isNotBlank())
+            assertTrue(language, localized.getString(R.string.rotate_to_portrait).isNotBlank())
+        }
     }
 
     // ---------- Version ----------

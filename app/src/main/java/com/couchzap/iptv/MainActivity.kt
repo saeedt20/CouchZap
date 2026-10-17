@@ -634,9 +634,9 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         if (settingsHost.ownsInput) { if (!importCommitting) { pendingChannelsAfterSettings = true; closeSettingsMenu() }; return }
         closeSettingsMenu()
         osdController.hideOsd()
-        updateQuickActionsVisibility()
         groupsPicker.close()
         channelMotion.show()
+        updateQuickActionsVisibility()
         updatePlaybackErrorFocus()
         updateChannelListAdapter()
         focusCurrentChannel()
@@ -904,7 +904,8 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private fun prepareSettingsPresentation() {
         welcomeIntro.finish(); groupsPicker.close()
         closeChannelListOverlay(); osdController.hideOsd()
-        updateQuickActionsVisibility()
+        // beforeOpen runs before the Settings host takes input ownership.
+        updateQuickActionsVisibility(settingsOpening = true)
         updateSourceLabel(); updateSoundLabel(); updateEffectsLabel();settingsPanel.header()
     }
 
@@ -1246,10 +1247,12 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     }
 
     /** 3.1.1 item 4: keep the rotate button visibility in step with quick actions. */
-    private fun updateQuickActionsVisibility() {        val quickVisible = !isTvMode && !channelMotion.desiredOpen
+    private fun updateQuickActionsVisibility(settingsOpening: Boolean = false) {
+        val quickVisible = !isTvMode && !channelMotion.desiredOpen &&
+            !settingsOpening && !settingsHost.ownsInput
         binding.btnQuickSettings.visibility = if (quickVisible) View.VISIBLE else View.GONE
         // Rotation is phone-only and hidden whenever quick settings is hidden
-        // (channel list open, Settings open, overlays, TV mode).
+        // (channel list open, Settings entering/open/closing, TV mode).
         binding.btnRotate.visibility = if (quickVisible) View.VISIBLE else View.GONE
         updateRotateButtonDescription()
     }
@@ -1563,7 +1566,11 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     override fun onResume() {
         super.onResume()
         if (::updateMenu.isInitialized) updateMenu.onResume()
-        if (::settingsHost.isInitialized) { settingsHost.resumeAfterStop(); settingsHost.refreshPolicy(); FocusMotionBinder.configure(binding.root, EffectsPolicy.resolve(EffectsMode.from(prefs.getEffectsMode()),EffectsPolicy.read(binding.root)).name.lowercase()) }
+        if (::settingsHost.isInitialized) {
+            settingsHost.resumeAfterStop(); settingsHost.refreshPolicy()
+            updateQuickActionsVisibility()
+            FocusMotionBinder.configure(binding.root, EffectsPolicy.resolve(EffectsMode.from(prefs.getEffectsMode()),EffectsPolicy.read(binding.root)).name.lowercase())
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

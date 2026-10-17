@@ -18,7 +18,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **[CouchZap-3.1.1.apk](https://github.com/saeedt20/CouchZap/releases/download/v3.1.1/CouchZap-3.1.1.apk)** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](https://github.com/saeedt20/CouchZap/releases/download/v3.1.1/CouchZap-3.1.1.apk.sha256). Source archives are also available on each release page.
+1. Download **[CouchZap-3.1.0.apk](https://github.com/saeedt20/CouchZap/releases/download/v3.1.0/CouchZap-3.1.0.apk)** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](https://github.com/saeedt20/CouchZap/releases/download/v3.1.0/CouchZap-3.1.0.apk.sha256). Source archives are also available on each release page.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. The app opens the welcome screen directly. Optionally choose a language, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
@@ -42,11 +42,11 @@ Choose a language from the welcome screen or **Settings → Language**. Selectio
 
 Each language includes interface messages, settings, updates, diagnostics and known channel categories. Custom channel/group names and playlist identities are preserved.
 
-## 3.1.1 — stable refinements
+## 3.1.1 — correction candidate
 
-**3.1.1 is the current stable release.** Persian/Arabic Settings chevrons now stay left-pointing after exit and relaunch, bound deterministically from the saved app language. On phones, the Persian/Arabic About header Back chevron points right (TV keeps left). TV choice lists initially focus the configured value. A new floating rotation button on phones toggles landscape/portrait viewing. See the [3.1.1 release notes](docs/releases/v3.1.1.md).
+**3.1.1 is awaiting a newly signed corrected APK; 3.1.0 remains stable.** Persian/Arabic Settings chevrons bind deterministically from the saved app language. On phones, the Persian/Arabic About header Back chevron points right (TV keeps left). TV choice lists initially focus the configured value. A floating rotation button below the phone Settings gear toggles landscape/portrait viewing. Independent review corrected overlapping quick-action targets and their visibility while Settings or channels are open. See the [3.1.1 release notes](docs/releases/v3.1.1.md) and [review record](docs/releases/v3.1.1-review.md).
 
-**Upgrading:** 3.1.1 uses version code 19 and the established release certificate. Install it over the official 3.1.0 app to retain local data; do not uninstall first. Stable 3.1.0 discovers it through Check for updates.
+**Planned upgrade:** 3.1.1 uses version code 19 and must use the established release certificate. Once published, install it over the official 3.1.0 app to retain local data; do not uninstall first. Stable 3.1.0 can discover the published stable update through Check for updates.
 
 ## 3.1.0 — stable native redesign
 
@@ -208,11 +208,11 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-Version 3.1.1 passed **223 unit/Robolectric cases**, with zero failures, errors or skips. Debug/Release lint have zero errors; warnings remain. Both Debug and optimized Release builds passed. The signed APK's application payload was compared against the unsigned build, and its SHA-256, established signing certificate, package/version and ZIP alignment have been verified. Version 3.1.0 passed 213 cases in independent [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38980113816) on the corrected application commit.
+The submitted 3.1.1 transfer reported 223 passing cases, but independent acceptance tests reproduced two phone quick-action defects. This correction branch fixes them and replaces unconditional About/focus assertions with behavioral checks. Corrected verification and signing status are recorded in the [3.1.1 review](docs/releases/v3.1.1-review.md). The old submitted APK is superseded; a newly signed build is required. Version 3.1.0 passed 213 cases in independent [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38980113816) on the corrected application commit.
 
 Coverage includes API 24, 28 and 36, six-language welcome and live RTL/LTR switching, search, favourites, catalog remote traversal, playlist persistence and Settings focus. New 3.1 acceptance cases exercise actual preview bounds and safe insets, app/device locale conflicts, clock time zones, real touch DOWN/UP activation and remote reading of About in all six languages. See the [detailed acceptance report](docs/releases/v3.1.0-verification.md).
 
-Physical Android 7 XDSR 685 HDR and Android 16 checks were **not run for 3.1.0**. Device-specific touch/IME, remote, decoder/HDR behavior and upgrade installation still need hardware verification. The [earlier Android 7 network results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) concern older releases. The [publishing process](docs/releases/publishing.md) explains the independent build comparison and key-free publication of the reviewed signed bytes.
+Physical Android 7 XDSR 685 HDR and Android 16 checks were **not run for 3.1.0 or 3.1.1**. Device-specific touch/IME, remote, decoder/HDR behavior and upgrade installation still need hardware verification. The [earlier Android 7 network results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) concern older releases. The [publishing process](docs/releases/publishing.md) explains the independent build comparison and key-free publication of the reviewed signed bytes.
 
 Automated checks do not validate physical TV remotes, hardware decoders or live stream availability. Playback depends on the device's codec support and source availability. There is no provider-account login, DRM configuration, recording, catch-up service or SmoothStreaming module. Opaque HLS/DASH links use manifest hints or a server's HEAD content type; servers that supply neither may require a conventional manifest URL.
 
