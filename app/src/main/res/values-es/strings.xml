@@ -192,4 +192,6 @@ Tus listas, favoritos y ajustes permanecen en tu dispositivo. Explora el código
     <string name="guide_source_number">Guía %d</string>
     <string name="source_scope_note">Tu selección se guarda para futuras actualizaciones.</string>
     <string name="crt_sound">Sonido al cambiar de canal</string>
+    <string name="rotate_to_landscape">Cambiar a horizontal</string>
+    <string name="rotate_to_portrait">Cambiar a vertical</string>
 </resources>

@@ -347,6 +347,20 @@ class PlayerController(
             TrackChoice(label, group.mediaTrackGroup, index)
         }
     }
+    /** 3.1.1 item 3: read-only current selection for the track list; index into
+     * [choices] (0 = Off/Automatic), or -1 if unknown. Does not change state. */
+    fun selectedTrackIndex(type: Int): Int {
+        val player = exoPlayer ?: return -1
+        val params = player.trackSelectionParameters
+        if (params.disabledTrackTypes.contains(type)) return 0 // Off
+        val choices = choices(type)
+        // Find which choice matches the current override, if any.
+        for ((trackGroup, override) in params.overrides) {
+            val idx = choices.indexOfFirst { it.group == trackGroup && override.trackIndices.contains(it.index) }
+            if (idx >= 0) return idx + 1 // +1 for the Off/Automatic row
+        }
+        return 0 // Automatic (no explicit override)
+    }
     fun selectTrack(type: Int, choice: TrackChoice?, disabled: Boolean = false) {
         val player = exoPlayer ?: return
         val parameters = player.trackSelectionParameters.buildUpon().clearOverridesOfType(type).setTrackTypeDisabled(type, disabled)

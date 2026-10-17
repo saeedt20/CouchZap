@@ -192,6 +192,12 @@ class SettingsPanel(private val activity: AppCompatActivity, private val binding
                 onClick(this){action(index)};body.addView(this,LinearLayout.LayoutParams(-1,-2))
             }}
             rows.forEachIndexed{i,row->row.nextFocusUpId=rows.getOrNull(i-1)?.id?:binding.settingsBack.id;row.nextFocusDownId=rows.getOrNull(i+1)?.id?:row.id}
+            // 3.1.1 item 3: on TV, initially focus the configured value instead
+            // of the first option. Safe fallback: invalid index or non-TV keeps
+            // the existing first-focus behavior.
+            if (com.couchzap.iptv.ui.design.AdaptiveUi.isTv(activity)) {
+                rows.getOrNull(selected)?.takeIf { it.isEnabled && it.isFocusable }?.let { initialFocus(it) }
+            }
         }
     }
     fun dp(value:Int)=(value*activity.resources.displayMetrics.density+.5f).toInt()

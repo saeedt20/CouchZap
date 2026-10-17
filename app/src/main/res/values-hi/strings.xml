@@ -192,4 +192,6 @@
     <string name="guide_source_number">गाइड %d</string>
     <string name="source_scope_note">रीफ़्रेश करने के लिए आपका चयन सेव किया जाता है।</string>
     <string name="crt_sound">चैनल बदलने की आवाज़</string>
+    <string name="rotate_to_landscape">लैंडस्केप पर स्विच करें</string>
+    <string name="rotate_to_portrait">पोर्ट्रेट पर स्विच करें</string>
 </resources>

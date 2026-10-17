@@ -88,12 +88,16 @@ class BetaFixesRegressionTest {
         assertTrue("navigable row keeps chevron", descendants(navRow).filterIsInstance<ImageView>().any { it.visibility == View.VISIBLE })
     }
 
-    // 3.1: FA/AR rows use the auto-mirrored left-pointing chevron; EN keeps ›.
-    // The old beta2 expectation (non-mirrored right chevron in FA/AR) is superseded.
-    @Test fun `row chevron drawable auto-mirrors for RTL`() {
+    // 3.1.1: FA/AR rows use the fixed left chevron asset; EN uses the fixed
+    // right asset. Both are autoMirrored=false; direction comes from the saved
+    // app language, not drawable mirroring. The old 3.1 auto-mirror expectation
+    // is superseded by the deterministic 3.1.1 policy.
+    @Test fun `row chevron drawables are fixed assets`() {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
-        val d = ctx.getDrawable(R.drawable.ic_chevron_row) as android.graphics.drawable.VectorDrawable
-        assertTrue("row chevron must auto-mirror so FA/AR shows ‹", d.isAutoMirrored)
+        val right = ctx.getDrawable(R.drawable.ic_chevron_row) as android.graphics.drawable.VectorDrawable
+        val left = ctx.getDrawable(R.drawable.ic_chevron_row_left) as android.graphics.drawable.VectorDrawable
+        assertFalse("right chevron must be a fixed asset", right.isAutoMirrored)
+        assertFalse("left chevron must be a fixed asset", left.isAutoMirrored)
         val orig = ctx.getDrawable(R.drawable.ic_chevron) as android.graphics.drawable.VectorDrawable
         assertTrue("original chevron keeps auto-mirror for other uses", orig.isAutoMirrored)
     }

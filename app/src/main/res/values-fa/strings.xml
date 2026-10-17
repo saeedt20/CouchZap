@@ -192,4 +192,6 @@
     <string name="guide_source_number">راهنمای %d</string>
     <string name="source_scope_note">انتخاب شما برای تازه‌سازی ذخیره می‌شود.</string>
     <string name="crt_sound">صدای جابه‌جایی شبکه</string>
+    <string name="rotate_to_landscape">نمایش افقی</string>
+    <string name="rotate_to_portrait">نمایش عمودی</string>
 </resources>

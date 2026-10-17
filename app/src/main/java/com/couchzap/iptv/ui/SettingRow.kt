@@ -22,17 +22,27 @@ open class SettingRow(context: Context, attrs: AttributeSet? = null) : LinearLay
      * and show no chevron. */
     var navigates: Boolean = true
         set(value) { field = value; updateArrow() }
-    private fun updateArrow() {
+    /** 3.1.1: public for language-change refresh; binds the saved-language chevron. */
+    fun updateArrow() {
         val d = resources.displayMetrics.density
         if (navigates) {
             if (arrow == null) {
-                // 3.1: row chevron auto-mirrors with the app layout direction,
-                // so FA/AR rows show the owner-requested left-pointing ‹ while
-                // EN/ES/HI/TH keep the right-pointing ›. Layout/text stay RTL.
-                arrow = ImageView(context).apply { setImageResource(R.drawable.ic_chevron_row); importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO }
+                arrow = ImageView(context).apply { importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO }
                 addView(arrow, LayoutParams((24 * d).toInt(), (24 * d).toInt()).apply { marginStart = (8 * d).toInt() })
             }
-            arrow?.visibility = VISIBLE
+            // 3.1.1 item 2: deterministic physical direction from the saved app
+            // language, bound on every refresh (not just creation). FA/AR get
+            // the fixed left glyph; other app languages get the fixed right
+            // glyph. Both assets are autoMirrored=false; normalize any stale
+            // transform so a second refresh cannot flip the icon again.
+            val rtl = com.couchzap.iptv.util.AppLanguage.isRtl(
+                com.couchzap.iptv.util.Prefs(context).getLanguage()
+                    ?: com.couchzap.iptv.util.AppLanguage.DEFAULT)
+            arrow?.apply {
+                setImageResource(if (rtl) R.drawable.ic_chevron_row_left else R.drawable.ic_chevron_row)
+                scaleX = 1f; scaleY = 1f; rotation = 0f
+                visibility = VISIBLE
+            }
         } else {
             arrow?.visibility = GONE
         }

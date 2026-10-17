@@ -192,4 +192,6 @@
     <string name="guide_source_number">الدليل %d</string>
     <string name="source_scope_note">يتم حفظ اختيارك لاستخدامه عند التحديث.</string>
     <string name="crt_sound">صوت تغيير القناة</string>
+    <string name="rotate_to_landscape">التبديل إلى الوضع الأفقي</string>
+    <string name="rotate_to_portrait">التبديل إلى الوضع العمودي</string>
 </resources>

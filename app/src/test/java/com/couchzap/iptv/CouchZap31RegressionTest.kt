@@ -59,12 +59,14 @@ class CouchZap31RegressionTest {
         assertEquals(View.VISIBLE, activity.uiView<View>(R.id.layout_settings).visibility)
     }
 
-    // ---------- A: chevrons ----------
+    // ---------- A: chevrons (3.1.1: fixed assets, saved-language policy) ----------
 
-    @Test fun `A fa row chevron drawable auto-mirrors`() {
+    @Test fun `A row chevron drawables are fixed`() {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
-        val d = ctx.getDrawable(R.drawable.ic_chevron_row) as android.graphics.drawable.VectorDrawable
-        assertTrue("row chevron must auto-mirror for FA/AR ‹", d.isAutoMirrored)
+        val right = ctx.getDrawable(R.drawable.ic_chevron_row) as android.graphics.drawable.VectorDrawable
+        val left = ctx.getDrawable(R.drawable.ic_chevron_row_left) as android.graphics.drawable.VectorDrawable
+        assertFalse("right chevron must be fixed", right.isAutoMirrored)
+        assertFalse("left chevron must be fixed", left.isAutoMirrored)
     }
 
     @Test fun `A sound toggle row has no chevron`() = screen { activity ->

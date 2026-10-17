@@ -192,4 +192,6 @@ Your playlists, favourites and settings stay on your device. Explore the source 
     <string name="guide_source_number">Guide %d</string>
     <string name="source_scope_note">Your selection is saved for refresh.</string>
     <string name="crt_sound">Channel switch sound</string>
+    <string name="rotate_to_landscape">Switch to landscape</string>
+    <string name="rotate_to_portrait">Switch to portrait</string>
 </resources>

@@ -192,4 +192,6 @@
     <string name="guide_source_number">ผังรายการ %d</string>
     <string name="source_scope_note">บันทึกตัวเลือกของคุณไว้สำหรับการรีเฟรช</string>
     <string name="crt_sound">เสียงเปลี่ยนช่อง</string>
+    <string name="rotate_to_landscape">สลับเป็นแนวนอน</string>
+    <string name="rotate_to_portrait">สลับเป็นแนวตั้ง</string>
 </resources>

@@ -145,6 +145,10 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private val aspectRatios = arrayOf(Prefs.ASPECT_FIT, Prefs.ASPECT_FILL, Prefs.ASPECT_16_9, Prefs.ASPECT_4_3)
     private var currentAspectIndex = 0
     private var isTvMode = false
+    /** 3.1.1 item 4: session-level manual orientation override for phones.
+     * Null = system default; otherwise an ActivityInfo.SCREEN_ORIENTATION_* value.
+     * Not persisted; a fresh session returns to system behavior. */
+    private var phoneOrientationOverride: Int? = null
     private var importMessage = R.string.download_playlist
     private var renderImport: (() -> Unit)? = null
     private var importInProgress = false
@@ -197,6 +201,11 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 3.1.1 item 4: restore the session orientation override across recreation.
+        if (savedInstanceState?.containsKey("phone_orientation_override") == true) {
+            phoneOrientationOverride = savedInstanceState.getInt("phone_orientation_override")
+                .takeIf { it != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
+        }
         DiagnosticLog.initialize(this)
         DiagnosticLog.record("app_start")
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -347,6 +356,12 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         if (channels.isNotEmpty()) repository.saveLastChannelIndex(currentIndex, channels[currentIndex])
         playerController?.release()
         playerController = null
+    }
+
+    /** 3.1.1 item 4: persist the session orientation override across recreation. */
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        phoneOrientationOverride?.let { outState.putInt("phone_orientation_override", it) }
     }
 
     private fun loadChannelsAndStartPlayback() {
@@ -619,7 +634,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         if (settingsHost.ownsInput) { if (!importCommitting) { pendingChannelsAfterSettings = true; closeSettingsMenu() }; return }
         closeSettingsMenu()
         osdController.hideOsd()
-        binding.btnQuickSettings.visibility = View.GONE
+        updateQuickActionsVisibility()
         groupsPicker.close()
         channelMotion.show()
         updatePlaybackErrorFocus()
@@ -677,7 +692,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         channelMotion.hide()
         if (owned) binding.root.requestFocus()
         updatePlaybackErrorFocus()
-        binding.btnQuickSettings.visibility = if (isTvMode) View.GONE else View.VISIBLE
+        updateQuickActionsVisibility()
     }
 
     private fun setupSettingsMenu() {
@@ -701,6 +716,8 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             }
         }
         binding.btnQuickSettings.setOnClickListener { toggleSettingsMenu() }
+        // 3.1.1 item 4: floating rotation toggle for phones.
+        binding.btnRotate.setOnClickListener { togglePhoneOrientation() }
         settingsPanel.onClick(binding.btnSettingsClose) { closeSettingsMenu() }
         settingsPanel.onClick(binding.btnSettingsMode) {
             val modes = listOf("Auto", "TV", "Phone")
@@ -738,11 +755,15 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         settingsPanel.onClick(binding.btnSettingsUpdate) { updateMenu.show() }
         settingsPanel.onClick(binding.btnSettingsLogs) { diagnosticMenu.show(repository.source()?.kind, channels.size) }
         settingsPanel.onClick(binding.btnSettingsAbout) {
-            // 3.1: approved simpler About. Scoped left-pointing header chevron in
-            // FA/AR; reset on leave so other pages keep the standard back icon.
+            // 3.1.1 item 1: mobile FA/AR About header chevron points RIGHT;
+            // TV FA/AR keeps the left-pointing chevron. Scoped override, reset
+            // on leave so other pages keep the standard back icon.
             val aboutRtl = AppLanguage.isRtl(prefs.getLanguage())
-            settingsPanel.headerBackIconOverride =
-                if (aboutRtl) R.drawable.ic_back_fixed_left else null
+            settingsPanel.headerBackIconOverride = when {
+                !aboutRtl -> null
+                isTvMode -> R.drawable.ic_back_fixed_left
+                else -> R.drawable.ic_back_fixed_right
+            }
             settingsPanel.page("about", R.string.about, leave = {
                 settingsPanel.headerBackIconOverride = null
             }) { body ->
@@ -837,6 +858,8 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             AppLanguage.apply(this, binding.root, language)
             AppLanguage.apply(this, settingsHost.root, language)
             AppLanguage.translate(this, binding.settingsRootScroll)
+            // 3.1.1 item 2: refresh row chevrons to the new saved language.
+            refreshRowChevrons(binding.settingsRootScroll)
             settingsPanel.back(); settingsPanel.header()
             applyInterfaceMode(); updateAspectLabel(); updateSleepLabel(); updateSoundLabel(); updateEffectsLabel(); updateSourceLabel()
             updateChannelListAdapter()
@@ -881,7 +904,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
     private fun prepareSettingsPresentation() {
         welcomeIntro.finish(); groupsPicker.close()
         closeChannelListOverlay(); osdController.hideOsd()
-        binding.btnQuickSettings.visibility = View.GONE
+        updateQuickActionsVisibility()
         updateSourceLabel(); updateSoundLabel(); updateEffectsLabel();settingsPanel.header()
     }
 
@@ -916,7 +939,7 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
         binding.viewImport.root.descendantFocusability = android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS
         binding.layoutFileBrowser.descendantFocusability = android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS
         if (importScreen.isVisible()) (origin ?: binding.viewImport.btnImport).requestFocusFromTouch()
-        binding.btnQuickSettings.visibility = if (isTvMode || channelMotion.desiredOpen) View.GONE else View.VISIBLE
+        updateQuickActionsVisibility()
         updatePlaybackErrorFocus()
         if (openChannels && channels.isNotEmpty()) openChannelListOverlay()
     }
@@ -1192,13 +1215,55 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK) ||
             !packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)
         isTvMode = mode == "TV" || (mode == "Auto" && detectedTv)
-        requestedOrientation = if (isTvMode) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        // 3.1.1 item 4: TV keeps sensor landscape; phone uses the session
+        // manual override if present, otherwise the system default. The override
+        // is never cleared here, so it survives config/language/layout updates.
+        requestedOrientation = when {
+            isTvMode -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            phoneOrientationOverride != null -> phoneOrientationOverride!!
+            else -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+        // Entering TV mode drops any phone override; leaving TV starts fresh.
+        if (isTvMode) phoneOrientationOverride = null
         val nativeLanguage = AppLanguage.supported.firstOrNull { it.code == (prefs.getLanguage() ?: AppLanguage.DEFAULT) }?.name ?: "English"
         binding.tvSettingsLanguageValue.text = nativeLanguage
         binding.viewImport.btnImportLanguage.text = nativeLanguage
         binding.tvSettingsModeValue.text = when (mode) { "Auto" -> getString(R.string.automatic); "Phone" -> getString(R.string.touch_mode); else -> getString(R.string.tv_mode) }
-        binding.btnQuickSettings.visibility = if (isTvMode) View.GONE else View.VISIBLE
+        updateQuickActionsVisibility()
         updateResponsiveLayout()
+    }
+
+    /** 3.1.1 item 4: toggle between manual landscape and portrait for phones. */
+    private fun togglePhoneOrientation() {
+        if (isTvMode) return
+        val current = resources.configuration.orientation
+        phoneOrientationOverride = if (current == Configuration.ORIENTATION_LANDSCAPE)
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        else
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        applyInterfaceMode()
+        updateRotateButtonDescription()
+    }
+
+    /** 3.1.1 item 4: keep the rotate button visibility in step with quick actions. */
+    private fun updateQuickActionsVisibility() {        val quickVisible = !isTvMode && !channelMotion.desiredOpen
+        binding.btnQuickSettings.visibility = if (quickVisible) View.VISIBLE else View.GONE
+        // Rotation is phone-only and hidden whenever quick settings is hidden
+        // (channel list open, Settings open, overlays, TV mode).
+        binding.btnRotate.visibility = if (quickVisible) View.VISIBLE else View.GONE
+        updateRotateButtonDescription()
+    }
+
+    private fun updateRotateButtonDescription() {
+        val landscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        binding.btnRotate.contentDescription = getString(
+            if (landscape) R.string.rotate_to_portrait else R.string.rotate_to_landscape)
+    }
+
+    /** 3.1.1 item 2: rebind all visible row chevrons to the saved app language. */
+    private fun refreshRowChevrons(root: View) {
+        if (root is com.couchzap.iptv.ui.SettingRow) root.updateArrow()
+        if (root is ViewGroup) for (i in 0 until root.childCount) refreshRowChevrons(root.getChildAt(i))
     }
 
     private fun updateResponsiveLayout() {
@@ -1281,6 +1346,8 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             AppLanguage.apply(this, binding.root, prefs.getLanguage() ?: AppLanguage.DEFAULT)
             AppLanguage.apply(this, settingsHost.root, prefs.getLanguage() ?: AppLanguage.DEFAULT)
             AppLanguage.translate(this, binding.settingsRootScroll)
+            // 3.1.1 item 2: refresh row chevrons after configuration change.
+            refreshRowChevrons(binding.settingsRootScroll)
             updateAspectLabel(); updateSleepLabel(); updateSoundLabel(); updateEffectsLabel(); updateSourceLabel()
             settingsPanel.header()
             playerController?.refreshPlaybackInfo(); osdController.refresh()
@@ -1423,7 +1490,9 @@ class MainActivity : AppCompatActivity(), PlayerController.PlayerEventListener {
             settingsPanel.page("track-$type", title) { settingsPanel.text(it, getString(if (type == C.TRACK_TYPE_AUDIO) R.string.no_audio_choice else R.string.no_subtitle_choice)) }; return
         }
         val labels = listOf(getString(if (type == C.TRACK_TYPE_TEXT) R.string.off else R.string.automatic)) + tracks.map { it.label }
-        settingsPanel.choices("track-$type", title, labels) { which ->
+        // 3.1.1 item 3: focus the currently selected track on TV.
+        val selectedTrack = player?.selectedTrackIndex(type) ?: -1
+        settingsPanel.choices("track-$type", title, labels, selectedTrack) { which ->
             player?.selectTrack(type, tracks.getOrNull(which - 1), type == C.TRACK_TYPE_TEXT && which == 0); settingsPanel.back()
         }
     }
