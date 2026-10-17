@@ -18,7 +18,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **[CouchZap-3.1.0.apk](https://github.com/saeedt20/CouchZap/releases/download/v3.1.0/CouchZap-3.1.0.apk)** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](https://github.com/saeedt20/CouchZap/releases/download/v3.1.0/CouchZap-3.1.0.apk.sha256). Source archives are also available on each release page.
+1. Download **[CouchZap-3.1.1.apk](https://github.com/saeedt20/CouchZap/releases/download/v3.1.1/CouchZap-3.1.1.apk)** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](https://github.com/saeedt20/CouchZap/releases/download/v3.1.1/CouchZap-3.1.1.apk.sha256). Source archives are also available on each release page.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. The app opens the welcome screen directly. Optionally choose a language, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
@@ -41,6 +41,12 @@ Choose a language from the welcome screen or **Settings → Language**. Selectio
 | 6 | العربية | Right to left | Right side |
 
 Each language includes interface messages, settings, updates, diagnostics and known channel categories. Custom channel/group names and playlist identities are preserved.
+
+## 3.1.1 — stable refinements
+
+**3.1.1 is the current stable release.** Persian/Arabic Settings chevrons now stay left-pointing after exit and relaunch, bound deterministically from the saved app language. On phones, the Persian/Arabic About header Back chevron points right (TV keeps left). TV choice lists initially focus the configured value. A new floating rotation button on phones toggles landscape/portrait viewing. See the [3.1.1 release notes](docs/releases/v3.1.1.md).
+
+**Upgrading:** 3.1.1 uses version code 19 and the established release certificate. Install it over the official 3.1.0 app to retain local data; do not uninstall first. Stable 3.1.0 discovers it through Check for updates.
 
 ## 3.1.0 — stable native redesign
 
@@ -202,7 +208,7 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-Version 3.1.0 passed **213 unit/Robolectric cases**, with zero failures, errors or skips, both locally and in independent [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38980113816) on the corrected application commit. Debug/Release lint have zero errors; warnings remain. Both Debug and optimized Release builds passed. The accepted signed APK matches **682 application payload entries** in both independent builds, and its SHA-256, established signing certificate, package/version and ZIP alignment have been verified.
+Version 3.1.1 passed **223 unit/Robolectric cases**, with zero failures, errors or skips. Debug/Release lint have zero errors; warnings remain. Both Debug and optimized Release builds passed. The signed APK's application payload was compared against the unsigned build, and its SHA-256, established signing certificate, package/version and ZIP alignment have been verified. Version 3.1.0 passed 213 cases in independent [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38980113816) on the corrected application commit.
 
 Coverage includes API 24, 28 and 36, six-language welcome and live RTL/LTR switching, search, favourites, catalog remote traversal, playlist persistence and Settings focus. New 3.1 acceptance cases exercise actual preview bounds and safe insets, app/device locale conflicts, clock time zones, real touch DOWN/UP activation and remote reading of About in all six languages. See the [detailed acceptance report](docs/releases/v3.1.0-verification.md).
 
