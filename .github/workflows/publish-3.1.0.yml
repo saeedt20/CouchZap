@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       checks_run:
-        description: Successful Android checks run on this exact main commit
+        description: Successful Android checks run on the tagged main release commit
         required: true
         type: string
 
@@ -49,7 +49,8 @@ jobs:
           source = recipe['source_commit']
           assert source == '443aecdbb1f817993f6aa866f678916e245ea4c2'
           assert recipe['version'] == '3.1.0'
-          assert git('rev-parse', 'v3.1.0^{commit}') == os.environ['GITHUB_SHA']
+          release_commit = git('rev-parse', 'v3.1.0^{commit}')
+          subprocess.run(['git', 'merge-base', '--is-ancestor', release_commit, 'HEAD'], check=True)
           subprocess.run(['git', 'merge-base', '--is-ancestor', source, 'HEAD'], check=True)
           allowed = ('README.md', 'CHANGELOG.md', 'docs/releases/', 'docs/design/IMPLEMENTATION.md',
                      'distribution/3.1.0/', '.github/workflows/publish-3.1.0.yml')
@@ -57,7 +58,7 @@ jobs:
               assert name in allowed or any(name.startswith(p) for p in allowed if p.endswith('/')), name
           checks = os.environ['CHECKS_RUN']
           assert re.fullmatch(r'[0-9]+', checks)
-          for run_id, sha in [(str(recipe['build_run_id']), source), (checks, os.environ['GITHUB_SHA'])]:
+          for run_id, sha in [(str(recipe['build_run_id']), source), (checks, release_commit)]:
               run = api(f'repos/{os.environ["GH_REPO"]}/actions/runs/{run_id}')
               assert run['conclusion'] == 'success' and run['head_sha'] == sha
               assert run['path'] == '.github/workflows/android.yml'
@@ -115,7 +116,9 @@ jobs:
           python3 - <<'PY'
           import hashlib, json, os, subprocess
           from pathlib import Path
-          release = json.loads(subprocess.check_output(['gh', 'api', f'repos/{os.environ["GH_REPO"]}/releases/tags/v3.1.0'], text=True))
+          # The REST by-tag endpoint excludes drafts; resolve the draft's ID URL through gh.
+          view = json.loads(subprocess.check_output(['gh', 'release', 'view', 'v3.1.0', '--json', 'apiUrl'], text=True))
+          release = json.loads(subprocess.check_output(['gh', 'api', view['apiUrl']], text=True))
           assert release['draft']
           assets = {a['name']: a for a in release['assets']}
           assert len(release['assets']) == len(assets) == 2
