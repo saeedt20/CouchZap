@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.0 — 2026-10-17 (stable)
+
+Graduate the native redesign from beta. Fix first-tap activation of mobile Settings options while preserving D-pad focus; use left-pointing Persian/Arabic Settings chevrons, top-right next-channel previews and localized Info clock digits; simplify About in all six languages with creator/MIT credits and a dedication. Restore the English preview safe inset and remote scrolling through About. Version code 18, established signing certificate. All 213 tests pass; both lint variants have zero errors; signed APK matches the independent app payload. Physical-device checks remain not run. See [release notes](docs/releases/v3.1.0.md) and [acceptance record](docs/releases/v3.1.0-verification.md). Supersedes stable 2.2.1 and the 3.0 prereleases.
+
 ## 3.0-beta.2 — 2026-10-16 (prerelease)
 
 Ten owner-reported beta fixes on the native redesign: keyboard dismissal after channel search selection, favourite star without the green selected line, no chevron on the Channel switch sound toggle, separated compact-phone Settings sections, aligned mobile Info buttons, rewritten About with creator credit and MIT license (root LICENSE added), first-tap activation for mobile buttons, right-pointing FA/AR settings chevrons, Persian/Arabic localized digits, and a native download progress bar. Version code 17. See [release notes](docs/releases/v3.0-beta.2.md). Beta, not stable; 2.2.1 remains the stable release.

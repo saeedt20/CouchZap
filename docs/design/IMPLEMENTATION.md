@@ -1,5 +1,7 @@
 # Native design implementation
 
+Historical 3.0-beta implementation record. The redesign is now stable in **3.1.0**; see the [current release notes](../releases/v3.1.0.md) and [3.1 acceptance record](../releases/v3.1.0-verification.md). Results and release-status statements below describe the beta checkpoint.
+
 Baseline: `30cf8de44ca78ae5ad120a9a59177ac20608af6f` (main, 2.2.1, version code 15).
 Contract: the user-supplied [COUCHZAP_DESIGN_SPEC.md](SPEC.md), prepared 15 October 2026.
 

@@ -18,7 +18,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **CouchZap-2.2.1.apk** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](distribution/CouchZap-2.2.1.apk.sha256). Source archives are also available on each release page.
+1. Download **[CouchZap-3.1.0.apk](https://github.com/saeedt20/CouchZap/releases/download/v3.1.0/CouchZap-3.1.0.apk)** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](https://github.com/saeedt20/CouchZap/releases/download/v3.1.0/CouchZap-3.1.0.apk.sha256). Source archives are also available on each release page.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. The app opens the welcome screen directly. Optionally choose a language, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
@@ -42,17 +42,15 @@ Choose a language from the welcome screen or **Settings → Language**. Selectio
 
 Each language includes interface messages, settings, updates, diagnostics and known channel categories. Custom channel/group names and playlist identities are preserved.
 
-## 3.0 Beta — native redesign
+## 3.1.0 — stable native redesign
 
-The [3.0 Beta prerelease](https://github.com/saeedt20/CouchZap/releases/tag/v3.0-beta) is available for early testing. **2.2.1 remains the stable version for everyday watching.** The beta keeps Kotlin/XML, Media3 and the existing import/playback core. See the [beta release notes](docs/releases/v3.0-beta.md) and [implementation and verification notes](docs/design/IMPLEMENTATION.md) for evidence and hardware checks.
+**3.1.0 is the current stable release**, replacing 2.2.1 and graduating from the 3.0 betas. It keeps native Kotlin/Android Views and Media3, with adaptive TV/phone Settings, clearer playback controls and all six interface languages. See the [3.1.0 release notes](docs/releases/v3.1.0.md) and [acceptance report](docs/releases/v3.1.0-verification.md).
 
-The beta uses version code 16 and the same signing certificate, so it installs over 2.2.1. Returning to stable 2.2.1 (code 15) is a downgrade that ordinary installation rejects; uninstalling to return can remove local playlists, favourites and settings.
+Since Beta 2, mobile Settings options activate on the first tap while retaining remote focus. Persian/Arabic Settings chevrons point left, the next-channel preview sits at the top right and the Info clock uses local digits. About is simpler, credits Saeed Taheri / سعید طاهری and ends with a dedication. English and the other LTR layouts retain their existing behavior.
 
-### 3.0 Beta 2
+The ten Beta 2 fixes remain, including keyboard dismissal after channel search selection, cleaner favourite/sound controls, separated phone Settings sections, aligned mobile Info controls, localized channel/group digits and native download progress.
 
-The [3.0 Beta 2 prerelease](https://github.com/saeedt20/CouchZap/releases/tag/v3.0-beta.2) fixes ten owner-reported issues: keyboard dismissal after channel search, favourite star marker, sound-toggle chevron, compact Settings sections, mobile Info layout, About with creator credit and MIT license, first-tap activation for Settings Back/Close and channel-panel actions, FA/AR chevrons, localized digits and a native download progress bar. Settings navigation and choice rows retain their existing focus behavior for remote navigation. Version code 17. See the [Beta 2 release notes](docs/releases/v3.0-beta.2.md). Still a beta; 2.2.1 remains stable.
-
-Use manual GitHub downloads for beta updates: the current in-app updater does not compare an installed prerelease version name. See the beta release notes for this known limitation.
+**Upgrading:** 3.1.0 uses version code 18 and the established release certificate. Install it over the official 2.2.1 or 3.0 beta app to retain local data; do not uninstall first. Stable 2.2.1 can discover it through Check for updates. From 3.0-beta or 3.0-beta.2, download this APK manually once because those installed beta version names cannot be compared by the updater. Future stable updates use the compatible three-part version name. Physical-device upgrade installation has not been checked for 3.1.0.
 
 TV Settings now has **Playback / Playlist / App** sections, remembers the last row and supports mirrored navigation in Persian/Arabic. Back returns from a child page, then from detail to the section rail, then closes Settings. Compact phones use a grouped full-width page. **App → Visual effects** offers Auto, Full depth, Safe and Off; Safe keeps video/subtitles untransformed, and unsupported devices fall back conservatively.
 
@@ -65,11 +63,11 @@ Welcome keeps optional language selection and offers file/link import or public 
 | Groups: selection and focus | [العربية](docs/design/captures/groups-tv-ar.png) |
 | Phone and expanded Info | [हिन्दी welcome](docs/design/captures/welcome-phone-hi.png) · [TV Info](docs/design/captures/info-expanded-tv.png) |
 
-These captures use native Android Views with fixture channels/backdrops. They do not establish live decoder, SurfaceView, blur or remote behavior on physical hardware.
+These historical redesign captures predate the final 3.1 fixes and use native Android Views with fixture channels/backdrops. They do not establish live decoder, SurfaceView, blur or remote behavior on physical hardware.
 
 ## Screenshots
 
-These published-release images render the app's actual Android views using Robolectric 4.16.1 native graphics. The six-language welcome and English/Arabic panel images use API 28; the older Android 16 examples below use API 36. Channel data and the illustrative backdrop are fixtures. Motion is disabled for stable screenshots.
+These historical 2.x release images render the app's actual Android views using Robolectric 4.16.1 native graphics; they are not new 3.1 screenshots. The six-language welcome and English/Arabic panel images use API 28; the older Android 16 examples below use API 36. Channel data and the illustrative backdrop are fixtures. Motion is disabled for stable screenshots.
 
 | Screen | English | العربية |
 | --- | --- | --- |
@@ -204,11 +202,11 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-Version 2.2.1 passed **125 unit/Robolectric cases**, with zero failures, errors or skips, in [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38751612163). Debug/release lint completed with no errors, and Debug and optimized Release APK assembly passed. Existing lint warnings remain.
+Version 3.1.0 passed **213 unit/Robolectric cases**, with zero failures, errors or skips, both locally and in independent [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38980113816) on the corrected application commit. Debug/Release lint have zero errors; warnings remain. Both Debug and optimized Release builds passed. The accepted signed APK matches **682 application payload entries** in both independent builds, and its SHA-256, established signing certificate, package/version and ZIP alignment have been verified.
 
-Coverage includes API 24, 28 and 36, optional first-launch language selection, the six-language menu order, saved language after restart, live RTL/LTR switching, channel/settings panel docking, native TV/phone layouts, multiword/composing-text search, favourites, settings focus and playlist persistence. Public catalog regressions on API 24 and 36 traverse a 240-country list, select middle rows, recover missing focus and check filtered/empty results and held remote keys in English, Persian and Arabic. See the [2.2.1 release notes](docs/releases/v2.2.1.md) and earlier [localization/search checks](docs/work/phase08-localization-search.md).
+Coverage includes API 24, 28 and 36, six-language welcome and live RTL/LTR switching, search, favourites, catalog remote traversal, playlist persistence and Settings focus. New 3.1 acceptance cases exercise actual preview bounds and safe insets, app/device locale conflicts, clock time zones, real touch DOWN/UP activation and remote reading of About in all six languages. See the [detailed acceptance report](docs/releases/v3.1.0-verification.md).
 
-The Android 16 focus-overlay fix and Android 7 startup/TLS fixes are retained. The [earlier network integration results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) document live Android 7 network checks. Release publication separately verifies the signed APK against the independent build and exercises the same signed bytes on Android TV 7; see the [publishing process](docs/releases/publishing.md).
+Physical Android 7 XDSR 685 HDR and Android 16 checks were **not run for 3.1.0**. Device-specific touch/IME, remote, decoder/HDR behavior and upgrade installation still need hardware verification. The [earlier Android 7 network results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) concern older releases. The [publishing process](docs/releases/publishing.md) explains the independent build comparison and key-free publication of the reviewed signed bytes.
 
 Automated checks do not validate physical TV remotes, hardware decoders or live stream availability. Playback depends on the device's codec support and source availability. There is no provider-account login, DRM configuration, recording, catch-up service or SmoothStreaming module. Opaque HLS/DASH links use manifest hints or a server's HEAD content type; servers that supply neither may require a conventional manifest URL.
 
@@ -233,7 +231,7 @@ For bugs, include device/Android version, reproduction steps and sanitized logs 
 ## License
 
 CouchZap is open-source software released under the [MIT License](LICENSE).
-Copyright (c) 2026 Saeed Taheri.
+Created by **Saeed Taheri (سعید طاهری)**. Copyright (c) 2026 Saeed Taheri.
 
 The MIT license covers the project's code. Third-party notices are preserved
 separately: the CRT sample is dedicated under CC0 1.0 (see

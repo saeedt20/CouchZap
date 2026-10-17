@@ -6,9 +6,19 @@ For the 2.1.x releases, publication preserved the exact APK tested by the user o
 
 The repository stores public reconstruction data and a recipe bound to the unsigned and signed SHA-256 checksums. The data contains the signature, ZIP structure and reviewed VCS metadata differences; it cannot sign a different APK and contains no private key or password. The release job retrieves that specific checked build, reconstructs the reviewed signed APK and verifies its checksum. It also compares the payload with the current main build before attaching the APK to the GitHub Release.
 
-Publication requires a fresh Android TV 7 flow check of the same signed bytes. Normal developer builds still use the `COUCHZAP_*` environment variables documented in the README. Future releases need a fresh reviewed build and public reconstruction data generated with the same private key. Existing published assets are never overwritten by this workflow.
+The legacy 2.x automatic publication workflow requires a fresh Android TV 7 emulator flow check of the same signed bytes. Normal developer builds still use the `COUCHZAP_*` environment variables documented in the README. Future releases need a fresh reviewed build and public reconstruction data generated with the same private key. Existing published assets are never overwritten by this workflow.
 
-## Preparing a new version
+## Stable 3.1.0 publication
+
+3.1.0 is accepted from corrected application commit `443aecdbb1f817993f6aa866f678916e245ea4c2`. Claude builds/signs privately; Codex independently verifies the returned binary, updates documentation and publishes. See the [acceptance record](v3.1.0-verification.md) for the exact APK/certificate hashes, 213-test results, 682-entry payload comparisons and physical-device checks marked not run.
+
+The fresh recipe and public reconstruction data are versioned in `distribution/3.1.0/`. They are bound to successful [CI run 38980113816](https://github.com/saeedt20/CouchZap/actions/runs/38980113816) and the accepted corrected signed APK. The root `distribution/release-recipe.json` remains a historical 2.2.1 recipe; it intentionally does not match the current app version and cannot publish 3.1.0 through the old main auto-release path.
+
+After final main Android checks pass, tag that main commit `v3.1.0` and manually dispatch `publish-3.1.0.yml` on main with its successful checks-run ID. The workflow checks source ancestry and the documentation/publication-only diff, verifies both build-run identities, reconstructs the exact signed bytes, compares them against the final main build, checks the certificate/version/alignment, and uploads to a draft. It verifies both uploaded asset digests before publishing explicitly as **non-prerelease / Latest**. It refuses to overwrite an existing public release. No private key is accessed by this workflow.
+
+After publication, re-download the public APK and checksum, verify the exact bytes and certificate, and check `releases/latest` plus the updater's expected asset URLs. Keep old tags/releases/assets unchanged. This process does not claim a new Android TV emulator or physical-device flow run for 3.1.0.
+
+## Preparing a new version with the legacy automatic flow
 
 1. Update `versionName` and increment `versionCode` in `app/build.gradle.kts`; update README, CHANGELOG and `docs/releases/v<version>.md`.
 2. Run the Android checks. The unsigned CI artifact is named `couchzap-<version>-unsigned`; it is not an installable release asset.
