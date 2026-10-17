@@ -1,8 +1,8 @@
 # Changelog
 
-## 3.1.1 — unreleased correction candidate
+## 3.1.1 — 2026-10-17 (stable)
 
-Four owner-reported refinements on the stable 3.1.0 base. Persian/Arabic Settings row chevrons use fixed left-pointing assets bound deterministically from the saved app language. The mobile Persian/Arabic About header points right; TV keeps left. TV choice pages initially focus the configured value. A phone rotation button toggles landscape/portrait with a session override. Independent review fixes the rotation/Settings target overlap and hides quick actions while Settings or channels own the screen; real regression checks replace unconditional assertions. Version code 19. A newly signed corrected APK is required before publication; 3.1.0 remains stable. Physical-device checks remain not run. See the [review record](docs/releases/v3.1.1-review.md).
+Four owner-reported refinements on the stable 3.1.0 base. Persian/Arabic Settings row chevrons use fixed left-pointing assets bound deterministically from the saved app language, including after relaunch. The mobile Persian/Arabic About header points right; TV keeps left. TV choice pages initially focus the configured value. A phone rotation button below the quick Settings gear toggles landscape/portrait with a retained session override. Independent review fixes the rotation/Settings target overlap and hides quick actions while Settings or channels own the screen; real regression checks replace unconditional assertions. Version code 19, established release certificate. All 331 tests pass; both lint variants have zero errors; the newly signed APK matches all 685 application entries in both independent unsigned builds. Physical-device checks remain not run. Supersedes stable 3.1.0. See the [acceptance report](docs/releases/v3.1.1-verification.md).
 
 ## 3.1.0 — 2026-10-17 (stable)
 

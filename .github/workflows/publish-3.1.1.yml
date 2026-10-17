@@ -1,0 +1,136 @@
+name: Publish reviewed CouchZap 3.1.1
+
+on:
+  workflow_dispatch:
+    inputs:
+      checks_run:
+        description: Successful Android checks run on the tagged main release commit
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: couchzap-3.1.1-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify final source and reconstruct the accepted APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CHECKS_RUN: ${{ inputs.checks_run }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess
+          from pathlib import Path
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          def api(path):
+              return json.loads(subprocess.check_output(['gh', 'api', path], text=True))
+          recipe = json.loads(Path('distribution/3.1.1/release-recipe.json').read_text())
+          source = recipe['source_commit']
+          assert source == 'f33df88e3445c08ccb3f4030d8431c3902b3dddf'
+          assert recipe['version'] == '3.1.1'
+          release_commit = git('rev-parse', 'v3.1.1^{commit}')
+          subprocess.run(['git', 'merge-base', '--is-ancestor', release_commit, 'HEAD'], check=True)
+          subprocess.run(['git', 'merge-base', '--is-ancestor', source, 'HEAD'], check=True)
+          allowed = ('README.md', 'CHANGELOG.md', 'docs/releases/', 'docs/design/IMPLEMENTATION.md',
+                     'distribution/3.1.1/', '.github/workflows/publish-3.1.1.yml')
+          for name in git('diff', '--name-only', source, 'HEAD').splitlines():
+              assert name in allowed or any(name.startswith(p) for p in allowed if p.endswith('/')), name
+          checks = os.environ['CHECKS_RUN']
+          assert re.fullmatch(r'[0-9]+', checks)
+          for run_id, sha in [(str(recipe['build_run_id']), source), (checks, release_commit)]:
+              run = api(f'repos/{os.environ["GH_REPO"]}/actions/runs/{run_id}')
+              assert run['conclusion'] == 'success' and run['head_sha'] == sha
+              assert run['path'] == '.github/workflows/android.yml'
+              assert run['head_repository']['full_name'] == os.environ['GH_REPO']
+          final = api(f'repos/{os.environ["GH_REPO"]}/actions/runs/{checks}')
+          assert final['head_branch'] == 'main' and final['event'] == 'push'
+          PY
+          build_run=$(python3 -c "import json; print(json.load(open('distribution/3.1.1/release-recipe.json'))['build_run_id'])")
+          mkdir -p "$RUNNER_TEMP/reviewed-build" "$RUNNER_TEMP/current-build" "$RUNNER_TEMP/release"
+          gh run download "$build_run" --name couchzap-3.1.1-unsigned --dir "$RUNNER_TEMP/reviewed-build"
+          gh run download "$CHECKS_RUN" --name couchzap-3.1.1-unsigned --dir "$RUNNER_TEMP/current-build"
+          python3 scripts/assemble-reviewed-release.py distribution/3.1.1/release-recipe.json \
+            "$RUNNER_TEMP/reviewed-build/app-release-unsigned.apk" "$RUNNER_TEMP/release/CouchZap-3.1.1.apk"
+          for build in reviewed-build current-build; do
+            python3 scripts/verify-reviewed-release.py \
+              "$RUNNER_TEMP/$build/app-release-unsigned.apk" "$RUNNER_TEMP/release/CouchZap-3.1.1.apk"
+          done
+          cp distribution/3.1.1/CouchZap-3.1.1.apk.sha256 "$RUNNER_TEMP/release/"
+          (cd "$RUNNER_TEMP/release" && sha256sum --check CouchZap-3.1.1.apk.sha256)
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c 4 "$RUNNER_TEMP/release/CouchZap-3.1.1.apk"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --min-sdk-version 24 --max-sdk-version 36 \
+            --verbose --print-certs "$RUNNER_TEMP/release/CouchZap-3.1.1.apk" > "$RUNNER_TEMP/certificate.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$RUNNER_TEMP/release/CouchZap-3.1.1.apk" > "$RUNNER_TEMP/badging.txt"
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          p = Path(os.environ['RUNNER_TEMP'])
+          cert = (p / 'certificate.txt').read_text()
+          assert 'Number of signers: 1' in cert
+          assert 'Signer #1 certificate SHA-256 digest: 539f14a4b71cc830108cffefa8778ec06797be539c90ab80bc0c89b0c60eb187' in cert
+          assert 'Verified using v2 scheme (APK Signature Scheme v2): true' in cert
+          assert 'Verified using v3 scheme (APK Signature Scheme v3): true' in cert
+          badging = (p / 'badging.txt').read_text()
+          assert "package: name='com.couchzap.iptv' versionCode='19' versionName='3.1.1'" in badging
+          assert "sdkVersion:'24'" in badging and "targetSdkVersion:'35'" in badging
+          print('Verified accepted release bytes, certificate, version, alignment and final-main app payload')
+          PY
+      - name: Attach verified assets and publish stable Latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          state=$(gh release view v3.1.1 --json isDraft --jq '.isDraft' 2>/dev/null || true)
+          if [ "$state" = false ]; then
+            echo 'v3.1.1 is already public; refusing to overwrite it.'
+            exit 1
+          fi
+          if [ -z "$state" ]; then
+            gh release create v3.1.1 --verify-tag --draft --latest=false \
+              --title 'CouchZap 3.1.1' --notes-file docs/releases/v3.1.1.md
+          fi
+          test "$(gh release view v3.1.1 --json isDraft --jq '.isDraft')" = true
+          gh release upload v3.1.1 "$RUNNER_TEMP/release/CouchZap-3.1.1.apk" \
+            "$RUNNER_TEMP/release/CouchZap-3.1.1.apk.sha256" --clobber
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          # The REST by-tag endpoint excludes drafts; resolve the draft's ID URL through gh.
+          view = json.loads(subprocess.check_output(['gh', 'release', 'view', 'v3.1.1', '--json', 'apiUrl'], text=True))
+          release = json.loads(subprocess.check_output(['gh', 'api', view['apiUrl']], text=True))
+          assert release['draft']
+          assets = {a['name']: a for a in release['assets']}
+          assert len(release['assets']) == len(assets) == 2
+          for name in ['CouchZap-3.1.1.apk', 'CouchZap-3.1.1.apk.sha256']:
+              p = Path(os.environ['RUNNER_TEMP']) / 'release' / name
+              a = assets[name]
+              assert a['state'] == 'uploaded' and a['size'] == p.stat().st_size
+              assert a['digest'] == 'sha256:' + hashlib.sha256(p.read_bytes()).hexdigest()
+          print('Both draft assets uploaded with exact verified SHA-256 digests')
+          PY
+          gh release edit v3.1.1 --draft=false --prerelease=false --latest \
+            --title 'CouchZap 3.1.1' --notes-file docs/releases/v3.1.1.md
+          test "$(gh api "repos/$GH_REPO/releases/latest" --jq '.tag_name')" = v3.1.1
+          test "$(gh release view v3.1.1 --json isPrerelease --jq '.isPrerelease')" = false
+          test "$(gh release view v3.1.1 --json isDraft --jq '.isDraft')" = false

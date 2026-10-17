@@ -18,7 +18,7 @@ Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account
 
 ## Download and start
 
-1. Download **[CouchZap-3.1.0.apk](https://github.com/saeedt20/CouchZap/releases/download/v3.1.0/CouchZap-3.1.0.apk)** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](https://github.com/saeedt20/CouchZap/releases/download/v3.1.0/CouchZap-3.1.0.apk.sha256). Source archives are also available on each release page.
+1. Download **[CouchZap-3.1.1.apk](https://github.com/saeedt20/CouchZap/releases/download/v3.1.1/CouchZap-3.1.1.apk)** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](https://github.com/saeedt20/CouchZap/releases/download/v3.1.1/CouchZap-3.1.1.apk.sha256). Source archives are also available on each release page.
 2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
 3. The app opens the welcome screen directly. Optionally choose a language, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
 4. Select a channel and enjoy.
@@ -42,15 +42,15 @@ Choose a language from the welcome screen or **Settings → Language**. Selectio
 
 Each language includes interface messages, settings, updates, diagnostics and known channel categories. Custom channel/group names and playlist identities are preserved.
 
-## 3.1.1 — correction candidate
+## 3.1.1 — stable refinements
 
-**3.1.1 is awaiting a newly signed corrected APK; 3.1.0 remains stable.** Persian/Arabic Settings chevrons bind deterministically from the saved app language. On phones, the Persian/Arabic About header Back chevron points right (TV keeps left). TV choice lists initially focus the configured value. A floating rotation button below the phone Settings gear toggles landscape/portrait viewing. Independent review corrected overlapping quick-action targets and their visibility while Settings or channels are open. See the [3.1.1 release notes](docs/releases/v3.1.1.md) and [review record](docs/releases/v3.1.1-review.md).
+**3.1.1 is the current stable release.** Persian/Arabic Settings chevrons bind deterministically from the saved app language, including after exit and relaunch. On phones, the Persian/Arabic About header Back chevron points right (TV keeps left). TV choice lists initially focus the configured value. A floating rotation button below the phone Settings gear toggles landscape/portrait viewing. The two quick controls have separate touch targets and hide while Settings or channels are open. See the [3.1.1 release notes](docs/releases/v3.1.1.md) and [independent acceptance report](docs/releases/v3.1.1-verification.md).
 
-**Planned upgrade:** 3.1.1 uses version code 19 and must use the established release certificate. Once published, install it over the official 3.1.0 app to retain local data; do not uninstall first. Stable 3.1.0 can discover the published stable update through Check for updates.
+**Upgrading:** 3.1.1 uses version code 19 and the established release certificate. Install it over the official 3.1.0 app to retain local data; do not uninstall first. Stable 3.1.0 discovers it through Check for updates. From the 3.0 betas, download this APK manually once because those installed beta version names cannot be compared by the updater.
 
 ## 3.1.0 — stable native redesign
 
-**3.1.0 is the current stable release**, replacing 2.2.1 and graduating from the 3.0 betas. It keeps native Kotlin/Android Views and Media3, with adaptive TV/phone Settings, clearer playback controls and all six interface languages. See the [3.1.0 release notes](docs/releases/v3.1.0.md) and [acceptance report](docs/releases/v3.1.0-verification.md).
+**3.1.0 introduced the stable native redesign**, replacing 2.2.1 and graduating from the 3.0 betas. It keeps native Kotlin/Android Views and Media3, with adaptive TV/phone Settings, clearer playback controls and all six interface languages. See the [3.1.0 release notes](docs/releases/v3.1.0.md) and [acceptance report](docs/releases/v3.1.0-verification.md).
 
 Since Beta 2, mobile Settings options activate on the first tap while retaining remote focus. Persian/Arabic Settings chevrons point left, the next-channel preview sits at the top right and the Info clock uses local digits. About is simpler, credits Saeed Taheri / سعید طاهری and ends with a dedication. English and the other LTR layouts retain their existing behavior.
 
@@ -155,7 +155,7 @@ Arrow keys move between buttons when a control panel has focus. Key mappings can
 
 ### Phone
 
-Tap the video to show/hide controls, double-tap to play/pause, swipe left/right to switch channels and swipe up to open the channel list. Use the gear button for settings.
+Tap the video to show/hide controls, double-tap to play/pause, swipe left/right to switch channels and swipe up to open the channel list. Use the gear button for settings. The rotation button below it switches between landscape and portrait; your manual orientation is kept for the session, including through language and layout changes. Rotation controls are phone-only.
 
 ## Playlists and programme guide
 
@@ -208,7 +208,7 @@ Without a configured keystore, the release output is unsigned. Published release
 
 ## Validation and limitations
 
-The submitted 3.1.1 transfer reported 223 passing cases, but independent acceptance tests reproduced two phone quick-action defects. This correction branch fixes them and replaces unconditional About/focus assertions with behavioral checks. Corrected verification and signing status are recorded in the [3.1.1 review](docs/releases/v3.1.1-review.md). The old submitted APK is superseded; a newly signed build is required. Version 3.1.0 passed 213 cases in independent [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/38980113816) on the corrected application commit.
+Version 3.1.1 passed **331 unit/Robolectric cases**, with zero failures, errors or skips, in independent [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/39025264063) and local verification on the exact corrected application commit. Both lint variants have zero errors; warnings remain. Both Debug and optimized Release builds passed. All 685 application payload entries in the accepted signed APK match both independent unsigned builds, and its established certificate, v2/v3 signatures, package/version, checksum and ZIP alignment are verified. See the [3.1.1 acceptance report](docs/releases/v3.1.1-verification.md); the [initial correction review](docs/releases/v3.1.1-review.md) preserves the defects found and fixed before signing.
 
 Coverage includes API 24, 28 and 36, six-language welcome and live RTL/LTR switching, search, favourites, catalog remote traversal, playlist persistence and Settings focus. New 3.1 acceptance cases exercise actual preview bounds and safe insets, app/device locale conflicts, clock time zones, real touch DOWN/UP activation and remote reading of About in all six languages. See the [detailed acceptance report](docs/releases/v3.1.0-verification.md).
 

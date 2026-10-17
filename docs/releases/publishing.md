@@ -18,6 +18,12 @@ After final main Android checks pass, tag that main commit `v3.1.0` and manually
 
 After publication, re-download the public APK and checksum, verify the exact bytes and certificate, and check `releases/latest` plus the updater's expected asset URLs. Keep old tags/releases/assets unchanged. This process does not claim a new Android TV emulator or physical-device flow run for 3.1.0.
 
+## Stable 3.1.1 publication
+
+The [3.1.1 acceptance report](v3.1.1-verification.md) pins corrected application commit `f33df88e3445c08ccb3f4030d8431c3902b3dddf`, successful [source CI run 39025264063](https://github.com/saeedt20/CouchZap/actions/runs/39025264063) and the newly signed accepted APK with SHA-256 `3cccfe433b6fe1d898b3f59d57c7704c384fa1f079164d298b2d93161bbb3f54`. The old `928d0fb5...` candidate must not be used.
+
+The fresh versioned recipe is `distribution/3.1.1/release-recipe.json`. After final main checks pass, dispatch `publish-3.1.1.yml` on main with that successful tagged-main checks-run ID. It applies the same source/run/payload/certificate/draft-asset/Latest controls as the 3.1.0 publisher above. The root legacy recipe and older releases stay unchanged. The workflow uses public signature data from the accepted APK, never a private key. No new hardware check is claimed.
+
 ## Preparing a new version with the legacy automatic flow
 
 1. Update `versionName` and increment `versionCode` in `app/build.gradle.kts`; update README, CHANGELOG and `docs/releases/v<version>.md`.
