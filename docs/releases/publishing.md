@@ -6,7 +6,29 @@ For the 2.1.x releases, publication preserved the exact APK tested by the user o
 
 The repository stores public reconstruction data and a recipe bound to the unsigned and signed SHA-256 checksums. The data contains the signature, ZIP structure and reviewed VCS metadata differences; it cannot sign a different APK and contains no private key or password. The release job retrieves that specific checked build, reconstructs the reviewed signed APK and verifies its checksum. It also compares the payload with the current main build before attaching the APK to the GitHub Release.
 
-The legacy 2.x automatic publication workflow requires a fresh Android TV 7 emulator flow check of the same signed bytes. Normal developer builds still use the `COUCHZAP_*` environment variables documented in the README. Future releases need a fresh reviewed build and public reconstruction data generated with the same private key. Existing published assets are never overwritten by this workflow.
+The legacy 2.x automatic publication workflow requires a fresh Android TV 7 emulator flow check of the same signed bytes. Normal developer builds use the `COUCHZAP_*` environment variables in [Developer signing](#developer-signing). Future releases need a fresh reviewed build and public reconstruction data generated with the same private key. Existing published assets are never overwritten by this workflow.
+
+## Developer signing
+
+Set these variables in your private shell or secure build environment:
+
+| Variable | Purpose |
+| --- | --- |
+| `COUCHZAP_KEYSTORE` | Absolute path to the private release keystore |
+| `COUCHZAP_STORE_PASSWORD` | Keystore password |
+| `COUCHZAP_KEY_ALIAS` | Key alias; defaults to `couchzap` |
+| `COUCHZAP_KEY_PASSWORD` | Key password; defaults to the store password |
+
+```sh
+./gradlew :app:assembleRelease :app:lintRelease
+adb install -r app/build/outputs/apk/release/app-release.apk
+```
+
+Without a configured keystore, the release output is unsigned. Published updates
+must use the established release key; Android cannot install over an app signed
+with a different key. Uninstalling removes local playlists and preferences.
+Never commit a keystore or password. These developer commands do not replace the
+independent reviewed-release verification below.
 
 ## Stable 3.1.0 publication
 

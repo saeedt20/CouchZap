@@ -3,184 +3,69 @@
 </p>
 
 <h1 align="center">CouchZap</h1>
-<p align="center"><strong>Take a seat. Start watching.</strong><br>A calm, remote-friendly IPTV player for Android TV and phones.</p>
-
+<p align="center"><strong>Take a seat. Start watching.</strong><br>A remote-friendly IPTV player for Android TV and phones.</p>
+<p align="center">
+  <a href="https://github.com/saeedt20/CouchZap/releases/latest"><img src="https://img.shields.io/github/v/release/saeedt20/CouchZap" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/Android-7.0%2B-green" alt="Android 7.0 or newer">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a>
+</p>
 <p align="center">
   <a href="https://github.com/saeedt20/CouchZap/releases/latest">Download APK</a> ·
   <a href="#screenshots">Screenshots</a> ·
-  <a href="#controls">Remote guide</a> ·
+  <a href="docs/USAGE.md">User guide</a> ·
   <a href="https://github.com/saeedt20/CouchZap/issues">Report an issue</a>
 </p>
 
-CouchZap brings your playlist to the living room with a sage-green interface, clear focus states and uncluttered playback controls. Add a local file or playlist link, or optionally start with public channels from [iptv-org](https://github.com/iptv-org/iptv) or [Free-TV](https://github.com/Free-TV/IPTV).
-
-Native Kotlin and Android views · Android 7.0+ · Media3 playback · No account required
+CouchZap brings your playlists to a sage-green interface with clear remote focus, channel search, favourites and playback controls. Built with native Kotlin/Android views and Media3. **No account required.**
 
 ## Download and start
 
-1. Download **[CouchZap-3.1.1.apk](https://github.com/saeedt20/CouchZap/releases/download/v3.1.1/CouchZap-3.1.1.apk)** from [Releases](https://github.com/saeedt20/CouchZap/releases/latest), together with its [SHA-256 checksum](https://github.com/saeedt20/CouchZap/releases/download/v3.1.1/CouchZap-3.1.1.apk.sha256). Source archives are also available on each release page.
-2. Install it on your Android TV, TV box or phone. Allow installation from the app used to open the APK if Android asks.
-3. The app opens the welcome screen directly. Optionally choose a language, then **Import playlist** for a local M3U, M3U8 or TXT file, or **Start with public channels**.
-4. Select a channel and enjoy.
+1. Download **[CouchZap-3.1.1.apk](https://github.com/saeedt20/CouchZap/releases/download/v3.1.1/CouchZap-3.1.1.apk)** and its [SHA-256 checksum](https://github.com/saeedt20/CouchZap/releases/download/v3.1.1/CouchZap-3.1.1.apk.sha256).
+2. Install it on your Android TV, TV box or phone. Allow installation from the app opening the APK if Android asks.
+3. Choose **Import playlist** for an M3U/M3U8/TXT file, or opt into **Start with public channels**. Links and source changes are available under **Settings → Playlist sources**.
+4. Select a channel.
 
-Use **Settings → Playlist sources** to import an HTTP(S) link, choose another source or refresh the current playlist. Choose a provider, then a country/language/category for iptv-org or a country/themed list for Free-TV. Remote Up/Down moves one option at a time, including in long or filtered public lists. Choose source order or natural name order; source channel numbers remain unchanged. Public imports are opt-in.
+**Upgrading:** install 3.1.1 over the official 3.1.0 app to retain data; do not uninstall first. Stable 3.1.0 can discover it through **Check for updates**. From a 3.0 beta, download the APK manually once. Android updates require the established signing certificate.
 
-Public channel availability depends on the source and your location. CouchZap downloads playlists when requested; it does not bundle streams or provide a subscription service.
-
-## Languages
-
-Choose a language from the welcome screen or **Settings → Language**. Selection is optional on first launch; the default is English. Your choice is saved and applied immediately, including after restarting the app.
-
-| Menu order | Language | Text direction | Channels and settings |
-| --- | --- | --- | --- |
-| 1 | English | Left to right | Left side |
-| 2 | Español | Left to right | Left side |
-| 3 | हिन्दी | Left to right | Left side |
-| 4 | ไทย | Left to right | Left side |
-| 5 | فارسی | Right to left | Right side |
-| 6 | العربية | Right to left | Right side |
-
-Each language includes interface messages, settings, updates, diagnostics and known channel categories. Custom channel/group names and playlist identities are preserved.
-
-## 3.1.1 — stable refinements
-
-**3.1.1 is the current stable release.** Persian/Arabic Settings chevrons bind deterministically from the saved app language, including after exit and relaunch. On phones, the Persian/Arabic About header Back chevron points right (TV keeps left). TV choice lists initially focus the configured value. A floating rotation button below the phone Settings gear toggles landscape/portrait viewing. The two quick controls have separate touch targets and hide while Settings or channels are open. See the [3.1.1 release notes](docs/releases/v3.1.1.md) and [independent acceptance report](docs/releases/v3.1.1-verification.md).
-
-**Upgrading:** 3.1.1 uses version code 19 and the established release certificate. Install it over the official 3.1.0 app to retain local data; do not uninstall first. Stable 3.1.0 discovers it through Check for updates. From the 3.0 betas, download this APK manually once because those installed beta version names cannot be compared by the updater.
-
-## 3.1.0 — stable native redesign
-
-**3.1.0 introduced the stable native redesign**, replacing 2.2.1 and graduating from the 3.0 betas. It keeps native Kotlin/Android Views and Media3, with adaptive TV/phone Settings, clearer playback controls and all six interface languages. See the [3.1.0 release notes](docs/releases/v3.1.0.md) and [acceptance report](docs/releases/v3.1.0-verification.md).
-
-Since Beta 2, mobile Settings options activate on the first tap while retaining remote focus. Persian/Arabic Settings chevrons point left, the next-channel preview sits at the top right and the Info clock uses local digits. About is simpler, credits Saeed Taheri / سعید طاهری and ends with a dedication. English and the other LTR layouts retain their existing behavior.
-
-The ten Beta 2 fixes remain, including keyboard dismissal after channel search selection, cleaner favourite/sound controls, separated phone Settings sections, aligned mobile Info controls, localized channel/group digits and native download progress.
-
-**Upgrading:** 3.1.0 uses version code 18 and the established release certificate. Install it over the official 2.2.1 or 3.0 beta app to retain local data; do not uninstall first. Stable 2.2.1 can discover it through Check for updates. From 3.0-beta or 3.0-beta.2, download this APK manually once because those installed beta version names cannot be compared by the updater. Future stable updates use the compatible three-part version name. Physical-device upgrade installation has not been checked for 3.1.0.
-
-TV Settings now has **Playback / Playlist / App** sections, remembers the last row and supports mirrored navigation in Persian/Arabic. Back returns from a child page, then from detail to the section rail, then closes Settings. Compact phones use a grouped full-width page. **App → Visual effects** offers Auto, Full depth, Safe and Off; Safe keeps video/subtitles untransformed, and unsupported devices fall back conservatively.
-
-Welcome keeps optional language selection and offers file/link import or public sources. Long public catalogs use a virtualized list with one-step remote traversal and retained search. Phone Info keeps playback controls visible while expanded technical information scrolls.
-
-| Native review capture | Preview |
-| --- | --- |
-| TV welcome | [English](docs/design/captures/welcome-tv-en.png) · [العربية](docs/design/captures/welcome-tv-ar.png) |
-| TV settings and language | [Playback](docs/design/captures/settings-tv-en.png) · [العربية](docs/design/captures/language-tv-ar.png) |
-| Groups: selection and focus | [العربية](docs/design/captures/groups-tv-ar.png) |
-| Phone and expanded Info | [हिन्दी welcome](docs/design/captures/welcome-phone-hi.png) · [TV Info](docs/design/captures/info-expanded-tv.png) |
-
-These historical redesign captures predate the final 3.1 fixes and use native Android Views with fixture channels/backdrops. They do not establish live decoder, SurfaceView, blur or remote behavior on physical hardware.
+CouchZap does not supply a subscription, bundle streams or guarantee public-channel availability. Use sources you are authorized to access.
 
 ## Screenshots
 
-These historical 2.x release images render the app's actual Android views using Robolectric 4.16.1 native graphics; they are not new 3.1 screenshots. The six-language welcome and English/Arabic panel images use API 28; the older Android 16 examples below use API 36. Channel data and the illustrative backdrop are fixtures. Motion is disabled for stable screenshots.
+<table>
+<tr><th>TV welcome</th><th>TV settings</th></tr>
+<tr><td><img src="docs/design/captures/welcome-tv-en.png" alt="Native TV welcome with example artwork" width="440"></td><td><img src="docs/design/captures/settings-tv-en.png" alt="Native TV playback settings" width="440"></td></tr>
+</table>
 
-| Screen | English | العربية |
-| --- | --- | --- |
-| Welcome | ![English welcome](docs/screenshots/v2.2.0/welcome-tv-en.png) | ![الترحيب بالعربية](docs/screenshots/v2.2.0/welcome-tv-ar.png) |
-| Channels | ![English channels on the left](docs/screenshots/v2.2.0/channels-tv-en.png) | ![القنوات على اليمين](docs/screenshots/v2.2.0/channels-tv-ar.png) |
-| Info | ![English playback controls](docs/screenshots/v2.2.0/info-tv-en.png) | ![عناصر التحكم بالعربية](docs/screenshots/v2.2.0/info-tv-ar.png) |
-| Settings | ![English settings on the left](docs/screenshots/v2.2.0/settings-tv-en.png) | ![الإعدادات على اليمين](docs/screenshots/v2.2.0/settings-tv-ar.png) |
-
-<details>
-<summary>Phone welcome in all six languages, in menu order</summary>
-
-<img src="docs/screenshots/v2.2.0/welcome-phone-en.png" alt="English" width="180">
-<img src="docs/screenshots/v2.2.0/welcome-phone-es.png" alt="Español" width="180">
-<img src="docs/screenshots/v2.2.0/welcome-phone-hi.png" alt="हिन्दी" width="180">
-<img src="docs/screenshots/v2.2.0/welcome-phone-th.png" alt="ไทย" width="180">
-<img src="docs/screenshots/v2.2.0/welcome-phone-fa.png" alt="فارسی" width="180">
-<img src="docs/screenshots/v2.2.0/welcome-phone-ar.png" alt="العربية" width="180">
-
-</details>
-
-<details>
-<summary>Android 16 settings and Persian search from 2.1.x</summary>
-
-<img src="docs/work/phase07/screenshots/ui-fix-settings-phone-en-api36.png" alt="English Android 16 settings after Back" width="270">
-<img src="docs/work/phase07/screenshots/ui-fix-settings-phone-fa-api36.png" alt="Persian Android 16 settings after Back" width="270">
-
-<img src="docs/work/phase08/screenshots/stage8-fa-phone-api36-search.png" alt="Multiword Persian search and translated channel group" width="270">
-<img src="docs/work/phase08/screenshots/stage8-fa-phone-api36-aspect.png" alt="Persian picture ratios" width="270">
-
-</details>
-
-<details>
-<summary>Favourite button: absent and added</summary>
-
-<img src="docs/work/phase07/screenshots/stage7-info-fa-phone-api36-favourite-off.png" alt="Favourite absent: outlined star" width="270">
-<img src="docs/work/phase07/screenshots/stage7-info-fa-phone-api36-favourite-on.png" alt="Favourite added: filled star" width="270">
-
-</details>
+*Native redesign captures with fixture content, taken before the final 3.1 fixes. They do not demonstrate physical-device playback.*
 
 ## Features
 
-- **A calmer interface:** couch-and-lightning identity, warm sage accents, generous buttons and visible remote focus.
-- **A better channel browser:** search that retains typing and the cursor while results update, groups, favourites, channel logos and a distinct playback-status label. The panel docks right in Persian and Arabic, and left in English, Spanish, Hindi and Thai. Focus and the currently selected channel remain separate, including during asynchronous connection errors. Up from the first visible channel wraps to the last; Down wraps back to the first.
-- **Flexible playlist sources:** local files, HTTP(S) links and selectable public iptv-org and Free-TV directories. Cached channels remain available between launches; failed imports preserve the previous playlist.
-- **Useful Info controls:** channel name, number, clock, play/pause, an outlined/filled favourite star and a second level for available codec, resolution and bitrate information.
-- **Programme guide:** XMLTV from a file or link, including gzip files. Shows now/next and programme progress when guide IDs match the playlist.
-- **Playback options:** HLS, DASH, RTSP and compatible progressive streams, available audio/subtitle tracks, Fit/Fill/16:9/4:3 picture modes, reconnect attempts and a retry/next-channel error panel.
-- **Updates from Settings:** check the latest stable GitHub release, download it with progress, verify its checksum and CouchZap signing certificate, then open Android’s installer. Installation always requires your confirmation.
-- **Diagnostic reports:** preview, share or save an app-only log from Settings. It contains device/version details and error classes/stacks; playlist URLs, channel names, tokens and account data are excluded. Boxes without a sharing/file app can copy the report to the clipboard.
-- **Six interface languages:** choose English, Español, हिन्दी, ไทย, فارسی or العربية, in that order, from the welcome screen or Settings. First launch opens the welcome screen directly, with English as the default. Persian and Arabic use RTL text and right-docked channels/settings; English, Spanish, Hindi and Thai use LTR text and left-docked panels. Known IPTV groups are translated without changing playlist identities. Settings subpages retain parent focus and scroll when you press Back.
-- **Light welcome motion:** a one-time intro that completes on the first key or touch while still handling that input. System animation and visual-effects settings are respected.
-- **Optional CRT click:** enable **Settings → Playback → Channel switch sound** for an original, quiet 160ms sample. It is off by default, previews when enabled and plays only on committed channel changes; browsing, retries and reconnects stay silent. Media volume and mute are respected.
-- **Everyday conveniences:** last watched channel, numeric selection for large playlists, a 15/30/60/90-minute sleep timer and saved interface preferences.
-- **TV and phone support:** automatic device detection, manual TV/Phone modes, TV overscan padding, responsive phone layout and touch gestures.
+- **Browse comfortably:** channel search, groups, favourites, logos, numeric selection and last-watched recall.
+- **Choose your sources:** local files, HTTP(S) playlists and optional [iptv-org](https://github.com/iptv-org/iptv) or [Free-TV](https://github.com/Free-TV/IPTV) directories. Failed imports preserve the previous playlist.
+- **Watch your way:** HLS, DASH, RTSP and compatible progressive streams, source-provided audio/subtitles, picture modes and retry controls.
+- **Programme guide:** local or linked XMLTV, including gzip, with now/next information when guide IDs match.
+- **TV and phone layouts:** remote navigation, touch gestures, phone rotation controls, sleep timer and optional channel-switch sound.
+- **Six languages:** English, Español, हिन्दी, ไทย, فارسی and العربية. English is the default; Persian/Arabic use RTL text and right-docked panels.
+- **Requested updates and diagnostics:** checksum/certificate-checked updates and an app-only diagnostic report you preview before sharing.
 
-Favourites and the current channel survive playlist refreshes when `tvg-id`, or the fallback name and group identity, remain stable. Refresh is manual; cached playlists and guides do not update automatically.
+Playlists and guides are cached locally and refreshed manually. See the [user guide](docs/USAGE.md) for source formats, language behavior, persistence and diagnostics.
 
 ## Controls
 
-### TV remote
-
-| Button | Action |
-| --- | --- |
+| TV remote | Action |
+|---|---|
 | OK / Up during playback | Open channels |
-| Up / Down in channels | Move focus; wrap at the first/last visible row |
-| OK on a channel | Play it |
-| Hold OK on a channel | Add/remove favourite |
-| Left (Right in RTL) from a channel row | Reach the filter buttons, then search |
-| Right / CH+ / Page Up during playback | Next channel |
-| Left / CH− / Page Down during playback | Previous channel |
-| Down / Info | Show controls; press Info again for stream details |
-| Number keys / Delete / OK | Enter / correct / confirm a channel number |
-| Play / Pause / Play-Pause | Play / pause / toggle |
-| Last Channel | Return to the previous watched channel |
-| Menu | Open settings |
-| Back | Close the active panel; press twice with panels closed to exit |
+| Up / Down, then OK | Browse and play |
+| Hold OK on a channel | Toggle favourite |
+| Right / CH+; Left / CH− during playback | Next; previous channel |
+| Down / Info | Open controls; Info again shows stream details |
+| Menu / Back | Settings; close the active panel |
 
-Arrow keys move between buttons when a control panel has focus. Key mappings can vary between remotes. The expanded Info panel also includes a previous-watched-channel button.
+On phones: tap for controls, double-tap to play/pause, swipe left/right to change channels and swipe up for the list. See the [complete remote and touch guide](docs/USAGE.md#controls), including RTL behavior and key mappings.
 
-### Phone
+## Build and verification
 
-Tap the video to show/hide controls, double-tap to play/pause, swipe left/right to switch channels and swipe up to open the channel list. Use the gear button for settings. The rotation button below it switches between landscape and portrait; your manual orientation is kept for the session, including through language and layout changes. Rotation controls are phone-only.
-
-## Playlists and programme guide
-
-M3U metadata includes `tvg-id`, `tvg-logo`, `group-title`, User-Agent/Referer fields and HLS/DASH manifest hints. Duplicate stream URLs are removed; channel numbers follow playlist order and stay unchanged when the displayed list is sorted by name. TXT accepts `Name,URL` entries or bare stream URLs.
-
-```m3u
-#EXTM3U x-tvg-url="https://example.org/guide.xml.gz"
-#EXTINF:-1 tvg-id="example.news" tvg-logo="https://example.org/logo.png" group-title="News",Example News
-https://example.org/live.m3u8
-```
-
-The URLs above are placeholders. Import your guide through **Settings → Programme guide** and use matching `tvg-id` values. A guide URL in the playlist header can be used through **Refresh guide**; guides are not downloaded automatically. Guide import keeps programmes relevant to the next 48 hours and rejects oversized files. Audio tracks, subtitles and programme information appear only when the source supplies them.
-
-Android 7–9 also have a basic file-browser fallback if the system document picker is missing. Android 10+ require an enabled system Files/document-picker app.
-
-## Build from source
-
-| Tool | Version |
-| --- | --- |
-| JDK | 21 |
-| Android SDK / target SDK | 35 |
-| Android Build Tools | 36.0.0 |
-| Android Gradle Plugin | 9.1.1 |
-| Gradle wrapper | 9.3.1 |
-| Minimum Android | 7.0 / API 24 |
+Use **JDK 21**, Android SDK **35** and Build Tools **36.0.0** with the pinned Gradle wrapper:
 
 ```sh
 git clone https://github.com/saeedt20/CouchZap.git
@@ -188,58 +73,16 @@ cd CouchZap
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
 ```
 
-Configure the SDK in Android Studio, `ANDROID_HOME` or an untracked `local.properties`. On Windows use `gradlew.bat`. Debug output: `app/build/outputs/apk/debug/app-debug.apk`.
+Set the SDK through Android Studio, `ANDROID_HOME` or an untracked `local.properties`. Windows uses `gradlew.bat`. Debug output is `app/build/outputs/apk/debug/app-debug.apk`. [Release signing and publishing](docs/releases/publishing.md#developer-signing) require a private keystore; no signing secret belongs in Git.
 
-For a signed, optimized release, set these environment variables in your shell or secure build environment:
+The [3.1.1 acceptance record](docs/releases/v3.1.1-verification.md) documents 331 unit/Robolectric cases, builds, lint and signed-payload verification. Physical-device checks for 3.1.1 were not run; remotes, decoders/HDR, touch/IME and upgrade installation remain hardware-dependent. No provider-account login, DRM configuration, recording or catch-up service is included.
 
-| Variable | Purpose |
-| --- | --- |
-| `COUCHZAP_KEYSTORE` | Absolute path to your private release keystore |
-| `COUCHZAP_STORE_PASSWORD` | Keystore password |
-| `COUCHZAP_KEY_ALIAS` | Key alias; defaults to `couchzap` |
-| `COUCHZAP_KEY_PASSWORD` | Key password; defaults to the store password |
+## Privacy, history and license
 
-```sh
-./gradlew :app:assembleRelease :app:lintRelease
-adb install -r app/build/outputs/apk/release/app-release.apk
-```
+Playlists, guides, favourites and preferences stay in private app storage. There is no analytics or advertising service. Playback and imports connect to your selected providers; HTTP sources remain unencrypted. Diagnostic sharing and updates are requested by you.
 
-Without a configured keystore, the release output is unsigned. Published releases use a dedicated release key. Updates must use the same key; Android cannot install it over a build signed with a different key. Uninstalling removes local playlists and preferences. Signing keys and passwords are excluded from this repository. Maintainers can read the [reviewed-release publishing notes](docs/releases/publishing.md).
+- [Current release notes](docs/releases/v3.1.1.md) · [3.1.0 redesign](docs/releases/v3.1.0.md)
+- [User guide](docs/USAGE.md) · [Publishing process](docs/releases/publishing.md)
+- [Original CRT sample and CC0 notice](docs/assets/crt_sound.md)
 
-## Validation and limitations
-
-Version 3.1.1 passed **331 unit/Robolectric cases**, with zero failures, errors or skips, in independent [GitHub Actions](https://github.com/saeedt20/CouchZap/actions/runs/39025264063) and local verification on the exact corrected application commit. Both lint variants have zero errors; warnings remain. Both Debug and optimized Release builds passed. All 685 application payload entries in the accepted signed APK match both independent unsigned builds, and its established certificate, v2/v3 signatures, package/version, checksum and ZIP alignment are verified. See the [3.1.1 acceptance report](docs/releases/v3.1.1-verification.md); the [initial correction review](docs/releases/v3.1.1-review.md) preserves the defects found and fixed before signing.
-
-Coverage includes API 24, 28 and 36, six-language welcome and live RTL/LTR switching, search, favourites, catalog remote traversal, playlist persistence and Settings focus. New 3.1 acceptance cases exercise actual preview bounds and safe insets, app/device locale conflicts, clock time zones, real touch DOWN/UP activation and remote reading of About in all six languages. See the [detailed acceptance report](docs/releases/v3.1.0-verification.md).
-
-Physical Android 7 XDSR 685 HDR and Android 16 checks were **not run for 3.1.0 or 3.1.1**. Device-specific touch/IME, remote, decoder/HDR behavior and upgrade installation still need hardware verification. The [earlier Android 7 network results](https://github.com/saeedt20/CouchZap/actions/runs/38611939876) concern older releases. The [publishing process](docs/releases/publishing.md) explains the independent build comparison and key-free publication of the reviewed signed bytes.
-
-Automated checks do not validate physical TV remotes, hardware decoders or live stream availability. Playback depends on the device's codec support and source availability. There is no provider-account login, DRM configuration, recording, catch-up service or SmoothStreaming module. Opaque HLS/DASH links use manifest hints or a server's HEAD content type; servers that supply neither may require a conventional manifest URL.
-
-## Updates and diagnostic logs
-
-Open **Settings → Check for updates**. Downloads come only from this repository’s stable GitHub Releases. CouchZap checks SHA-256, the application ID, version and the release signing certificate before offering installation. On Android 8+, allow CouchZap to install updates when Android asks; on Android 7, the device’s unknown-sources setting may be needed. Updates run only when requested.
-
-Open **Settings → Share diagnostic log** to preview and share a text report, or save it to a file. Import failures also offer a shortcut to that report. Nothing is sent automatically. Logs stay in private app storage and retain a bounded recent history; they contain Android/device/version information and sanitized exception traces, rather than whole-system logcat or your playlist contents. Attach the report to a GitHub issue or send it to the maintainer.
-
-Android 7 lacks the ISRG Root X1 certificate required by the public directory. CouchZap includes the official public root for the iptv-org and GitHub domains while keeping certificate-chain and hostname verification enabled. Other destinations continue to use system trust.
-
-## Data and attribution
-
-Playlists, guides, favourites and preferences stay in private app storage. CouchZap has no analytics, advertising or account service. It connects to playlist, guide, artwork and stream servers that you select; public directories connect to the chosen iptv-org or Free-TV source. HTTP sources are supported, so transport security depends on the source.
-
-The [original CRT sample](docs/assets/crt_sound.md) is synthesized locally without third-party recordings and dedicated under CC0 1.0.
-
-Thanks to [Free-TV](https://github.com/Free-TV/IPTV), [iptv-org](https://github.com/iptv-org/iptv) for its public playlist directory and metadata API, [AndroidX Media3](https://github.com/androidx/media) for playback, [AndroidSVG](https://github.com/BigBadaboom/androidsvg) for SVG artwork, and [Robolectric](https://github.com/robolectric/robolectric) for Android regression testing.
-
-For bugs, include device/Android version, reproduction steps and sanitized logs in [GitHub Issues](https://github.com/saeedt20/CouchZap/issues).
-
-## License
-
-CouchZap is open-source software released under the [MIT License](LICENSE).
-Created by **Saeed Taheri (سعید طاهری)**. Copyright (c) 2026 Saeed Taheri.
-
-The MIT license covers the project's code. Third-party notices are preserved
-separately: the CRT sample is dedicated under CC0 1.0 (see
-`docs/assets/crt_sound.md`), and upstream dependency licenses (e.g. AndroidX
-Media3, AndroidSVG, Robolectric) remain with their respective projects.
+Original application code is **[MIT-licensed](LICENSE)**, copyright © 2026 Saeed Taheri (سعید طاهری). Upstream Media3, AndroidSVG, Robolectric and other dependencies retain their licenses. Thanks to iptv-org and Free-TV for their public directories.
